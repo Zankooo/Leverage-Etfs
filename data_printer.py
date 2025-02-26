@@ -3,6 +3,8 @@ def navaden_print(podatki):
     print(podatki)
 
 def print_vsak_v_svoji_vrstici(podatki):
-    """Izpiše vsak seznam (vrstico) v novi vrstici."""
+    """Funkcija sprinta vsak line v svoji vrstici
+    @:param dvojni array
+    """
     for line in podatki:
         print(line)
