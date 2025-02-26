@@ -47,4 +47,4 @@ calculate_compound_interest(initial_investment, interest_rate, time_period)
 # morm narest to verzijo od leta pač kokr mam podatke do recimo 2024 da
 # radotu pokazm kaj mislm pac
 # za vsa leta ampak da menjam kolko pade sp500 k kupis leverage in vplacila in tako
-#ampak leta pa ostanejo ista
+# ampak leta pa ostanejo ista
