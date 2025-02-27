@@ -62,3 +62,4 @@ def calculate_daily_changes(podatki):
 #DEJANSKO RAZUMEM VECINO KAJ SE DOGAJA
 #preverit zdej ce dela se za druge indekse
 
+
