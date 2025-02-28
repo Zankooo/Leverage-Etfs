@@ -1,9 +1,6 @@
 # to je class v katerem bomo izvajali operacije nad csv file
 import csv
 
-
-from data_printer import print_vsak_v_svoji_vrstici
-
 # nalozimo podatke iz izbrane csv datoteke
 def load_csv(filepath):
     """
@@ -14,7 +11,6 @@ def load_csv(filepath):
         array = [row for row in csv_reader]
         print("Csv file naložen!")
         return array
-
 
 def obrni_csv(podatki):
     """
@@ -36,7 +32,6 @@ def obrni_csv(podatki):
     #zbrisemo oba na koncu
     podatki.pop()
     podatki.pop()
-
     print("Datoteka uspešno obrnjena!")
     return podatki
 
@@ -51,6 +46,5 @@ def ustvari_nov_csv_file(podatki):
     with open(file_path, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerows(podatki)
-
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena!")
 
