@@ -9,7 +9,7 @@
 
 ## Cilji:
 - Sprogramirat da ti izracuna uspesno brez napak donose za vsak dan ob danem csv, fileu
-- potem da je lahko sintaksa csv.ja drugacna, torej prvo podatke pol datum in tako, in da on to razbere in popravi
+- potem da je lahko sintaksa datuma lahko drugačna
 - potem pa že s kešom da investiraš (v navadnega ne leverage) ampak pogledat na chatu kko to gre, pac zacet da vsak mesec prvega vrzes notri
 - in se s tem igrat da bo dovrseno
 - in pol preit na leverage in pogledat na chatu kako iz navadnega naredit leverage, pac a samo 2x das 

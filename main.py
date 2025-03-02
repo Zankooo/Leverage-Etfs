@@ -6,14 +6,9 @@ from fancy_zakljucki_programa import *
 
 
 
-te_obrnit = load_csv('podatki/spx_do_danes_novi.csv')
-obrnjeno = obrni_csv(te_obrnit)
+podatki = load_csv('podatki/nasdaq.csv')
 
-
-sprintaj = convert_dates(obrnjeno)
-
-print_vsak_v_svoji_vrstici(sprintaj)
-
+calculate_return(podatki)
 
 
 

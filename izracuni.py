@@ -65,3 +65,29 @@ def convert_dates(podatki):
     for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
         podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
     return podatki  # Vrne posodobljene podatke
+
+
+def calculate_return(data, initial_investment=1000):
+    """
+    Sprejme seznam seznamov [[datum, tecaj]] in začetno investicijo.
+    Izračuna končno vrednost investicije glede na spremembo SP500 indeksa.
+
+    :param data: Seznam seznamov [[datum, vrednost SP500]]
+    :param initial_investment: Začetni kapital (privzeto 1000 enot)
+    :return: Končna vrednost investicije
+    """
+
+    # Vrednost SP500 na prvi dan
+    first_price = float(data[2][1])
+
+    # Vrednost SP500 na zadnji dan
+    last_price = float(data[-1][1])
+
+    # Donos na osnovi rasti indeksa
+    final_value = initial_investment * (last_price / first_price)
+    if final_value > 1000:
+        final_value_formatirano = f"{final_value:,.2f} eur"
+        print(final_value_formatirano)
+    print(f"{round(final_value,2)} eur")
+
+    return round(final_value,2)  # Zaokrožimo na 2 decimalni mesti
