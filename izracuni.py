@@ -1,4 +1,4 @@
-
+from datetime import datetime
 
 def calculate_daily_changes(podatki):
     """
@@ -6,7 +6,6 @@ def calculate_daily_changes(podatki):
     Prva vrstica je ime indeksa in od kdaj do kdaj
     Druga vrstica so poimenovanje podatkov
     Tretja so pa ze podatki, prvi je datum drugi pa vrednost
-
     """
     def is_float(value):
         """Notranja funkcija; Preveri, ali je podana vrednost veljaven float."""
@@ -21,12 +20,10 @@ def calculate_daily_changes(podatki):
     result.append(podatki[1] + ["Daily Change (%)"])  # Prvi dan ni spremembe
     # Drugi dan nastavim na '0%', ker ni spremembe
     result.append(podatki[2] + ['0%'])
-
     # Izračun spremembe za vsak naslednji dan
     for i in range(3, len(podatki)):
         current_value = podatki[i][1]
         previous_value = podatki[i - 1][1]  # Ena vrstica nazaj
-
 
         # Če je trenutna vrednost prazna, napišemo "holidays"
         if current_value == '':
@@ -59,7 +56,12 @@ def calculate_daily_changes(podatki):
 
     return result
 
-#DEJANSKO RAZUMEM VECINO KAJ SE DOGAJA
-#preverit zdej ce dela se za druge indekse
-
-
+def convert_dates(podatki):
+    """
+    Sprejme list of lists, kjer je prvi stolpec datum v formatu MM/DD/YYYY.
+    Pretvori datume od tretje vrstice naprej v format YYYY-MM-DD.
+    Vrne posodobljen seznam.
+    """
+    for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
+        podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
+    return podatki  # Vrne posodobljene podatke

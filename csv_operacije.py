@@ -15,10 +15,10 @@ def load_csv(filepath):
 def obrni_csv(podatki):
     """
     Funkcija ki sprejme dvojni list/array, pac podatki
-    in obrne vse skupaj tako da da prvi array na konec in zadnjega na zacetek
-    pri tem prvi dve vrstici ki sta 'naslov' csv filea, obdrzi na istem mestu
+    in obrne vse skupaj; da seveda zacne obracat v tretji vrstici in obrne obicno vse skupaj reverse
+    Pri tem prvi dve vrstici ki sta 'naslov' csv filea, obdrzi na istem mestu. Torej zacne kot receno v 3 vrstici obracat
     @:param dvojni array/list
-    @return obrnjen list/array
+    @return obrnjen array/list
     """
     # obrnemo podatke
     podatki.reverse()
