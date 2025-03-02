@@ -9,6 +9,7 @@ def fancy1():
 
 
 def fancy2():
+    print("----------")
     print("""
         🎉 PROGRAM KONČAN 🎉
        ************************

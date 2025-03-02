@@ -1,4 +1,8 @@
 from datetime import datetime
+from datetime import *
+
+from data_printer import print_vsak_v_svoji_vrstici
+
 
 def calculate_daily_changes(podatki):
     """
@@ -53,7 +57,6 @@ def calculate_daily_changes(podatki):
             daily_change = ((current_value - previous_value) / previous_value) * 100
             change_str = f"{'+' if daily_change > 0 else ''}{round(daily_change, 2)}%"
             result.append(podatki[i] + [change_str])
-
     return result
 
 def convert_dates(podatki):
@@ -67,7 +70,8 @@ def convert_dates(podatki):
     return podatki  # Vrne posodobljene podatke
 
 
-def calculate_return(data, initial_investment=1000):
+def calculate_return(podatki, initial_investment=1000, every_day_contribution=10):
+    # ta funkcija za izracun dejansko dela
     """
     Sprejme seznam seznamov [[datum, tecaj]] in začetno investicijo.
     Izračuna končno vrednost investicije glede na spremembo SP500 indeksa.
@@ -76,18 +80,33 @@ def calculate_return(data, initial_investment=1000):
     :param initial_investment: Začetni kapital (privzeto 1000 enot)
     :return: Končna vrednost investicije
     """
+    # edin fiksat ker pac on ze prvi dan uposteva donos, to pogleedat, drugace pa dejansko dela
+    podatki_daily_changes = calculate_daily_changes(podatki)
+    investment = 1000
+    zacetek = 9389 # pol dat eno vec kar takrat je praznik, da vidm kaj bo
+    konec = 9600
+# ko gledam na full chart sp500 moram da ni inflation adjuested, pol se cifre matchajo
+# kle se malo pogledat ker pac prvi dan ko ti kupis tukaj ze uposteva donos iz prvega dne
+    for i in range(zacetek, konec):
+        # problem je ker v spx obeh ni "" v obicnem fileu
+        if podatki_daily_changes[i][2] == "Holidays":
+            continue
+        else:
+            #damo stran procent
+            daily_change = podatki_daily_changes[i][2].replace("%", "")  # Remove '%'
+            # spremenimo v int in zaokrozimo na dve decimalki
+            daily_change_cifra = round(float(daily_change), 2) / 100  # Convert to decimal
+            # izracunamo
+            # !!! ce hocemo dat vsak dan notri 10 eur je ta vrstica ali pa pac jo zbrisemo
+            #investment = investment + 10
+            investment = investment * (1 + daily_change_cifra) # 1 zato ker ce je donos 0,5% kar je 0,005% je v bistvu: kart 1,005
+            print(f"Vrednost po dnevu {i}: {investment:.2f} eur")
 
-    # Vrednost SP500 na prvi dan
-    first_price = float(data[2][1])
+    print(f"Investirali smo {initial_investment}eur dne {podatki[2][0]}")
+    print(f"Od datuma {podatki[zacetek][0]} do {podatki[konec][0]} smo imeli notri in imamo sedaj: {investment:.2f}eur")
+    zasluzili = round ((investment - initial_investment),2)
+    zasluzili_formatirano = f"{zasluzili:,.2f} eur"
+    print(f"Oz drugace receno; zasluzili/izgubili smo {zasluzili_formatirano}")
 
-    # Vrednost SP500 na zadnji dan
-    last_price = float(data[-1][1])
 
-    # Donos na osnovi rasti indeksa
-    final_value = initial_investment * (last_price / first_price)
-    if final_value > 1000:
-        final_value_formatirano = f"{final_value:,.2f} eur"
-        print(final_value_formatirano)
-    print(f"{round(final_value,2)} eur")
-
-    return round(final_value,2)  # Zaokrožimo na 2 decimalni mesti
+    return round(investment,2)  # Zaokrožimo na 2 decimalni mesti
