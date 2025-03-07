@@ -1,15 +1,12 @@
 from datetime import datetime
 from datetime import *
 
-from data_printer import print_vsak_v_svoji_vrstici
-
-
 def calculate_daily_changes(podatki):
     """
-    Sprejme dvojni array s podatki o NASDAQ indeksu in vrne array z dodatnim stolpcem; "daily change"
-    Prva vrstica je ime indeksa in od kdaj do kdaj
-    Druga vrstica so poimenovanje podatkov
-    Tretja so pa ze podatki, prvi je datum drugi pa vrednost
+    Sprejme dvojni array s podatki o indeksa in vrne array z dodatnim stolpcem; "daily change"
+    Prva vrstica v csv file je ime indeksa in od kdaj do kdaj je
+    Druga vrstica v csv file so poimenovanje podatkov
+    Tretja so pa ze podatki, prvi(na indeksu 0) je datum drugi(na indeksu 1) je pa vrednost
     """
     def is_float(value):
         """Notranja funkcija; Preveri, ali je podana vrednost veljaven float."""
@@ -70,7 +67,7 @@ def convert_dates(podatki):
     return podatki  # Vrne posodobljene podatke
 
 
-def calculate_return(podatki, initial_investment=1000, every_day_contribution=10):
+def calculate_return(podatki):
     # ta funkcija za izracun dejansko dela
     """
     Sprejme seznam seznamov [[datum, tecaj]] in začetno investicijo.
@@ -82,12 +79,14 @@ def calculate_return(podatki, initial_investment=1000, every_day_contribution=10
     """
     # edin fiksat ker pac on ze prvi dan uposteva donos, to pogleedat, drugace pa dejansko dela
     podatki_daily_changes = calculate_daily_changes(podatki)
-    investment = 1000
-    zacetek = 9389 # pol dat eno vec kar takrat je praznik, da vidm kaj bo
-    konec = 9600
-# ko gledam na full chart sp500 moram da ni inflation adjuested, pol se cifre matchajo
+    initial_investment = int(input("Vpisi zacetno investicijo: "))
+    investment = initial_investment
+    print("Izberi; ne more bit 0 in 1 ker so to lastnosti file-a, ampak pri 2 lahko zacnemo")
+    zacetek = int(input("Zacetek kdaj, kera vrstica: ")) # pol dat eno vec kar takrat je praznik, da vidm kaj bo
+    konec = int(input("Konec kdaj, kera vrstica: "))
+    # ko gledam na full chart sp500 moram da ni inflation adjuested, pol se cifre matchajo
 # kle se malo pogledat ker pac prvi dan ko ti kupis tukaj ze uposteva donos iz prvega dne
-    for i in range(zacetek, konec):
+    for i in range(zacetek, konec+1):
         # problem je ker v spx obeh ni "" v obicnem fileu
         if podatki_daily_changes[i][2] == "Holidays":
             continue
@@ -100,13 +99,14 @@ def calculate_return(podatki, initial_investment=1000, every_day_contribution=10
             # !!! ce hocemo dat vsak dan notri 10 eur je ta vrstica ali pa pac jo zbrisemo
             #investment = investment + 10
             investment = investment * (1 + daily_change_cifra) # 1 zato ker ce je donos 0,5% kar je 0,005% je v bistvu: kart 1,005
-            print(f"Vrednost po dnevu {i}: {investment:.2f} eur")
+            print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f}eur ({daily_change}%)")
 
-    print(f"Investirali smo {initial_investment}eur dne {podatki[2][0]}")
+    print("-----------")
+    print(f"Investirali smo {initial_investment}eur dne {podatki[zacetek][0]}")
     print(f"Od datuma {podatki[zacetek][0]} do {podatki[konec][0]} smo imeli notri in imamo sedaj: {investment:.2f}eur")
     zasluzili = round ((investment - initial_investment),2)
-    zasluzili_formatirano = f"{zasluzili:,.2f} eur"
+    zasluzili_formatirano = f"{zasluzili:,.2f}eur"
     print(f"Oz drugace receno; zasluzili/izgubili smo {zasluzili_formatirano}")
-
-
-    return round(investment,2)  # Zaokrožimo na 2 decimalni mesti
+    # Zaokrožimo na 2 decimalni mesti
+    koncni_izracun = round(investment,2)
+    return koncni_izracun
