@@ -1,9 +1,9 @@
 from datetime import datetime
 from datetime import *
-
+import re
 def calculate_daily_changes(podatki):
     """
-    Sprejme dvojni array s podatki o indeksa in vrne array z dodatnim stolpcem; "daily change"
+    Sprejme dvojni array s podatki o indeksu in vrne array z dodatnim stolpcem; "daily change"
     Prva vrstica v csv file je ime indeksa in od kdaj do kdaj je
     Druga vrstica v csv file so poimenovanje podatkov
     Tretja so pa ze podatki, prvi(na indeksu 0) je datum drugi(na indeksu 1) je pa vrednost
@@ -15,6 +15,15 @@ def calculate_daily_changes(podatki):
             return True
         except ValueError:
             return False
+    # ce je format datuma tako, klicemo funkcijo da spremenimo datum,
+    # drugace pa ne...
+    # ker hocemo da je pac v formatu 2021-10-06
+    # to tuki dejansko ne rabimo ampak za vsak sluca
+    # uzamemo datum iz tretje vrstice da pogledamo kako so datumi zapisani
+    date_string = podatki[2][0]
+    # in ce ni tako; 2021-10-06, potem klicemo funkcijo da spremenimo
+    if not re.match(r"\d{4}-\d{2}-\d{2}", date_string):
+        podatki = convert_dates(podatki)
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]
     # Inicializacija prve vrstice brez spremembe
@@ -25,15 +34,13 @@ def calculate_daily_changes(podatki):
     for i in range(3, len(podatki)):
         current_value = podatki[i][1]
         previous_value = podatki[i - 1][1]  # Ena vrstica nazaj
-
         # Če je trenutna vrednost prazna, napišemo "holidays"
         if current_value == '':
             result.append(podatki[i] + ['Holidays'])
             # nadaljujemo loop - continue, ker ni nic za racunat pac
             continue
-
         # Če je trenutna vrednost veljaven float
-        if is_float(current_value):
+        elif is_float(current_value):
             current_value = float(current_value)
             #ugotovit moramo prejšno vrednost, oz ker dan nazadnje je pa bil trgovalni dan
             # v skoraj večini primerov je bil prejšni dan trgovalni-ima tecaj, razen ko je bil 11/9
@@ -48,7 +55,6 @@ def calculate_daily_changes(podatki):
                         break
                     else:
                         vrstica = vrstica - 1
-
             # tukaj pa zracunamo torej spremembo in jo zapisemo v vrstico v kateri smo trenutno
             previous_value = float(previous_value)
             daily_change = ((current_value - previous_value) / previous_value) * 100
@@ -56,28 +62,18 @@ def calculate_daily_changes(podatki):
             result.append(podatki[i] + [change_str])
     return result
 
-def convert_dates(podatki):
-    """
-    Sprejme list of lists, kjer je prvi stolpec datum v formatu MM/DD/YYYY.
-    Pretvori datume od tretje vrstice naprej v format YYYY-MM-DD.
-    Vrne posodobljen seznam.
-    """
-    for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
-        podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
-    return podatki  # Vrne posodobljene podatke
-
 
 def calculate_return(podatki):
     # ta funkcija za izracun dejansko dela
     """
-    Sprejme seznam seznamov [[datum, tecaj]] in začetno investicijo.
+    Sprejme seznam seznamov [[datum, tecaj]] in začetno investicijo, potem tudi dnevni vložek(kasneje mesečni ko bom fixal).
     Izračuna končno vrednost investicije glede na spremembo SP500 indeksa.
-
     :param data: Seznam seznamov [[datum, vrednost SP500]]
     :param initial_investment: Začetni kapital (privzeto 1000 enot)
-    :return: Končna vrednost investicije
+    :return: int končna vrednost investicije
     """
     # edin fiksat ker pac on ze prvi dan uposteva donos, to pogleedat, drugace pa dejansko dela
+    # klicemo funckijo o izracunu daily cganges %
     podatki_daily_changes = calculate_daily_changes(podatki)
     initial_investment = int(input("Vpisi zacetno investicijo: "))
     investment = initial_investment
@@ -85,22 +81,20 @@ def calculate_return(podatki):
     zacetek = int(input("Zacetek kdaj, kera vrstica: ")) # pol dat eno vec kar takrat je praznik, da vidm kaj bo
     konec = int(input("Konec kdaj, kera vrstica: "))
     # ko gledam na full chart sp500 moram da ni inflation adjuested, pol se cifre matchajo
-# kle se malo pogledat ker pac prvi dan ko ti kupis tukaj ze uposteva donos iz prvega dne
+    # kle se malo pogledat ker pac prvi dan ko ti kupis tukaj ze uposteva donos iz prvega dne
+    #ja pac se uposteva, pac se smatra da si kupu direkt pred odprtjem borze
     for i in range(zacetek, konec+1):
         # problem je ker v spx obeh ni "" v obicnem fileu
         if podatki_daily_changes[i][2] == "Holidays":
             continue
         else:
-            #damo stran procent
             daily_change = podatki_daily_changes[i][2].replace("%", "")  # Remove '%'
-            # spremenimo v int in zaokrozimo na dve decimalki
-            daily_change_cifra = round(float(daily_change), 2) / 100  # Convert to decimal
+            daily_change_cifra = (round(float(daily_change), 2) / 100)  # Convert to decimal
             # izracunamo
             # !!! ce hocemo dat vsak dan notri 10 eur je ta vrstica ali pa pac jo zbrisemo
             #investment = investment + 10
-            investment = investment * (1 + daily_change_cifra) # 1 zato ker ce je donos 0,5% kar je 0,005% je v bistvu: kart 1,005
+            investment = investment * (1 + daily_change_cifra) # izracun; 1 zato ker ce je donos 0,5% kar je 0,005% je v bistvu: krat 1,005
             print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f}eur ({daily_change}%)")
-
     print("-----------")
     print(f"Investirali smo {initial_investment}eur dne {podatki[zacetek][0]}")
     print(f"Od datuma {podatki[zacetek][0]} do {podatki[konec][0]} smo imeli notri in imamo sedaj: {investment:.2f}eur")
@@ -110,3 +104,13 @@ def calculate_return(podatki):
     # Zaokrožimo na 2 decimalni mesti
     koncni_izracun = round(investment,2)
     return koncni_izracun
+
+def convert_dates(podatki):
+    """
+    Sprejme list of lists, kjer je prvi stolpec datum v formatu MM/DD/YYYY.
+    Pretvori datume od tretje vrstice naprej v format YYYY-MM-DD.
+    Vrne posodobljen list of lists.
+    """
+    for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
+        podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
+    return podatki  # Vrne posodobljene podatke
