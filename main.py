@@ -6,7 +6,7 @@ from fancy_zakljucki_programa import *
 
 
 
-podatki = load_csv('podatki/spx_do_danes_novi.csv')
+podatki = load_csv('podatki/nasdaq.csv')
 print('----------')
 
 podatki_changes = calculate_daily_changes(podatki)

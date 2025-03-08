@@ -8,13 +8,7 @@ def calculate_daily_changes(podatki):
     Druga vrstica v csv file so poimenovanje podatkov
     Tretja so pa ze podatki, prvi(na indeksu 0) je datum drugi(na indeksu 1) je pa vrednost
     """
-    def is_float(value):
-        """Notranja funkcija; Preveri, ali je podana vrednost veljaven float."""
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+
     # ce je format datuma tako, klicemo funkcijo da spremenimo datum,
     # drugace pa ne...
     # ker hocemo da je pac v formatu 2021-10-06
@@ -63,47 +57,72 @@ def calculate_daily_changes(podatki):
     return result
 
 
+
+
+
 def calculate_return(podatki):
-    # ta funkcija za izracun dejansko dela
     """
-    Sprejme seznam seznamov [[datum, tecaj]] in začetno investicijo, potem tudi dnevni vložek(kasneje mesečni ko bom fixal).
-    Izračuna končno vrednost investicije glede na spremembo SP500 indeksa.
-    :param data: Seznam seznamov [[datum, vrednost SP500]]
-    :param initial_investment: Začetni kapital (privzeto 1000 enot)
+    Sprejme seznam seznamov [[datum, tečaj]] in omogoča začetno investicijo + mesečne vložke.
+    Izračuna končno vrednost investicije glede na spremembo S&P 500 indeksa.
+    :param podatki: Seznam seznamov [[datum, vrednost SP500]]
     :return: int končna vrednost investicije
     """
-    # edin fiksat ker pac on ze prvi dan uposteva donos, to pogleedat, drugace pa dejansko dela
-    # klicemo funckijo o izracunu daily cganges %
+
     podatki_daily_changes = calculate_daily_changes(podatki)
-    initial_investment = int(input("Vpisi zacetno investicijo: "))
+    initial_investment = int(input("Vpisi začetno investicijo: "))
+    monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
-    print("Izberi; ne more bit 0 in 1 ker so to lastnosti file-a, ampak pri 2 lahko zacnemo")
-    zacetek = int(input("Zacetek kdaj, kera vrstica: ")) # pol dat eno vec kar takrat je praznik, da vidm kaj bo
-    konec = int(input("Konec kdaj, kera vrstica: "))
-    # ko gledam na full chart sp500 moram da ni inflation adjuested, pol se cifre matchajo
-    # kle se malo pogledat ker pac prvi dan ko ti kupis tukaj ze uposteva donos iz prvega dne
-    #ja pac se uposteva, pac se smatra da si kupu direkt pred odprtjem borze
-    for i in range(zacetek, konec+1):
-        # problem je ker v spx obeh ni "" v obicnem fileu
+    mesecni_vlozki_vsota = 0
+    print("Izberi začetni dan investiranja (indeks vrstice, npr. 2)")
+    zacetek = int(input("Začetek (katera vrstica): "))
+    konec = int(input("Konec (katera vrstica): "))
+
+    # Nastavimo začetni mesec za mesečne vložke
+    current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
+
+    for i in range(zacetek, konec + 1):
         if podatki_daily_changes[i][2] == "Holidays":
-            continue
-        else:
-            daily_change = podatki_daily_changes[i][2].replace("%", "")  # Remove '%'
-            daily_change_cifra = (round(float(daily_change), 2) / 100)  # Convert to decimal
-            # izracunamo
-            # !!! ce hocemo dat vsak dan notri 10 eur je ta vrstica ali pa pac jo zbrisemo
-            #investment = investment + 10
-            investment = investment * (1 + daily_change_cifra) # izracun; 1 zato ker ce je donos 0,5% kar je 0,005% je v bistvu: krat 1,005
-            print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f}eur ({daily_change}%)")
+            continue  # Preskoči dneve, ko borza ne deluje
+#CE NE DAS ZA SPX DO DANES NOVI BI MOGLO DELAT LEPO. PAC MORM POGLEDAT VSE CSV FILE IN FORMATE IN DA POL NAPISM FUNKCIJE DA PREOBLIKUJEM V EN FORMAT IN POL Z NJIM DELAM
+        daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
+        daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
+
+        # Pridobimo mesec trenutnega datuma
+        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+
+        # Če je nov mesec, dodamo mesečni vložek
+        if date.month != current_month:
+            investment = investment + monthly_investment
+            mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
+            current_month = date.month  # Posodobimo trenutni mesec
+
+        # Izračun vrednosti portfelja
+        investment = investment * (1 + daily_change_cifra)
+
+        print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
+
     print("-----------")
-    print(f"Investirali smo {initial_investment}eur dne {podatki[zacetek][0]}")
-    print(f"Od datuma {podatki[zacetek][0]} do {podatki[konec][0]} smo imeli notri in imamo sedaj: {investment:.2f}eur")
-    zasluzili = round ((investment - initial_investment),2)
-    zasluzili_formatirano = f"{zasluzili:,.2f}eur"
-    print(f"Oz drugace receno; zasluzili/izgubili smo {zasluzili_formatirano}")
-    # Zaokrožimo na 2 decimalni mesti
-    koncni_izracun = round(investment,2)
-    return koncni_izracun
+    print(f"Začetna investicija: {initial_investment} EUR dne {podatki[zacetek][0]}")
+    print(f"Vseh mesečnih vložkov je bilo: {mesecni_vlozki_vsota}EUR")
+    print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} smo imeli skupno investicijo: {investment:.2f} EUR")
+
+    zasluzili = round(investment - initial_investment, 2)
+    zasluzili_formatirano = f"{zasluzili:,.2f} EUR"
+    print(f"Zaslužek / izguba: {zasluzili_formatirano}")
+
+    return round(investment, 2)
+
+
+#-----------FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
+
+def is_float(value):
+    """Notranja funkcija; Preveri, ali je podana vrednost veljaven float."""
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
 
 def convert_dates(podatki):
     """
