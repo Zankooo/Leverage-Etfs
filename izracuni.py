@@ -21,7 +21,7 @@ def calculate_daily_changes(podatki):
     # ce ni format; 2021-10-06, potem klicemo funkcijo da spremenimo v ta format
     if not re.match(r"\d{4}-\d{2}-\d{2}", date_string):
         podatki = convert_dates(podatki)
-
+        print("Podatkom sem spremenil datum v iso format")
     # prvo to spremenimo preden gremo obracat podatke, ce seveda niso od najstarejsega k najmlajsemu
     datum1_string = podatki[2][0]
     datum2_string = podatki[len(podatki)-1][0]
@@ -29,6 +29,7 @@ def calculate_daily_changes(podatki):
     date2 = datetime.strptime(datum2_string, "%Y-%m-%d")
     if date1 > date2:
         podatki = obrni_csv(podatki)
+        print("Podatki niso bili datumsko od najstarejsega k najmlajsemu, zato sem jih obrnil!")
 
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]
@@ -89,7 +90,7 @@ def calculate_return(podatki):
     for i in range(zacetek, konec + 1):
         if podatki_daily_changes[i][2] == "Holidays":
             continue  # Preskoči dneve, ko borza ne deluje
-#CE NE DAS ZA SPX DO DANES NOVI BI MOGLO DELAT LEPO. PAC MORM POGLEDAT VSE CSV FILE IN FORMATE IN DA POL NAPISM FUNKCIJE DA PREOBLIKUJEM V EN FORMAT IN POL Z NJIM DELAM
+
         daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
         daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
         # Pridobimo mesec trenutnega datuma
@@ -104,13 +105,13 @@ def calculate_return(podatki):
         print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
 
     print("-----------")
-    print(f"Začetna investicija: {initial_investment} EUR dne {podatki[zacetek][0]}")
-    print(f"Vseh mesečnih vložkov je bilo: {mesecni_vlozki_vsota}EUR")
-    print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} smo imeli skupno investicijo: {investment:.2f} EUR")
+    print(f"Začetna investicija je bila: {initial_investment} EUR in vseh mesečnih investicij: {mesecni_vlozki_vsota}EUR, skupaj: {initial_investment + mesecni_vlozki_vsota}EUR")
 
-    zasluzili = round(investment - initial_investment, 2)
-    zasluzili_formatirano = f"{zasluzili:,.2f} EUR"
-    print(f"Zaslužek / izguba: {zasluzili_formatirano}")
+    print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} imamo vse skupaj z donosom/izgubo: {investment:.2f} EUR")
+
+    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
+
+    print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
 
     return round(investment, 2)
 

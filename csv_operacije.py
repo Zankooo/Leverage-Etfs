@@ -34,7 +34,7 @@ def obrni_csv(podatki):
     #zbrisemo oba na koncu
     podatki.pop()
     podatki.pop()
-    print("Podatki niso bili datumsko od najstarejsega k najmlajsemu, zato sem jih obrnil!")
+    print("Podatki obrne datume saj niso bili od najstarejsega k najmlajsemu")
     return podatki
 
 
@@ -51,6 +51,7 @@ def convert_dates(podatki):
     """
     for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
         podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
+    print("Pretvorili smo datum v format iso")
     return podatki  # Vrne posodobljene podatke
 
 
