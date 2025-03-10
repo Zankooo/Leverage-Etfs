@@ -1,5 +1,7 @@
 # to je class v katerem bomo izvajali operacije nad csv file
 import csv
+from datetime import datetime
+
 
 # nalozimo podatke iz izbrane csv datoteke
 def load_csv(filepath):
@@ -32,13 +34,30 @@ def obrni_csv(podatki):
     #zbrisemo oba na koncu
     podatki.pop()
     podatki.pop()
-    print("Datoteka uspešno obrnjena!")
+    print("Podatki niso bili datumsko od najstarejsega k najmlajsemu, zato sem jih obrnil!")
     return podatki
+
+
+from datetime import datetime
+
+from datetime import datetime
+
+
+def convert_dates(podatki):
+    """
+    Sprejme list of lists, kjer je prvi stolpec datum v formatu MM/DD/YYYY.
+    Pretvori datume od tretje vrstice naprej v format YYYY-MM-DD.
+    Vrne posodobljen list of lists.
+    """
+    for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
+        podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
+    return podatki  # Vrne posodobljene podatke
+
 
 def ustvari_nov_csv_file(podatki):
     """
     Funkcija ki sprejme dvojni list/array, pac podatki
-    in ustvari novo csv datoteko, ki bo imenovana pod kot zelimo"
+    in ustvari iz nje novo csv datoteko, ki bo imenovana pod kot zelimo"
     @:param dvojni array/list
     """
     ime_novega = input("Kako naj bo ime novega csv file-a? ")

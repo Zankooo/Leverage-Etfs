@@ -1,6 +1,10 @@
 from datetime import datetime
 from datetime import *
 import re
+
+from csv_operacije import *
+
+
 def calculate_daily_changes(podatki):
     """
     Sprejme dvojni array s podatki o indeksu in vrne array z dodatnim stolpcem; "daily change"
@@ -8,16 +12,24 @@ def calculate_daily_changes(podatki):
     Druga vrstica v csv file so poimenovanje podatkov
     Tretja so pa ze podatki, prvi(na indeksu 0) je datum drugi(na indeksu 1) je pa vrednost
     """
-
     # ce je format datuma tako, klicemo funkcijo da spremenimo datum,
     # drugace pa ne...
     # ker hocemo da je pac v formatu 2021-10-06
     # to tuki dejansko ne rabimo ampak za vsak sluca
     # uzamemo datum iz tretje vrstice da pogledamo kako so datumi zapisani
     date_string = podatki[2][0]
-    # in ce ni tako; 2021-10-06, potem klicemo funkcijo da spremenimo
+    # ce ni format; 2021-10-06, potem klicemo funkcijo da spremenimo v ta format
     if not re.match(r"\d{4}-\d{2}-\d{2}", date_string):
         podatki = convert_dates(podatki)
+
+    # prvo to spremenimo preden gremo obracat podatke, ce seveda niso od najstarejsega k najmlajsemu
+    datum1_string = podatki[2][0]
+    datum2_string = podatki[len(podatki)-1][0]
+    date1 = datetime.strptime(datum1_string, "%Y-%m-%d")
+    date2 = datetime.strptime(datum2_string, "%Y-%m-%d")
+    if date1 > date2:
+        podatki = obrni_csv(podatki)
+
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]
     # Inicializacija prve vrstice brez spremembe
@@ -56,10 +68,6 @@ def calculate_daily_changes(podatki):
             result.append(podatki[i] + [change_str])
     return result
 
-
-
-
-
 def calculate_return(podatki):
     """
     Sprejme seznam seznamov [[datum, tečaj]] in omogoča začetno investicijo + mesečne vložke.
@@ -67,8 +75,8 @@ def calculate_return(podatki):
     :param podatki: Seznam seznamov [[datum, vrednost SP500]]
     :return: int končna vrednost investicije
     """
-
     podatki_daily_changes = calculate_daily_changes(podatki)
+
     initial_investment = int(input("Vpisi začetno investicijo: "))
     monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
@@ -76,29 +84,23 @@ def calculate_return(podatki):
     print("Izberi začetni dan investiranja (indeks vrstice, npr. 2)")
     zacetek = int(input("Začetek (katera vrstica): "))
     konec = int(input("Konec (katera vrstica): "))
-
     # Nastavimo začetni mesec za mesečne vložke
     current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
-
     for i in range(zacetek, konec + 1):
         if podatki_daily_changes[i][2] == "Holidays":
             continue  # Preskoči dneve, ko borza ne deluje
 #CE NE DAS ZA SPX DO DANES NOVI BI MOGLO DELAT LEPO. PAC MORM POGLEDAT VSE CSV FILE IN FORMATE IN DA POL NAPISM FUNKCIJE DA PREOBLIKUJEM V EN FORMAT IN POL Z NJIM DELAM
         daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
         daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
-
         # Pridobimo mesec trenutnega datuma
         date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
-
         # Če je nov mesec, dodamo mesečni vložek
         if date.month != current_month:
             investment = investment + monthly_investment
             mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
             current_month = date.month  # Posodobimo trenutni mesec
-
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
-
         print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
 
     print("-----------")
@@ -112,8 +114,7 @@ def calculate_return(podatki):
 
     return round(investment, 2)
 
-
-#-----------FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
+#----------- POMOZNE FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
 
 def is_float(value):
     """Notranja funkcija; Preveri, ali je podana vrednost veljaven float."""
@@ -123,13 +124,3 @@ def is_float(value):
     except ValueError:
         return False
 
-
-def convert_dates(podatki):
-    """
-    Sprejme list of lists, kjer je prvi stolpec datum v formatu MM/DD/YYYY.
-    Pretvori datume od tretje vrstice naprej v format YYYY-MM-DD.
-    Vrne posodobljen list of lists.
-    """
-    for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
-        podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
-    return podatki  # Vrne posodobljene podatke
