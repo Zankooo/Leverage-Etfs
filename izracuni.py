@@ -1,7 +1,4 @@
-from datetime import datetime
-from datetime import *
 import re
-
 from csv_operacije import *
 
 
@@ -11,58 +8,23 @@ def calculate_daily_changes(podatki):
     Prva vrstica v csv file je ime indeksa in od kdaj do kdaj je
     Druga vrstica v csv file so poimenovanje podatkov
     Tretja so pa ze podatki, prvi(na indeksu 0) je datum drugi(na indeksu 1) je pa vrednost
+    Ta funkcija naredi to:
+    - moras ji dati file
+
     """
-    # vzamemo datum iz tretje vrstice in ce ni v iso modelu klicemo funkcijo in spremenimo v iso model
-    date_string = podatki[2][0]
-    if not re.match(r"\d{4}-\d{2}-\d{2}", date_string):
-        podatki = convert_dates(podatki)
-
-    # prvo datum spremenimo datum in pol podatke da so od najstarejsega k najlmaljsemu
-    #vzamemo iz tretje vrstice in zadnje in ce je iz tretje vecji datum klicemo funkcijo
-    datum1_string = podatki[2][0]
-    datum2_string = podatki[len(podatki)-1][0]
-    date1 = datetime.strptime(datum1_string, "%Y-%m-%d")
-    date2 = datetime.strptime(datum2_string, "%Y-%m-%d")
-    if date1 > date2:
-        podatki = obrni_csv(podatki)
-
-
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]
     # Inicializacija prve vrstice brez spremembe
     result.append(podatki[1] + ["Daily Change (%)"])  # Prvi dan ni spremembe
-    # Drugi dan nastavim na '0%', ker ni spremembe
+    # Drugi dan nastavim na '0%', ker pac je prvi dan
     result.append(podatki[2] + ['0%'])
     # Izračun spremembe za vsak naslednji dan
     for i in range(3, len(podatki)):
-        current_value = podatki[i][1]
-        previous_value = podatki[i - 1][1]  # Ena vrstica nazaj
-        # Če je trenutna vrednost prazna, napišemo "holidays"
-        if current_value == '':
-            result.append(podatki[i] + ['Holidays'])
-            # nadaljujemo loop - continue, ker ni nic za racunat pac
-            continue
-        # Če je trenutna vrednost veljaven float
-        elif is_float(current_value):
-            current_value = float(current_value)
-            #ugotovit moramo prejšno vrednost, oz ker dan nazadnje je pa bil trgovalni dan
-            # v skoraj večini primerov je bil prejšni dan trgovalni-ima tecaj, razen ko je bil 11/9
-            # zato sem kodo tako napisal
-            if previous_value == '':
-                #loopamo nazaj da ugotovimo ker dan je pa tazadnji ki ima tecaj
-                vrstica = i - 1
-                while vrstica >= 0:
-                    #tisti ki ni prazen torej
-                    if podatki[vrstica][1]!= '':
-                        previous_value = float(podatki[vrstica][1])
-                        break
-                    else:
-                        vrstica = vrstica - 1
-            # tukaj pa zracunamo torej spremembo in jo zapisemo v vrstico v kateri smo trenutno
-            previous_value = float(previous_value)
-            daily_change = ((current_value - previous_value) / previous_value) * 100
-            change_str = f"{'+' if daily_change > 0 else ''}{round(daily_change, 2)}%"
-            result.append(podatki[i] + [change_str])
+        trenutni_tecaj = float(podatki[i][1])
+        dan_prej_tecaj = float(podatki[i - 1][1])
+        daily_change = ((trenutni_tecaj - dan_prej_tecaj) / dan_prej_tecaj) * 100
+        sprememba_procentualno = f"{'+' if daily_change > 0 else ''}{round(daily_change, 2)}%"
+        result.append(podatki[i] + [sprememba_procentualno])
     return result
 
 def calculate_return(podatki):

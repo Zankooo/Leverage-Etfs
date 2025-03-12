@@ -6,12 +6,10 @@ from fancy_zakljucki_programa import *
 
 
 
-podatki = load_csv('podatki/spx_history_novi.csv')
+podatki = load_csv('podatki/nasdaq-comp.csv')
 print('----------')
+podatki = izbaci_ven_holidayse(podatki)
 
-daily_changes = calculate_daily_changes(podatki)
-print_vsak_v_svoji_vrstici(daily_changes)
-calculate_return(podatki)
 
 
 

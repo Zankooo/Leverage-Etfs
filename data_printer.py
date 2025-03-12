@@ -1,4 +1,4 @@
-def navaden_print(podatki):
+def print_original(podatki):
     """Izpiše podatke v originalni obliki."""
     print("Izpis v originalni obliki")
     print(podatki)
