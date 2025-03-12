@@ -12,24 +12,20 @@ def calculate_daily_changes(podatki):
     Druga vrstica v csv file so poimenovanje podatkov
     Tretja so pa ze podatki, prvi(na indeksu 0) je datum drugi(na indeksu 1) je pa vrednost
     """
-    # ce je format datuma tako, klicemo funkcijo da spremenimo datum,
-    # drugace pa ne...
-    # ker hocemo da je pac v formatu 2021-10-06
-    # to tuki dejansko ne rabimo ampak za vsak sluca
-    # uzamemo datum iz tretje vrstice da pogledamo kako so datumi zapisani
+    # vzamemo datum iz tretje vrstice in ce ni v iso modelu klicemo funkcijo in spremenimo v iso model
     date_string = podatki[2][0]
-    # ce ni format; 2021-10-06, potem klicemo funkcijo da spremenimo v ta format
     if not re.match(r"\d{4}-\d{2}-\d{2}", date_string):
         podatki = convert_dates(podatki)
-        print("Podatkom sem spremenil datum v iso format")
-    # prvo to spremenimo preden gremo obracat podatke, ce seveda niso od najstarejsega k najmlajsemu
+
+    # prvo datum spremenimo datum in pol podatke da so od najstarejsega k najlmaljsemu
+    #vzamemo iz tretje vrstice in zadnje in ce je iz tretje vecji datum klicemo funkcijo
     datum1_string = podatki[2][0]
     datum2_string = podatki[len(podatki)-1][0]
     date1 = datetime.strptime(datum1_string, "%Y-%m-%d")
     date2 = datetime.strptime(datum2_string, "%Y-%m-%d")
     if date1 > date2:
         podatki = obrni_csv(podatki)
-        print("Podatki niso bili datumsko od najstarejsega k najmlajsemu, zato sem jih obrnil!")
+
 
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]

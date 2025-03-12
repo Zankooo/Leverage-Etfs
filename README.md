@@ -8,6 +8,7 @@
 ### ---------
 
 ## Cilji:
+Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp in da lahk o tudi drug folk uporablja pa naredim to, ce bo cas!
 - Sprogramirat da ti izracuna uspesno brez napak donose za vsak dan ob danem csv, fileu
 - potem da je lahko sintaksa datuma lahko drugačna
 - potem pa že s kešom da investiraš (v navadnega ne leverage) ampak pogledat na chatu kko to gre, pac zacet da vsak mesec prvega vrzes notri
