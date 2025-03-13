@@ -6,9 +6,12 @@ from fancy_zakljucki_programa import *
 
 
 
-podatki = load_csv('podatki/nasdaq-comp.csv')
+podatki = load_csv('podatki/spx_do_danes_novi.csv')
 print('----------')
-podatki = izbaci_ven_holidayse(podatki)
+podatki = spremeni_format_datumov(podatki)
+podatki = obrni_csv(podatki)
+print_vsak_v_svoji_vrstici(podatki)
+ustvari_nov_csv_file(podatki)
 
 
 

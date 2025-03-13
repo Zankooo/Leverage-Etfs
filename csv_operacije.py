@@ -36,33 +36,26 @@ def load_csv(filepath):
 
 def obrni_csv(podatki):
     """
-    Funkcija ki sprejme dvojni list/array, pac podatki
-    in obrne vse skupaj; da seveda zacne obracat v tretji vrstici in obrne obicno vse skupaj reverse
-    Pri tem prvi dve vrstici ki sta 'naslov' csv filea, obdrzi na istem mestu. Torej zacne kot receno v 3 vrstici obracat
-    @:param dvojni array/list
-    @return obrnjen array/list
+    Funkcija, ki sprejme dvojni seznam/array (CSV podatke),
+    in obrne vrstni red vseh vrstic od tretje vrstice naprej.
+    Prvi dve vrstici ('naslovna' dela CSV-ja) ostaneta nespremenjeni.
+    @param podatki: seznam seznamov (CSV podatki)
+    @return: obrnjen seznam seznamov
     """
-    # obrnemo podatke
-    podatki.reverse()
-    # prve dva sta 'naslova csv filea'
-    # ampak ko smo zdej obrnili sta padla na zadnje in predzadnje mesto
-    # damo ju na prve dva mesta in ju zbrisemo na koncu
-    zadnji = podatki[len(podatki) - 1]
-    predzadnji = podatki[len(podatki) - 2]
-    podatki[0] = zadnji
-    podatki[1] = predzadnji
-    #zbrisemo oba na koncu
-    podatki.pop()
-    podatki.pop()
-    print("Podatke smo obrnili, saj datumi niso bili od najstarejsega k najmlajsemu, sedaj pa so.")
-    return podatki
+    prva_vrstica = podatki[0]
+    druga_vrstica = podatki[1]
+    # Obrnemo vrstni red od tretje vrstice naprej
+    obrnjeni_podatki = list(reversed(podatki[2:]))
+    print("Podatke smo obrnili, saj datumi niso bili od najstarejšega k najmlajšemu, sedaj pa so.")
+    return [prva_vrstica, druga_vrstica] + obrnjeni_podatki
 
-def convert_dates(podatki):
+def spremeni_format_datumov(podatki):
     """
     Sprejme list of lists, kjer je prvi stolpec datum v formatu MM/DD/YYYY.
     Pretvori datume od tretje vrstice naprej v format YYYY-MM-DD.
     Vrne posodobljen list of lists.
     """
+
     for i in range(2, len(podatki)):  # Spremenimo datume od tretje vrstice naprej
         podatki[i][0] = datetime.strptime(podatki[i][0], "%m/%d/%Y").strftime("%Y-%m-%d")
     print("Datumi niso bili v iso formatu sedaj pa smo jih pretvorili.")
@@ -71,8 +64,6 @@ def convert_dates(podatki):
 
 # NAPISAT SE FUNKCIJO DA ZMECE VEN VSE VRSTICE KJER SO HOLIDAYSI IN NI TECAJA
 def izbaci_ven_holidayse(podatki):
-
-
     """
     Odstrani vrstice, ki vsebujejo samo datum (tj. en element v seznamu) basicaly holidays izbaci ven
     :param podatki: List of lists
