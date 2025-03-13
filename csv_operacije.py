@@ -10,7 +10,7 @@ def load_csv(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
         csv_reader = csv.reader(file)
         array = [row for row in csv_reader]
-        print(f"Csv file '{filepath}' naložen!")
+        print(f"Csv file '{filepath}' naložen! ✅")
         return array
 
 #----------------------------------------------------------------------------------------------------------------
@@ -89,5 +89,6 @@ def ustvari_nov_csv_file(podatki):
     with open(file_path, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerows(podatki)
-    print(f"Datoteka '{file_path}' je bila uspešno ustvarjena!")
+    print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
+    print("Poglej directory ")
 

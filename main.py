@@ -5,7 +5,7 @@ from fancy_zakljucki_programa import *
 
 print('----------')
 
-podatki = load_csv('podatki/spx_do_danes.csv')
+podatki = load_csv('podatki/spx_history.csv')
 print('----------')
 #calculate_return(podatki)
 
@@ -14,6 +14,8 @@ print('----------')
 
 podatki = calculate_annual_returns(podatki)
 print_vsak_v_svoji_vrstici(podatki)
+
+
 fancy1()
 
 

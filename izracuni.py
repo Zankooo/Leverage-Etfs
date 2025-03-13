@@ -130,7 +130,7 @@ def calculate_annual_returns(podatki):
         first_price = float(yearly_data.iloc[0]["Close"])
         last_price = float(yearly_data.iloc[-1]["Close"])
         return_pct = float(((last_price / first_price) - 1) * 100)
-        annual_returns.append([int(year), first_price, last_price, round(return_pct,2)])
+        annual_returns.append([int(year), round(first_price,2), round(last_price,2), round(return_pct,2)])
     return annual_returns
 
 
