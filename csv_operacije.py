@@ -10,7 +10,7 @@ def load_csv(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
         csv_reader = csv.reader(file)
         array = [row for row in csv_reader]
-        print("Csv file naložen!")
+        print(f"Csv file '{filepath}' naložen!")
         return array
 
 #----------------------------------------------------------------------------------------------------------------

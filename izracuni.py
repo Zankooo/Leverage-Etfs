@@ -46,30 +46,33 @@ def calculate_return(podatki):
     # Nastavimo začetni mesec za mesečne vložke
     current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
     for i in range(zacetek, konec + 1):
-        if podatki_daily_changes[i][2] == "Holidays":
-            continue  # Preskoči dneve, ko borza ne deluje
-
         daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
         daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
         # Pridobimo mesec trenutnega datuma
         date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+        stevec_mesecev = 1
         # Če je nov mesec, dodamo mesečni vložek
         if date.month != current_month:
             investment = investment + monthly_investment
+            print(f"Mesecna investicija investirana: {monthly_investment}eur")
             mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
-            current_month = date.month  # Posodobimo trenutni mesec
+            current_month = date.month
+            stevec_mesecev = stevec_mesecev + 1# Posodobimo trenutni mesec
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
         print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
-
     print("-----------")
-    print(f"Začetna investicija je bila: {initial_investment} EUR in vseh mesečnih investicij: {mesecni_vlozki_vsota}EUR, skupaj: {initial_investment + mesecni_vlozki_vsota}EUR")
-
+    print(f"Začetna investicija je bila: {initial_investment}EUR,")
+    print(f"Vseh mesečnih investicij je bilo: {mesecni_vlozki_vsota}EUR,")
+    print(f"Celotne investicije skupaj je torej bilo: {initial_investment + mesecni_vlozki_vsota}EUR")
+    print("-----------")
     print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} imamo vse skupaj z donosom/izgubo: {investment:.2f} EUR")
-
     zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
-
     print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
+    procentualno_zasluzek = (zasluzili / (initial_investment + mesecni_vlozki_vsota)) * 100
+    procentualno_zasluzek = round(procentualno_zasluzek,2)
+    print(f"Procentualno: {procentualno_zasluzek}%")
+    # procentualno je izracunano ->  (donos/cela investicija)*100
 
     return round(investment, 2)
 
