@@ -5,15 +5,15 @@ from fancy_zakljucki_programa import *
 
 print('----------')
 
-podatki = load_csv('podatki/nasdaq100.csv')
+podatki = load_csv('podatki/spx_do_danes.csv')
 print('----------')
-calculate_return(podatki)
+#calculate_return(podatki)
 
 
 
 
-
-
+podatki = calculate_annual_returns(podatki)
+print_vsak_v_svoji_vrstici(podatki)
 fancy1()
 
 

@@ -1,4 +1,7 @@
 import re
+
+import pandas as pd
+
 from csv_operacije import *
 
 
@@ -85,4 +88,53 @@ def is_float(value):
         return True
     except ValueError:
         return False
+
+
+def calculate_annual_returns(podatki):
+    """
+    Ne vem kako ta funkcija dela ampak dela!
+    Funkcija ki sprejme podatke, list of lists
+    In izracuna donos za vsako leto.
+    :param list of lists podatki indeksa
+    :return: list of lists donosov za vsako leto
+    """
+    # Začnemo obdelavo podatkov od tretje vrstice
+    podatki = podatki[2:]
+
+    # Če je vhodni podatki list of lists, ga pretvorimo v DataFrame
+    if isinstance(podatki, list):
+        podatki = pd.DataFrame(podatki, columns=["Date", "Close"])
+
+    # Preverimo, ali je podatki DataFrame
+    if not isinstance(podatki, pd.DataFrame):
+        raise TypeError(f"Vhodni podatki morajo biti pandas DataFrame, prejet: {type(podatki)}")
+
+    # Pretvorimo stolpec 'Date' v datetime format
+    podatki["Date"] = pd.to_datetime(podatki["Date"], errors='coerce')
+
+    # Odstranimo morebitne neveljavne vrstice
+    podatki = podatki.dropna()
+
+    # Pretvorimo 'Close' v numerični format
+    podatki["Close"] = pd.to_numeric(podatki["Close"], errors='coerce')
+
+    # Izluščimo leto
+    podatki["Year"] = podatki["Date"].dt.year
+
+    # Priprava praznega seznama za rezultate
+    annual_returns = [["Leto", "Prvi-dan", "Zadnji-dan", "Donos(%)"]]
+    unique_years = sorted(podatki["Year"].unique())
+
+    for year in unique_years:
+        yearly_data = podatki[podatki["Year"] == year]
+        first_price = float(yearly_data.iloc[0]["Close"])
+        last_price = float(yearly_data.iloc[-1]["Close"])
+        return_pct = float(((last_price / first_price) - 1) * 100)
+        annual_returns.append([int(year), first_price, last_price, round(return_pct,2)])
+    return annual_returns
+
+
+
+
+
 
