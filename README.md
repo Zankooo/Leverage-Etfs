@@ -19,3 +19,10 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
 - mogoce tudi na koncu user interface kjer lahko uploadas csv in izberes od katerega leta do katerega
 - in kle se lahko zmisljujem kolikor hocem s temi funkcionalnostmi
 - JE PA NAJBOLJ POMEMBNO DA IZ UNEGA NAVADNEGA USPESNO NAREEDIM LVERAGE - CHATA PRASAT IN POL V ENEM ZACNEM RECIMO UNE PRIMERE K SO V WORDU
+
+
+## Andro talk, latest goals:
+- ugotovit kako je leverage narejen pac, kako ga naredit iz osnovnega indeksa
+- potem ko bom ta csv naredil -> naredit kak primer ze
+- potem sprogramirat da das lahko kes kadarkolli notri ne samo prvega v mesecu
+- potem pa zacet uporabljat strategije, rado in reddit in tko. torej vkljucit v projekt

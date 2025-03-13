@@ -5,7 +5,7 @@ from fancy_zakljucki_programa import *
 
 print('----------')
 
-podatki = load_csv('podatki/spx_history.csv')
+podatki = load_csv('podatki/spx.csv')
 print('----------')
 #calculate_return(podatki)
 
