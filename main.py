@@ -5,19 +5,16 @@ from fancy_zakljucki_programa import *
 
 print('----------')
 
-podatki = load_csv('podatki/histori_data.csv')
+podatki = load_csv('podatki/spx.csv')
 print('----------')
 
-obrnjen = obrni_csv(podatki)
-spremenjen_datum = spremeni_format_datumov(obrnjen)
-brez_nezeljenih_stoplcev = izbrisi_nezelene_stoplce(spremenjen_datum)
-print_vsak_v_svoji_vrstici(brez_nezeljenih_stoplcev)
-ustvari_nov_csv_file(brez_nezeljenih_stoplcev)
 
+
+izracun_dobicka_mesecne_investicije_prvega(podatki)
 
 
 
 fancy1()
 
-
+# una fora kdaj kupis pac, pri mesecnih... to se poglobit
 

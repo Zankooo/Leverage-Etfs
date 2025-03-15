@@ -139,6 +139,20 @@ def izbrisi_nezelene_stoplce(podatki):
     return filtrirani_podatki
 
 
+
+def zaokrozi_na_dve_decimalki_tecaje(podatki):
+    """Funkcija ki zaokrozi vse tecaje na dve decimalke
+        Format mora biti da je tecaj na drugi, torej na prvem indeksu
+    """
+    print("--------------------------------")
+    print("Funkcija zaokrozi na dve decimalke laufa!")
+    for i in range(2, len(podatki)):  # zaokroziamo na dve decimalke od tretje vrstice naprej
+        vrednost = float(podatki[i][1])
+        podatki[i][1] = round(vrednost, 2)
+    print("Uspesno smo zaokrozili na dve decimalke! ✅")
+    return podatki
+
+
 # ta funkcija je zadnja ker pac ustvari podatke
 def ustvari_nov_csv_file(podatki):
     """
