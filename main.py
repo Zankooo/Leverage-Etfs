@@ -46,8 +46,8 @@ podatkiii = [
 ]
 
 # preverit ce to dejasnko dela!?
-izracun_dobicka_prodaj_kuppii(podatki)
-#izracun_dobicka_mesecne_investicije_prvega(podatki)
+#izracun_dobicka_prodaj_kuppi(podatki)
+izracun_dobicka_mesecne_investicije_prvega(podatki)
 #izracun_dobicka_mesecne_investicije_prvega(podatkiii)
 
 fancy1()
