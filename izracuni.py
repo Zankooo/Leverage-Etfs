@@ -142,8 +142,8 @@ def izracun_dobicka_prodaj_kuppii(podatki):
     # dodat pol tukaj da 2 ali vec je lahko indes
     zacetek = int(input("Začetek (katera vrstica): "))
     konec = int(input("Konec (katera vrstica): "))
-    input_koliko_more_padet_da_prodas = int(input("Koliko mora padet da prodas? (%): "))
-    input_koliko_mora_potem_spet_zrasti = int(input("Koliko mora potem spet zrasti da nazaj kupis? (%): "))
+    input_koliko_more_padet_da_prodas = float(input("Koliko mora padet da prodas? (%): "))
+    input_koliko_mora_potem_spet_zrasti = float(input("Koliko mora potem spet zrasti da nazaj kupis? (%): "))
     # pretvorba v format za izracunanje
     koliko_more_padet = 1 - (input_koliko_more_padet_da_prodas / 100)
     koliko_mora_potem_zrast = 1 + (input_koliko_mora_potem_spet_zrasti / 100)
@@ -151,10 +151,10 @@ def izracun_dobicka_prodaj_kuppii(podatki):
     ne_investiran_denar = 0
     invested = True
     prodal_pri = None
-    ath = podatki[zacetek][1]
+    ath = float(podatki[zacetek][1])
     print("--------------------------------")
     for i in range(zacetek, konec + 1):
-        trenutni_tecaj = podatki[i][1]
+        trenutni_tecaj = float(podatki[i][1])
         if invested and trenutni_tecaj > ath:
             ath = trenutni_tecaj
         if invested and trenutni_tecaj <= ath * koliko_more_padet:

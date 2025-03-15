@@ -28,7 +28,7 @@ podatkiii = [
     ["1971-04-06", 102],
     ["1971-04-07", 108],
     ["1971-04-08", 108],
-    ["1971-04-12", 109],
+    ["1971-04-12", 109.5],
     ["1971-04-13", 110],
     ["1971-04-14", 109],
     ["1971-04-15", 109],
@@ -46,8 +46,8 @@ podatkiii = [
 ]
 
 # preverit ce to dejasnko dela!?
-izracun_dobicka_prodaj_kuppii(podatkiii)
-
+izracun_dobicka_prodaj_kuppii(podatki)
+#izracun_dobicka_mesecne_investicije_prvega(podatki)
 #izracun_dobicka_mesecne_investicije_prvega(podatkiii)
 
 fancy1()
