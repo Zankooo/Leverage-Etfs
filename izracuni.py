@@ -3,9 +3,10 @@ import re
 import pandas as pd
 
 from csv_operacije import *
+# karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
+# dogovorjen format podatkov oz csv.ja
 
-
-def calculate_daily_changes(podatki):
+def izracun_dnevnih_sprememb(podatki):
     """
     Sprejme dvojni array s podatki o indeksu in vrne array z dodatnim stolpcem; "daily change"
     Prva vrstica v csv file je ime indeksa in od kdaj do kdaj je
@@ -30,22 +31,21 @@ def calculate_daily_changes(podatki):
         result.append(podatki[i] + [sprememba_procentualno])
     return result
 
-def calculate_return(podatki):
+def izracun_dobicka_mesecne_investicije_prvega(podatki):
     """
-    Sprejme seznam seznamov [[datum, tečaj]] in omogoča začetno investicijo + mesečne vložke.
+    Sprejme seznam seznamov [[datum, tečaj]] in omogoča začetno investicijo + mesečne vložke(prvega v mesecu - na zacetku meseca).
     Izračuna končno vrednost investicije glede na spremembo S&P 500 indeksa.
     :param podatki: Seznam seznamov [[datum, vrednost SP500]]
     :return: int končna vrednost investicije
     """
-    podatki_daily_changes = calculate_daily_changes(podatki)
+    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
     initial_investment = int(input("Vpisi začetno investicijo: "))
     monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
     mesecni_vlozki_vsota = 0
-    print("Izberi začetni dan investiranja (indeks vrstice, npr. 2)")
-    zacetek = int(input("Začetek (katera vrstica): "))
-    konec = int(input("Konec (katera vrstica): "))
+    zacetek = int(input("Začetek investiranja (katera vrstica)(indeks vrstice naj 2 ali več): "))
+    konec = int(input("Konec investiranja (katera vrstica): "))
     # Nastavimo začetni mesec za mesečne vložke
     current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
     for i in range(zacetek, konec + 1):
@@ -78,6 +78,108 @@ def calculate_return(podatki):
     # procentualno je izracunano ->  (donos/cela investicija)*100
 
     return round(investment, 2)
+
+def izracun_dobicka_prodaj_kupi(podatki):
+    """
+    Sprejme seznam seznamov [[datum, tečaj]] Ta strategija je da prodaš vse ko pade nek n% in kupiš vse ko zraste nek n%. Recimo da je n = 3, ali pa 5
+    Izračuna končno vrednost investicije glede na spremembo S&P 500 indeksa.
+    :param podatki: Seznam seznamov [[datum, vrednost SP500]]
+    :return: int končna vrednost investicije
+    """
+    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
+    print(f"Dolzina listov je (indeksi), {len(podatki)}, torej zacetek je lahko 0 in konec {len(podatki) - 1}")
+    initial_investment = int(input("Vpisi začetno investicijo: "))
+    investment = initial_investment
+    # dodat pol tukaj da 2 ali vec je lahko indes
+    zacetek = int(input("Začetek (katera vrstica): "))
+    konec = int(input("Konec (katera vrstica): "))
+    ne_investiran_denar = 0
+    all_time_high = float(podatki[2][1])
+    prodal_pri = None
+    for i in range(zacetek, konec + 1):
+        trenutni_tecaj = float(podatki[i][1])
+        if trenutni_tecaj > all_time_high:
+            all_time_high = trenutni_tecaj
+            print(f"Nov all time high je: {all_time_high} EUR")
+        # ce je vec trenutni tecaj padel za vec kot 3% od ath prodamo
+        if (trenutni_tecaj * 0.97) <= all_time_high:
+            print(f"Prodal pri vrstici {i} oz. datumu {podatki[i][0]}")
+            prodal_pri = float(podatki[i][1])
+            ne_investiran_denar = investment
+            investment = 0
+        # ce je tecaj 3% zrastel od tam kjer smo prodali, spet kupimo
+        elif ((float(podatki[i][1]) * 1.03)  >= prodal_pri):
+            investment = ne_investiran_denar
+            print(f"Kupil pri vrstici {i} oz. datumu {podatki[i][0]}")
+            ne_investiran_denar = 0
+        #obrestovanje, lahko bi dali brez elif not
+        elif not ((trenutni_tecaj * 0.97) <= all_time_high):
+            daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
+            daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
+            investment = investment * (1 + daily_change_cifra)
+            print(f"Vrednost pri vrstici {i} oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
+
+
+    print("-----------")
+    print(f"Začetna investicija je bila: {initial_investment}EUR,")
+    print("-----------")
+    if investment > ne_investiran_denar:
+        print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} imamo vse skupaj z donosom/izgubo: {investment:.2f} EUR")
+    else:
+        print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} imamo vse skupaj z donosom/izgubo: {ne_investiran_denar:.2f} EUR")
+
+
+    # procentualno je izracunano ->  (donos/cela investicija)*100
+
+    return round(investment, 2)
+
+def izracun_dobicka_prodaj_kuppii(podatki):
+
+    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
+    print(f"Dolzina listov je (indeksi), {len(podatki)-1}, torej zacetek je lahko 2 in konec {len(podatki) - 1}")
+    initial_investment = int(input("Vpisi začetno investicijo: "))
+    investment = initial_investment
+    # dodat pol tukaj da 2 ali vec je lahko indes
+    zacetek = int(input("Začetek (katera vrstica): "))
+    konec = int(input("Konec (katera vrstica): "))
+    input_koliko_more_padet_da_prodas = int(input("Koliko mora padet da prodas? (%): "))
+    input_koliko_mora_potem_spet_zrasti = int(input("Koliko mora potem spet zrasti da nazaj kupis? (%): "))
+    # pretvorba v format za izracunanje
+    koliko_more_padet = 1 - (input_koliko_more_padet_da_prodas / 100)
+    koliko_mora_potem_zrast = 1 + (input_koliko_mora_potem_spet_zrasti / 100)
+
+    ne_investiran_denar = 0
+    invested = True
+    prodal_pri = None
+    ath = podatki[zacetek][1]
+    print("--------------------------------")
+    for i in range(zacetek, konec + 1):
+        trenutni_tecaj = podatki[i][1]
+        if invested and trenutni_tecaj > ath:
+            ath = trenutni_tecaj
+        if invested and trenutni_tecaj <= ath * koliko_more_padet:
+            print(f"Prodal pri {podatki[i]}")
+            prodal_pri = trenutni_tecaj
+            ne_investiran_denar = investment
+            investment = 0
+            invested = False
+        elif not invested and trenutni_tecaj >= prodal_pri * koliko_mora_potem_zrast:
+            print(f"Kupil pri {podatki[i]}")
+            investment = ne_investiran_denar
+            ne_investiran_denar = 0
+            invested = True
+            ath = trenutni_tecaj
+        elif invested:
+            dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
+            # tuki prej delil z 100 ampak je ze deljeno z sto v zgornji vrstici.
+            # preverit na listu papirja ce deluje
+            investment = investment * (1 + dnevna_sprememba)
+    print("--------------------------------")
+    print(f"Zacetna investicija je bila {initial_investment}")
+    print("Zasluzili smo tok eur:")
+    print(investment if invested else ne_investiran_denar)
+    return investment if invested else ne_investiran_denar
+
 
 #----------- POMOZNE FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
 

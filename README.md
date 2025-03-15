@@ -22,6 +22,7 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
 
 
 ## Andro talk, latest goals:
+- naredit oci strategijo da vedno ko je recimo 3% dol prodas in vedno ko je 3% gor kupis. In tako za poljuben posto
 - ugotovit kako je leverage narejen pac, kako ga naredit iz osnovnega indeksa
 - potem ko bom ta csv naredil -> naredit kak primer ze
 - potem sprogramirat da das lahko kes kadarkolli notri ne samo prvega v mesecu
