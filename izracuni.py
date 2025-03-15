@@ -36,7 +36,7 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     :param podatki: List of lists dogovorjen format
     :return: int končna vrednost investicije
     """
-    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
+    # KLE JE FORA: ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
     # ampak tega verjetno ne bi smel upostevat, idk
    # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
@@ -75,13 +75,16 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     procentualno_zasluzek = round(procentualno_zasluzek,2)
     print(f"Procentualno: {procentualno_zasluzek}%")
     # procentualno je izracunano ->  (donos/cela investicija)*100
-
     return round(investment, 2)
 
 
 
 def izracun_dobicka_prodaj_kuppi(podatki):
-
+    """
+    Funkcija ki izracunava po metodi; prodamo vedno ko pade za nek % in kupimo ko zraste za nek %
+    :param podatki: podakti
+    :return: returna int koliko imamo
+    """
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
     print(f"Dolzina listov je (indeksi), {len(podatki)-1}, torej zacetek je lahko 2 in konec {len(podatki) - 1}")
     initial_investment = int(input("Vpisi začetno investicijo: "))
@@ -118,8 +121,7 @@ def izracun_dobicka_prodaj_kuppi(podatki):
             ath = trenutni_tecaj
         elif invested:
             dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
-            # tuki prej delil z 100 ampak je ze deljeno z sto v zgornji vrstici.
-            # preverit na listu papirja ce deluje
+
             investment = investment * (1 + dnevna_sprememba)
     print("--------------------------------")
     print(f"Zacetna investicija je bila {initial_investment}")
