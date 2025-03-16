@@ -64,18 +64,22 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
         investment = investment * (1 + daily_change_cifra)
         print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
     print("-----------")
-    print(f"Začetna investicija je bila: {initial_investment}EUR,")
-    print(f"Vseh mesečnih investicij je bilo: {mesecni_vlozki_vsota}EUR,")
-    print(f"Celotne investicije skupaj je torej bilo: {initial_investment + mesecni_vlozki_vsota}EUR")
+    print(f"{podatki[zacetek][0]} do {podatki[konec][0]}:")
+    print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
+    print(f"Vseh mesečnih investicij je bilo: {mesecni_vlozki_vsota}EUR 💸,")
     print("-----------")
-    print(f"Od {podatki[zacetek][0]} do {podatki[konec][0]} imamo vse skupaj z donosom/izgubo: {investment:.2f} EUR")
+    print(f"Total contribution(zacentna + mesecne): {initial_investment + mesecni_vlozki_vsota}EUR 🔢,")
     zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
     print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
-    procentualno_zasluzek = (zasluzili / (initial_investment + mesecni_vlozki_vsota)) * 100
-    procentualno_zasluzek = round(procentualno_zasluzek,2)
-    print(f"Procentualno: {procentualno_zasluzek}%")
-    # procentualno je izracunano ->  (donos/cela investicija)*100
+    print(f"Imamo vse skupaj: {investment:.2f} EUR 💰✈️🌍")
 
+    # to prikazemo samo ce imamo brez mescecnih. Edini namen je dokaz/prikazati, da pac ce potegnemo na google grafu da pac res dela funkcija
+    if mesecni_vlozki_vsota == 0:
+        procentualno_zasluzek = (zasluzili / initial_investment) * 100
+        procentualno_zasluzek = round(procentualno_zasluzek, 2)
+        print(f"Procentualno: {procentualno_zasluzek}%. Lahko preveris na google stock grafu da je zelo zelo podobno")
+    # procentualno je izracunano ->  (donos/cela investicija)*100
+    # tukaj ce so mesecne investicije je malo drugace in treba nekako fiksat
     return round(investment, 2)
 
 
@@ -94,7 +98,7 @@ def izracun_dobicka_prodaj_kuppi(podatki):
     # pretvorba v format za izracunanje
     koliko_more_padet = 1 - (input_koliko_more_padet_da_prodas / 100)
     koliko_mora_potem_zrast = 1 + (input_koliko_mora_potem_spet_zrasti / 100)
-
+    # ta metoda dela tako da kupis ko zraste od tok kokr si prodal, in ne od all time low
     ne_investiran_denar = 0
     invested = True
     prodal_pri = None

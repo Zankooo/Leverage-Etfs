@@ -10,10 +10,7 @@ print('----------')
 
 
 
-
-
-
-
+izracun_dobicka_mesecne_investicije_prvega(podatki)
 fancy1()
 
 

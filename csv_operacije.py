@@ -154,5 +154,5 @@ def ustvari_nov_csv_file(podatki):
         writer = csv.writer(file)
         writer.writerows(podatki)
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
-    print(f"Dodana je bila v directory: 'podatki_/obdelani'")
+    print(f"Dodana je bila v directory: 'podatki_obdelani'")
 
