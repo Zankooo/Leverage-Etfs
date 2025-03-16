@@ -11,9 +11,12 @@ print('----------')
 
 
 izracun_dobicka_mesecne_investicije_prvega(podatki)
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> main
 fancy1()
 
 # una fora kdaj kupis pac, pri mesecnih... to se poglobit

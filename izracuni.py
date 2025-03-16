@@ -36,7 +36,7 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     :param podatki: List of lists dogovorjen format
     :return: int končna vrednost investicije
     """
-    # KLE JE FORA: ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
+    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
     # ampak tega verjetno ne bi smel upostevat, idk
    # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
@@ -45,13 +45,11 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
     mesecni_vlozki_vsota = 0
-    zacetek = int(input("Začetek investiranja (katera vrstica)(indeks vrstice! Naj 2 ali več): "))
+    zacetek = int(input("Začetek investiranja (katera vrstica)(indeks vrstice naj 2 ali več): "))
     konec = int(input("Konec investiranja (katera vrstica): "))
     # Nastavimo začetni mesec za mesečne vložke
     current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
-    # !za zacetek je plus ena ker mi tist dan kupimo, ampak procenti se pa zacnejo naslednji dan
-    # !torej predpostavka kot da mi kupimo ko se borza lih konca
-    for i in range(zacetek + 1, konec + 1):
+    for i in range(zacetek, konec + 1):
         daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
         daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
         # Pridobimo mesec trenutnega datuma
@@ -77,16 +75,13 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     procentualno_zasluzek = round(procentualno_zasluzek,2)
     print(f"Procentualno: {procentualno_zasluzek}%")
     # procentualno je izracunano ->  (donos/cela investicija)*100
+
     return round(investment, 2)
 
 
 
 def izracun_dobicka_prodaj_kuppi(podatki):
-    """
-    Funkcija ki izracunava po metodi; prodamo vedno ko pade za nek % in kupimo ko zraste za nek %
-    :param podatki: podakti
-    :return: returna int koliko imamo
-    """
+
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
     print(f"Dolzina listov je (indeksi), {len(podatki)-1}, torej zacetek je lahko 2 in konec {len(podatki) - 1}")
     initial_investment = int(input("Vpisi začetno investicijo: "))
@@ -105,7 +100,6 @@ def izracun_dobicka_prodaj_kuppi(podatki):
     prodal_pri = None
     ath = float(podatki[zacetek][1])
     print("--------------------------------")
-    # KLE SE POGLEDAT ALI DAT TUDI +1 PR ZACETEK
     for i in range(zacetek, konec + 1):
         trenutni_tecaj = float(podatki[i][1])
         if invested and trenutni_tecaj > ath:
@@ -124,7 +118,8 @@ def izracun_dobicka_prodaj_kuppi(podatki):
             ath = trenutni_tecaj
         elif invested:
             dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
-
+            # tuki prej delil z 100 ampak je ze deljeno z sto v zgornji vrstici.
+            # preverit na listu papirja ce deluje
             investment = investment * (1 + dnevna_sprememba)
     print("--------------------------------")
     print(f"Zacetna investicija je bila {initial_investment}")
