@@ -9,8 +9,8 @@ podatki = load_csv('podatki/spx.csv')
 print('----------')
 
 
-
 izracun_dobicka_mesecne_investicije_prvega(podatki)
+
 
 
 
@@ -18,5 +18,5 @@ izracun_dobicka_mesecne_investicije_prvega(podatki)
 
 fancy1()
 
-# una fora kdaj kupis pac, pri mesecnih... to se poglobit
+
 

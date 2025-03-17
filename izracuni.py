@@ -36,26 +36,31 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     :param podatki: List of lists dogovorjen format
     :return: int končna vrednost investicije
     """
-    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
-    # ampak tega verjetno ne bi smel upostevat, idk
-   # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
+
+   # TA FUNKCIJA DEJANSKO DELA ZELO DOBR
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
     initial_investment = int(input("Vpisi začetno investicijo: "))
     monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
     mesecni_vlozki_vsota = 0
-    zacetek = int(input("Začetek investiranja (katera vrstica)(indeks vrstice naj 2 ali več): "))
-    konec = int(input("Konec investiranja (katera vrstica): "))
+
+    # klicemo funkcijo da dobimo indeksa zacetka in konca
+    indeksa_zacetka_in_konca = najdi_indekse_zacetka_in_konca(podatki)
+    index_zacetka = indeksa_zacetka_in_konca[0]
+    index_konca = indeksa_zacetka_in_konca[1]
+
     # Nastavimo začetni mesec za mesečne vložke
-    current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
-    for i in range(zacetek, konec + 1):
+    current_month = datetime.strptime(podatki[index_zacetka][0], "%Y-%m-%d").month
+    # plus ena pri index_zacetka, ker se zacne obrestovat naslednji dan, ker pac mi kupimo po close price ta dan
+    for i in range(index_zacetka + 1, index_konca + 1):
         daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
-        daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
+        daily_change_cifra = (float(daily_change)) / 100  # Pretvori v decimalno vrednost
         # Pridobimo mesec trenutnega datuma
         date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
         # Če je nov mesec, dodamo mesečni vložek
         if date.month != current_month:
+            # kupimo ta dan na koncu dneva, ob close pac -> recimo prvega v mesecu ob close ceni
             investment = investment + monthly_investment
             print(f"Mesecna investicija investirana: {monthly_investment}eur")
             mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
@@ -64,56 +69,63 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
         investment = investment * (1 + daily_change_cifra)
         print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
     print("-----------")
-    print(f"{podatki[zacetek][0]} do {podatki[konec][0]}:")
-    print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
-    print(f"Vseh mesečnih investicij je bilo: {mesecni_vlozki_vsota}EUR 💸,")
-    print("-----------")
-    print(f"Total contribution(zacentna + mesecne): {initial_investment + mesecni_vlozki_vsota}EUR 🔢,")
-    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
-    print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
-    print(f"Imamo vse skupaj: {investment:.2f} EUR 💰✈️🌍")
-
+    print("REZULTATI:")
+    print(f"{podatki[index_zacetka][0]} do {podatki[index_konca][0]}:")
+    print(f"Začetna investicija je bila: {formatiraj_kes(initial_investment)} 📌")
+    print(f"Vseh mesečnih investicij je bilo: {formatiraj_kes(mesecni_vlozki_vsota)} 💸")
+    print("---")
+    print(f"Total contribution (zacetna + mesecne): {formatiraj_kes(initial_investment + mesecni_vlozki_vsota)} 🔢")
+    zasluzili = investment - initial_investment - mesecni_vlozki_vsota
+    print(f"Torej zaslužili / izgubili smo: {formatiraj_kes(zasluzili)} 🏆")
+    print(f"Imamo vse skupaj: {formatiraj_kes(investment)} EUR 💰✈️🌍")
     # to prikazemo samo ce imamo brez mescecnih. Edini namen je dokaz/prikazati, da pac ce potegnemo na google grafu da pac res dela funkcija
     if mesecni_vlozki_vsota == 0:
         procentualno_zasluzek = (zasluzili / initial_investment) * 100
         procentualno_zasluzek = round(procentualno_zasluzek, 2)
-        print(f"Procentualno: {procentualno_zasluzek}%. Lahko preveris na google stock grafu da je zelo zelo podobno")
+        print(f"Procentualno: {procentualno_zasluzek}%. Lahko preveris na Google stock grafu, da je zelo zelo podobno")
     # procentualno je izracunano ->  (donos/cela investicija)*100
     # tukaj ce so mesecne investicije je malo drugace in treba nekako fiksat
     return round(investment, 2)
 
 
 
-def izracun_dobicka_prodaj_kuppi(podatki):
+def izracun_dobicka_prodaj_kupi(podatki):
 
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
-    print(f"Dolzina listov je (indeksi), {len(podatki)-1}, torej zacetek je lahko 2 in konec {len(podatki) - 1}")
+
     initial_investment = int(input("Vpisi začetno investicijo: "))
     investment = initial_investment
-    # dodat pol tukaj da 2 ali vec je lahko indes
-    zacetek = int(input("Začetek (katera vrstica): "))
-    konec = int(input("Konec (katera vrstica): "))
+
+    # dobimo datume
+    indeksa_zacetka_in_konca = najdi_indekse_zacetka_in_konca(podatki)
+    index_zacetka = indeksa_zacetka_in_konca[0]
+    index_konca = indeksa_zacetka_in_konca[1]
+
     input_koliko_more_padet_da_prodas = float(input("Koliko mora padet da prodas? (%): "))
-    input_koliko_mora_potem_spet_zrasti = float(input("Koliko mora potem spet zrasti da nazaj kupis? (%): "))
-    # pretvorba v format za izracunanje
+    input_koliko_mora_potem_spet_zrasti = float(input("Koliko mora potem spet zrasti od vrednosti, kjer si prodal, da spet nazaj kupis? (%): "))
+    # pretvorba v format za izracunanje, recimo ce je 1, to je 0,99
     koliko_more_padet = 1 - (input_koliko_more_padet_da_prodas / 100)
+    # # pretvorba v format za izracunanje, recimo ce je 2, to je 1,02
     koliko_mora_potem_zrast = 1 + (input_koliko_mora_potem_spet_zrasti / 100)
     # ta metoda dela tako da kupis ko zraste od tok kokr si prodal, in ne od all time low
+    # naredit se eno funkcijo ki od all time low
     ne_investiran_denar = 0
     invested = True
     prodal_pri = None
-    ath = float(podatki[zacetek][1])
+    ath = float(podatki[index_zacetka][1])
     print("--------------------------------")
-    for i in range(zacetek, konec + 1):
+    for i in range(index_zacetka + 1, index_konca + 1):
         trenutni_tecaj = float(podatki[i][1])
         if invested and trenutni_tecaj > ath:
             ath = trenutni_tecaj
+        # recimo ce damo da max pade 3, je to trenutni tecaj mora biti manjsi kot all time high * 0,97
         if invested and trenutni_tecaj <= ath * koliko_more_padet:
             print(f"Prodal pri {podatki[i]}")
             prodal_pri = trenutni_tecaj
             ne_investiran_denar = investment
             investment = 0
             invested = False
+        # recimo ce smo prodali pri 80 in damo; da mora zrasti 3% torej ko je trenutni vecji ali enak 82,4
         elif not invested and trenutni_tecaj >= prodal_pri * koliko_mora_potem_zrast:
             print(f"Kupil pri {podatki[i]}")
             investment = ne_investiran_denar
@@ -126,7 +138,7 @@ def izracun_dobicka_prodaj_kuppi(podatki):
             # preverit na listu papirja ce deluje
             investment = investment * (1 + dnevna_sprememba)
     print("--------------------------------")
-    print(f"Zacetna investicija je bila {initial_investment}")
+    print(f"Zacetna investicija je bila {formatiraj_kes(initial_investment)}")
     print("Zasluzili smo tok eur:")
     print(investment if invested else ne_investiran_denar)
     return investment if invested else ne_investiran_denar
@@ -184,7 +196,46 @@ def is_float(value):
     except ValueError:
         return False
 
+def formatiraj_kes(vrednost):
+    return f"{vrednost:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
 
+
+def najdi_indekse_zacetka_in_konca(podatki):
+    """Funkcija ki sprejema kot user input datum zacetka in konca in najde na katerem indeksu oz vrstici se nahajata
+    :param podatki: list of lists, dogovorjen format
+    :return list z dvema elementoma: index zacetka in index konca. Glede na vpisan datum
+    """
+    datum_zacetka = input("Vpisi datum zacetka (format: yyyy-mm-dd): ")
+    index_zacetka = None
+    index_konca = None
+    od_tukaj_naprej = None
+
+    # Najdemo za začetni datum indeks
+    for i in range(0, len(podatki)):
+        if podatki[i][0] == datum_zacetka:
+            print(f"Nasli smo datum zacetka, nahaja se na indeksu {i} oz. vrstici {i+1}")
+            index_zacetka = i  # Nastavi index začetka
+            od_tukaj_naprej = i  # Nastavi od-tukaj-naprej
+            break  # Lahko prekinemo zanko, ker smo našli začetek
+
+    if od_tukaj_naprej is None:
+        print("Datum začetka ni najden, oz. je napačno vpisan!")
+        return [-1, -1]
+
+    datum_konca = input("Vpisi datum konca (format: yyyy-mm-dd): ")
+
+    # Najdemo za končni datum indeks
+    for i in range(od_tukaj_naprej, len(podatki)):
+        if podatki[i][0] == datum_konca:
+            index_konca = i
+            print(f"Nasli smo datum konca, nahaja se na indeksu {i} oz. vrstici {i+1}")
+            break  # Prekinemo, ko najdemo datum konca
+
+    if index_konca is None:
+        print("Datum konca ni najden, oz. je napačno vpisan!")
+        return [-1, -1]
+
+    return [index_zacetka, index_konca]
 
 
 
