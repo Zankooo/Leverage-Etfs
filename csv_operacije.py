@@ -108,7 +108,6 @@ def izbrisi_nezelene_stoplce(podatki):
     """
     print("--------------------------------")
     print("Funkcija, ki izbrise zelene stolpce laufa!")
-
     # tukaj dobimo v list stolpce ki jih hocemo izbrisat
     stolpec_za_zbrisat = []
     prvi_vnos = True
@@ -153,6 +152,7 @@ def zaokrozi_na_dve_decimalki_tecaje(podatki):
     return podatki
 
 
+
 # ta funkcija je zadnja ker pac ustvari podatke
 def ustvari_nov_csv_file(podatki):
     """
@@ -169,4 +169,8 @@ def ustvari_nov_csv_file(podatki):
         writer.writerows(podatki)
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
     print(f"Dodana je bila v directory: 'podatki_obdelani'")
+
+
+
+
 

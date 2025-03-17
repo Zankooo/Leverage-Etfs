@@ -1,10 +1,7 @@
-import re
-
 import pandas as pd
-
 from csv_operacije import *
 # karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
-# dogovorjen format podatkov oz csv.ja
+# dogovorjen format podatkov oz csv.ja!
 
 def izracun_dnevnih_sprememb(podatki):
     """
@@ -36,7 +33,6 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     :param podatki: List of lists dogovorjen format
     :return: int končna vrednost investicije
     """
-
    # TA FUNKCIJA DEJANSKO DELA ZELO DOBR
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
@@ -88,9 +84,10 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     return round(investment, 2)
 
 
-
+#----------- POMOZNE FUNKCIJE; TEH DVEH FUNKCIJ ČIST NE RAZUMEM IN NE VEM CE PRAV DELATA-----------
 def izracun_dobicka_prodaj_kupi(podatki):
-
+    #STESTIRAL IN KAO DELA, SE ENKRAT STESTIRAT Z ANDROTOM, NAPISAT PODATKE NA LIST IN STESTIRAT
+    # ugotavljat zakaj se splaca kdaj in kdaj ne, ker je veliko taktike tukaj
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
     initial_investment = int(input("Vpisi začetno investicijo: "))
@@ -112,17 +109,22 @@ def izracun_dobicka_prodaj_kupi(podatki):
     ne_investiran_denar = 0
     invested = True
     prodal_pri = None
-    ath = float(podatki[index_zacetka][1])
+    tecaj_od_katerega_more_padet_da_prodamo = float(podatki[index_zacetka][1])
     print("--------------------------------")
     for i in range(index_zacetka + 1, index_konca + 1):
         trenutni_tecaj = float(podatki[i][1])
-        if invested and trenutni_tecaj > ath:
-            ath = trenutni_tecaj
+        if invested and trenutni_tecaj > tecaj_od_katerega_more_padet_da_prodamo:
+            tecaj_od_katerega_more_padet_da_prodamo = trenutni_tecaj
+            print(f"Nov all time high je {tecaj_od_katerega_more_padet_da_prodamo} od te vrednosti more pasti {input_koliko_more_padet_da_prodas}% da prodamo")
         # recimo ce damo da max pade 3, je to trenutni tecaj mora biti manjsi kot all time high * 0,97
-        if invested and trenutni_tecaj <= ath * koliko_more_padet:
-            print(f"Prodal pri {podatki[i]}")
+        if invested and trenutni_tecaj <= tecaj_od_katerega_more_padet_da_prodamo * koliko_more_padet:
+            print(f"Prodal pri {podatki[i]}, zrasti mora {input_koliko_mora_potem_spet_zrasti}% da spet kupimo")
+            print(f"In to na vsaj: {trenutni_tecaj * koliko_mora_potem_zrast}eur")
             prodal_pri = trenutni_tecaj
+            dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
+            investment = investment * (1 + dnevna_sprememba)
             ne_investiran_denar = investment
+            print(f"imamo toliko denarja {ne_investiran_denar}eur")
             investment = 0
             invested = False
         # recimo ce smo prodali pri 80 in damo; da mora zrasti 3% torej ko je trenutni vecji ali enak 82,4
@@ -131,60 +133,99 @@ def izracun_dobicka_prodaj_kupi(podatki):
             investment = ne_investiran_denar
             ne_investiran_denar = 0
             invested = True
-            ath = trenutni_tecaj
-        elif invested:
+            tecaj_od_katerega_more_padet_da_prodamo = trenutni_tecaj
+
+        elif invested and (trenutni_tecaj > tecaj_od_katerega_more_padet_da_prodamo * koliko_more_padet):
             dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
             # tuki prej delil z 100 ampak je ze deljeno z sto v zgornji vrstici.
             # preverit na listu papirja ce deluje
             investment = investment * (1 + dnevna_sprememba)
+
+            print(f"Investirano imamo pri {podatki[i]}in toliko je vredno: {investment}eur")
+        elif not invested:
+            print(f"Nimamo investirano pri {podatki[i]}")
+
     print("--------------------------------")
     print(f"Zacetna investicija je bila {formatiraj_kes(initial_investment)}")
     print("Zasluzili smo tok eur:")
-    print(investment if invested else ne_investiran_denar)
-    return investment if invested else ne_investiran_denar
+    zasluzili = investment if invested else ne_investiran_denar
+    print(formatiraj_kes(zasluzili))
+    return zasluzili
 
-def izracun_letnih_donosov(podatki):
-    """
-    Ne vem kako ta funkcija dela ampak dela!
-    Funkcija ki sprejme podatke, list of lists
-    In izracuna donos za Vsako leto.
-    :param list of lists podatki indeksa
-    :return: list of lists donosov za vsako leto
-    """
-    # Začnemo obdelavo podatkov od tretje vrstice
-    podatki = podatki[2:]
+def izracun_dobicka_prodaj_kupi_low(podatki):
+    #STESTIRAL IN KAO DELA, SE ENKRAT STESTIRAT Z ANDROTOM, NAPISAT PODATKE NA LIST IN STESTIRAT
+    # ugotavljat zakaj se splaca kdaj in kdaj ne, ker je veliko taktike tukaj
+    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
-    # Če je vhodni podatki list of lists, ga pretvorimo v DataFrame
-    if isinstance(podatki, list):
-        podatki = pd.DataFrame(podatki, columns=["Date", "Close"])
+    initial_investment = int(input("Vpisi začetno investicijo: "))
+    investment = initial_investment
 
-    # Preverimo, ali je podatki DataFrame
-    if not isinstance(podatki, pd.DataFrame):
-        raise TypeError(f"Vhodni podatki morajo biti pandas DataFrame, prejet: {type(podatki)}")
+    # dobimo datume
+    indeksa_zacetka_in_konca = najdi_indekse_zacetka_in_konca(podatki)
+    index_zacetka = indeksa_zacetka_in_konca[0]
+    index_konca = indeksa_zacetka_in_konca[1]
 
-    # Pretvorimo stolpec 'Date' v datetime format
-    podatki["Date"] = pd.to_datetime(podatki["Date"], errors='coerce')
+    input_koliko_more_padet_da_prodas = float(input("Koliko mora padet da prodas? (%): "))
+    input_koliko_mora_potem_spet_zrasti = float(input("Koliko mora potem spet zrasti od vrednosti, kjer si prodal, da spet nazaj kupis? (%): "))
+    # pretvorba v format za izracunanje, recimo ce je 1, to je 0,99
+    koliko_more_padet = 1 - (input_koliko_more_padet_da_prodas / 100)
+    # # pretvorba v format za izracunanje, recimo ce je 2, to je 1,02
+    koliko_mora_potem_zrast = 1 + (input_koliko_mora_potem_spet_zrasti / 100)
+    # ta metoda dela tako da kupis ko zraste od tok kokr si prodal, in ne od all time low
+    # naredit se eno funkcijo ki od all time low
+    ne_investiran_denar = 0
+    invested = True
+    tecaj_od_katerega_mora_zrasti = float
+    tecaj_od_katerega_more_padet_da_prodamo = float(podatki[index_zacetka][1])
+    print("--------------------------------")
+    for i in range(index_zacetka + 1, index_konca + 1):
+        trenutni_tecaj = float(podatki[i][1])
 
-    # Odstranimo morebitne neveljavne vrstice
-    podatki = podatki.dropna()
+        if invested and trenutni_tecaj > tecaj_od_katerega_more_padet_da_prodamo:
+            tecaj_od_katerega_more_padet_da_prodamo = trenutni_tecaj
+            print(f"Od te vrednosti mora sedaj pasti {tecaj_od_katerega_more_padet_da_prodamo}. Od te vrednosti more pasti {input_koliko_more_padet_da_prodas}% da prodamo, torej {tecaj_od_katerega_more_padet_da_prodamo * koliko_more_padet}eur")
 
-    # Pretvorimo 'Close' v numerični format
-    podatki["Close"] = pd.to_numeric(podatki["Close"], errors='coerce')
+        # recimo ce damo da max pade 3, je to trenutni tecaj mora biti manjsi kot all time high * 0,97
+        if invested and trenutni_tecaj <= tecaj_od_katerega_more_padet_da_prodamo * koliko_more_padet:
+            print(f"Prodal pri {podatki[i]}, zrasti mora {input_koliko_mora_potem_spet_zrasti}% da spet kupimo")
+            print(f"In to na vsaj: {trenutni_tecaj * koliko_mora_potem_zrast}eur")
+            tecaj_od_katerega_mora_zrasti = trenutni_tecaj
+            dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
+            investment = investment * (1 + dnevna_sprememba)
+            ne_investiran_denar = investment
+            print(f"Imamo toliko denarja {ne_investiran_denar}eur")
+            investment = 0
+            invested = False
 
-    # Izluščimo leto
-    podatki["Year"] = podatki["Date"].dt.year
+        # recimo ce smo prodali pri 80 in damo; da mora zrasti 3% torej ko je trenutni vecji ali enak 82,4
+        elif not invested and trenutni_tecaj >= (float(tecaj_od_katerega_mora_zrasti) * float(koliko_mora_potem_zrast)):
+            print(f"Kupil pri {podatki[i]}")
+            investment = ne_investiran_denar
+            ne_investiran_denar = 0
+            invested = True
+            tecaj_od_katerega_more_padet_da_prodamo = trenutni_tecaj
 
-    # Priprava praznega seznama za rezultate
-    annual_returns = [["Leto", "Prvi-dan", "Zadnji-dan", "Donos(%)"]]
-    unique_years = sorted(podatki["Year"].unique())
+        elif invested and (trenutni_tecaj > tecaj_od_katerega_more_padet_da_prodamo * koliko_more_padet):
+            dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
+            # tuki prej delil z 100 ampak je ze deljeno z sto v zgornji vrstici.
+            # preverit na listu papirja ce deluje
+            investment = investment * (1 + dnevna_sprememba)
+            print(f"Investirano imamo pri {podatki[i]}in toliko je vredno: {investment}eur")
 
-    for year in unique_years:
-        yearly_data = podatki[podatki["Year"] == year]
-        first_price = float(yearly_data.iloc[0]["Close"])
-        last_price = float(yearly_data.iloc[-1]["Close"])
-        return_pct = float(((last_price / first_price) - 1) * 100)
-        annual_returns.append([int(year), round(first_price,2), round(last_price,2), round(return_pct,2)])
-    return annual_returns
+        elif not invested:
+            print(f"Nimamo investirano pri {podatki[i]}")
+            tecaj_od_katerega_mora_zrasti = podatki[i][1]
+            #print(f"Nov all time low je {tecaj_od_katerega_mora_zrasti}. Od te vrednosti mora zrasti {input_koliko_mora_potem_spet_zrasti}% da kupimo, torej {tecaj_od_katerega_mora_zrasti * koliko_mora_potem_zrast}eur")
+
+    print("--------------------------------")
+    print(f"Zacetna investicija je bila {formatiraj_kes(initial_investment)}")
+    print("Zasluzili smo tok eur:")
+    zasluzili = investment if invested else ne_investiran_denar
+    print(formatiraj_kes(zasluzili))
+    return zasluzili
+
+
+
 
 #----------- POMOZNE FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
 
@@ -238,6 +279,49 @@ def najdi_indekse_zacetka_in_konca(podatki):
     return [index_zacetka, index_konca]
 
 
+#----------- FUNKCIJE KI NISO TAKTIKE OZ SO ZA ZRAVEN MALO ZA FORO-----------
+def izracun_letnih_donosov_indeksa(podatki):
+    """
+    Ne vem kako ta funkcija dela ampak dela!
+    Funkcija ki sprejme podatke, list of lists
+    In izracuna donos za Vsako leto.
+    :param list of lists podatki indeksa
+    :return: list of lists donosov za vsako leto
+    """
+    # Začnemo obdelavo podatkov od tretje vrstice
+    podatki = podatki[2:]
+
+    # Če je vhodni podatki list of lists, ga pretvorimo v DataFrame
+    if isinstance(podatki, list):
+        podatki = pd.DataFrame(podatki, columns=["Date", "Close"])
+
+    # Preverimo, ali je podatki DataFrame
+    if not isinstance(podatki, pd.DataFrame):
+        raise TypeError(f"Vhodni podatki morajo biti pandas DataFrame, prejet: {type(podatki)}")
+
+    # Pretvorimo stolpec 'Date' v datetime format
+    podatki["Date"] = pd.to_datetime(podatki["Date"], errors='coerce')
+
+    # Odstranimo morebitne neveljavne vrstice
+    podatki = podatki.dropna()
+
+    # Pretvorimo 'Close' v numerični format
+    podatki["Close"] = pd.to_numeric(podatki["Close"], errors='coerce')
+
+    # Izluščimo leto
+    podatki["Year"] = podatki["Date"].dt.year
+
+    # Priprava praznega seznama za rezultate
+    annual_returns = [["Leto", "Prvi-dan", "Zadnji-dan", "Donos(%)"]]
+    unique_years = sorted(podatki["Year"].unique())
+
+    for year in unique_years:
+        yearly_data = podatki[podatki["Year"] == year]
+        first_price = float(yearly_data.iloc[0]["Close"])
+        last_price = float(yearly_data.iloc[-1]["Close"])
+        return_pct = float(((last_price / first_price) - 1) * 100)
+        annual_returns.append([int(year), round(first_price,2), round(last_price,2), round(return_pct,2)])
+    return annual_returns
 
 
 

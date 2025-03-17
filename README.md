@@ -27,3 +27,10 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
 - potem ko bom ta csv naredil -> naredit kak primer ze
 - potem sprogramirat da das lahko kes kadarkolli notri ne samo prvega v mesecu
 - potem pa zacet uporabljat strategije, rado in reddit in tko. torej vkljucit v projekt
+
+## Kaj je narejeno:
+- mi operiramo z indeksom, ki je v csv fileu, ampak preden zacnemo delat izracune, morajo te podatki biti v dogovorjenem formatu, ki smo ga dolocili. Da spravimo podatke v tak format imamo vse opisano v classu **csv_operacije.py** kako to naredit in pravtako so tam funkcije ki nam pomagajo spravit v ta format
+- potem pa lahko gremo delat izracune. Razne metode oz. taktike investiranja so napisane v classu **izracuni.py**
+    - <u>Prva funkcija</u>: *izracun_dnevnih_sprememb* -> izracuna nam dnevne spremembe daily changes
+    - <u>Druga funkcija</u>: *izracun_dobicka_mesecne_investicije_prvega* -> izracuna nam koliko imamo kesa po nekem izbranem obdobju, uposteva tudi mesecne vlozke prvi trgovalni dan v mesecu.
+    - <u>Tretja funkcija</u>: *izracun_dobicka_prodaj_kupi* -> funkcija ki izracunava taktiko; gremo vedno prodat ko pade za nek procent in kupimo vedno ko zraste nek procent od 

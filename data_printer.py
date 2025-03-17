@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def print_original(podatki):
     """Izpiše podatke v originalni obliki."""
     print("Izpis v originalni obliki: 📝")
