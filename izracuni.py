@@ -1,5 +1,8 @@
 import pandas as pd
 from csv_operacije import *
+from indeksi_zacetek_konec import najdi_indekse_zacetka_in_konca
+
+
 # karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
 # dogovorjen format podatkov oz csv.ja!
 
@@ -13,7 +16,7 @@ def izracun_dnevnih_sprememb(podatki):
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]
     # Inicializacija prve vrstice brez spremembe
-    result.append(podatki[1] + ["Daily Change (%)"])  # Prvi dan ni spremembe
+    result.append(podatki[1] + ["Change (%)"])  # Prvi dan ni spremembe
     # Drugi dan nastavim na '0%', ker pac je prvi dan
     result.append(podatki[2] + ['0%'])
     # Izračun spremembe za vsak naslednji dan
@@ -241,42 +244,7 @@ def formatiraj_kes(vrednost):
     return f"{vrednost:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def najdi_indekse_zacetka_in_konca(podatki):
-    """Funkcija ki sprejema kot user input datum zacetka in konca in najde na katerem indeksu oz vrstici se nahajata
-    :param podatki: list of lists, dogovorjen format
-    :return list z dvema elementoma: index zacetka in index konca. Glede na vpisan datum
-    """
-    datum_zacetka = input("Vpisi datum zacetka (format: yyyy-mm-dd): ")
-    index_zacetka = None
-    index_konca = None
-    od_tukaj_naprej = None
 
-    # Najdemo za začetni datum indeks
-    for i in range(0, len(podatki)):
-        if podatki[i][0] == datum_zacetka:
-            print(f"Nasli smo datum zacetka, nahaja se na indeksu {i} oz. vrstici {i+1}")
-            index_zacetka = i  # Nastavi index začetka
-            od_tukaj_naprej = i  # Nastavi od-tukaj-naprej
-            break  # Lahko prekinemo zanko, ker smo našli začetek
-
-    if od_tukaj_naprej is None:
-        print("Datum začetka ni najden, oz. je napačno vpisan!")
-        return [-1, -1]
-
-    datum_konca = input("Vpisi datum konca (format: yyyy-mm-dd): ")
-
-    # Najdemo za končni datum indeks
-    for i in range(od_tukaj_naprej, len(podatki)):
-        if podatki[i][0] == datum_konca:
-            index_konca = i
-            print(f"Nasli smo datum konca, nahaja se na indeksu {i} oz. vrstici {i+1}")
-            break  # Prekinemo, ko najdemo datum konca
-
-    if index_konca is None:
-        print("Datum konca ni najden, oz. je napačno vpisan!")
-        return [-1, -1]
-
-    return [index_zacetka, index_konca]
 
 
 #----------- FUNKCIJE KI NISO TAKTIKE OZ SO ZA ZRAVEN MALO ZA FORO-----------
