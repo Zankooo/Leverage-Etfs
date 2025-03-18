@@ -1,5 +1,5 @@
 import sys
-def fancy1():
+def fancy_zakljucek_1():
     print("--------------------------------------------")
     # print("✔️ Program uspešno končan!")
     print("""
@@ -8,7 +8,7 @@ def fancy1():
     sys.exit(0)
 
 
-def fancy2():
+def fancy_zakljucek_2():
     print("--------------------------------------------")
     print("""
         🎉 PROGRAM KONČAN 🎉

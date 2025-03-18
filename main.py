@@ -2,13 +2,15 @@ from data_printer import *
 from izracuni import *
 from csv_operacije import *
 from fancy_zakljucki_programa import *
+from leverage_csv_file import calculate_leverage
 
 print('----------')
 
 podatki = load_csv('podatki/spx.csv')
+daily_change = izracun_dnevnih_sprememb(podatki)
+calculated_leverage = calculate_leverage(daily_change)
+print_vsak_v_svoji_vrstici(calculated_leverage)
 
-
-print('----------')
 
 data = [
     ['SP500', '1927-2020'],
@@ -28,9 +30,9 @@ data = [
 
 ]
 
-izracun_dobicka_prodaj_kupi_low(podatki)
 
-fancy1()
+
+fancy_zakljucek_1()
 
 
 
