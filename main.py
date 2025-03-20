@@ -14,7 +14,7 @@ podatki = load_csv('podatki/nasdaq100.csv')
 leverage = calculate_leverage(podatki)
 fancy_print(leverage)
 
-ustvari_nov_csv_file(leverage)
+
 
 
 

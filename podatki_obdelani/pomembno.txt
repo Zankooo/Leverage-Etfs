@@ -1,0 +1,10 @@
+Teli stirje, ki sem jih jaz ustvaril, se dejansko matchajo z dejanskimi leverage etfji.
+Na papirjema imam nakljucne datume in match za vsakega z vsakim
+- nasdaq_100_2x.csv -> match z QLD
+- nasdaq_100_3x.csv -> match z TQQQ
+- spx_2x.csv -> match z SSO
+- spx_3x.csv -> match z UPRO
+
+Mora biti ista valuta seveda, dbpg tukaj ne mores primerjat ker bi mogu pol upostevat se euro dolar tecaj.
+Niso čisto matchani, zato pogledat še kaki vsi stroški so pri leverage, ker v veliki meri je zaostakal za mojim.
+Je pa moj tudi parkrat bil boljsi ampak to je pa verjetno zato ker je moj brez dividend reinvestiranih.
