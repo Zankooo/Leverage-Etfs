@@ -34,3 +34,9 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
     - <u>Prva funkcija</u>: *izracun_dnevnih_sprememb* -> izracuna nam dnevne spremembe daily changes
     - <u>Druga funkcija</u>: *izracun_dobicka_mesecne_investicije_prvega* -> izracuna nam koliko imamo kesa po nekem izbranem obdobju, uposteva tudi mesecne vlozke prvi trgovalni dan v mesecu.
     - <u>Tretja funkcija</u>: *izracun_dobicka_prodaj_kupi* -> funkcija ki izracunava taktiko; gremo vedno prodat ko pade za nek procent in kupimo vedno ko zraste nek procent od 
+    - <u>Cetrta funkcija</u>: *izracun leverage
+
+## Problemi:
+- leverage se niti priblizno ne ujema z sso(ameriski sp500 2x) recimo. sso = 2x leverage in se ne ujema z mojim izracunom leverage, to najboljse opazimo ce damo neko obdobje in 100eur zacetne in nic mesecnih, procentualno bo cist drugace -> se enkrat cekirat
+- ce dam leverage faktor 1 ne dobim isto kot je osnovni, to mi je smeh pac
+- unedve funkcije buy sell nisem ziher ce prav delata

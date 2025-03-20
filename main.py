@@ -7,16 +7,15 @@ from leverage_csv_file import calculate_leverage
 print('----------')
 
 
-podatki = load_csv('podatki/spx.csv')
-
-izracunn = izracun_dobicka_mesecne_investicije_prvega(podatki)
+podatki = load_csv('podatki/nasdaq100.csv')
 
 
 
+leverage = calculate_leverage(podatki)
+fancy_print(leverage)
 
+ustvari_nov_csv_file(leverage)
 
-#calculated_leverage = calculate_leverage(daily_changes)
-#izracuni = izracun_dobicka_mesecne_investicije_prvega(calculated_leverage)
 
 
 fancy_zakljucek_1()
