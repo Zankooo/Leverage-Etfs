@@ -37,6 +37,6 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
     - <u>Cetrta funkcija</u>: *izracun leverage
 
 ## Problemi:
-- leverage se niti priblizno ne ujema z sso(ameriski sp500 2x) recimo. sso = 2x leverage in se ne ujema z mojim izracunom leverage, to najboljse opazimo ce damo neko obdobje in 100eur zacetne in nic mesecnih, procentualno bo cist drugace -> se enkrat cekirat
+- leverage se zelo dobro ujema z mojimi, ampak se preverit zakaj ni se boljsi match. (papirji scena)
 - ce dam leverage faktor 1 ne dobim isto kot je osnovni, to mi je smeh pac
 - unedve funkcije buy sell nisem ziher ce prav delata
