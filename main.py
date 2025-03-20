@@ -1,7 +1,6 @@
-from data_printer import *
-from izracuni import *
+from ne_pogosto_uporabljene.data_printer import *
 from csv_operacije import *
-from fancy_zakljucki_programa import *
+from ne_pogosto_uporabljene.fancy_zakljucki_programa import *
 from leverage_csv_file import calculate_leverage
 
 print('----------')

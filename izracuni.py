@@ -1,6 +1,6 @@
 import pandas as pd
 from csv_operacije import *
-from indeksi_zacetek_konec import najdi_indekse_zacetka_in_konca
+from ne_pogosto_uporabljene.indeksi_zacetek_konec import najdi_indekse_zacetka_in_konca
 
 
 # karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
@@ -11,7 +11,6 @@ def izracun_dnevnih_sprememb(podatki):
     Funkcija, ki izracuna dnevne spremembe indeksa
     :param list of lists (dogovorjen format)
     :return list of lists tak kot je bil podan in mu doda dnevne spremembe "daily changes"
-
     """
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]

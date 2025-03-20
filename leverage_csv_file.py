@@ -1,8 +1,5 @@
 # tukaj je pa format taksen da mora biti se daily change !!!
-from indeksi_zacetek_konec import najdi_indekse_zacetka_in_konca
 from izracuni import izracun_dnevnih_sprememb
-
-
 # TA FUNKCIJA DELA PRAV, TUDI Z IZRACUN MESECNI
 # CE DAMO SAMO ZACETNA INVESTICIJA PRIDE ISTO KOT JE DBPG. KAR JE ODLICNO!
 # AMPAK CE DAMO LEVERAGE FOKTOR 1, NE DOBIMO ISTO, TO NE VEM ZAKAJ AMPAK JA... MAL S CHATOM, MOZNO KAKE DECIMALKE?
@@ -39,15 +36,13 @@ def calculate_leverage(podatki):
 # ce dam 1 faktor, bi mogu dobit istega nazaja, ampak so majhne spremembe
 
 
-def calculate_leverage_dodaj_stolpce(podatki_z_daily_change_stoplcem):
+def calculate_leverage_dodaj_stolpce(podatki):
     """Funkcija, ki izračuna leverage in doda nove stolpce v obstoječ seznam.
-    :param podatki_z_daily_change_stoplcem: list of lists, kjer je prvi stolpec datum, drugi tečaj, tretji change.
-    :return: enak list of lists z dodanimi tremi novimi stolpci:
-             - Leverage tečaj
-             - Leverage dnevni change
-             - Primerjava osnovnega in leverage tečaja (True/False)
+    :param podatki dogovorjena struktura
+    :return: List of list: datum, tecaj, daily change, leverage tecaj, leverage daily change in primerjava true false
     """
-    podatki = podatki_z_daily_change_stoplcem
+    #izracunamo daily change
+    podatki = izracun_dnevnih_sprememb(podatki)
 
     # Določimo število decimalnih mest na podlagi najbolj natančnega podatka
     def max_decimalk(podatki):
