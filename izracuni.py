@@ -69,13 +69,13 @@ def izracun_dobicka_dca(podatki):
     print("-----------")
     print("REZULTATI:")
     print(f"{podatki[index_zacetka][0]} do {podatki[index_konca][0]}:")
-    print(f"Začetna investicija je bila: {formatiraj_kes(initial_investment)} 📌")
-    print(f"Vseh mesečnih investicij je bilo: {formatiraj_kes(mesecni_vlozki_vsota)} 💸")
+    print(f"Začetna investicija je bila: {formatiraj_kes_eur(initial_investment)} 📌")
+    print(f"Vseh mesečnih investicij je bilo: {formatiraj_kes_eur(mesecni_vlozki_vsota)} 💸")
     print("---")
-    print(f"Total contribution (zacetna + mesecne): {formatiraj_kes(initial_investment + mesecni_vlozki_vsota)} 🔢")
+    print(f"Total contribution (zacetna + mesecne): {formatiraj_kes_eur(initial_investment + mesecni_vlozki_vsota)} 🔢")
     zasluzili = investment - initial_investment - mesecni_vlozki_vsota
-    print(f"Torej zaslužili / izgubili smo: {formatiraj_kes(zasluzili)} 🏆")
-    print(f"Imamo vse skupaj: {formatiraj_kes(investment)} EUR 💰✈️🌍")
+    print(f"Torej zaslužili / izgubili smo: {formatiraj_kes_eur(zasluzili)} 🏆")
+    print(f"Imamo vse skupaj: {formatiraj_kes_eur(investment)} EUR 💰✈️🌍")
     # to prikazemo samo ce imamo brez mescecnih. Edini namen je dokaz/prikazati, da pac ce potegnemo na google grafu da pac res dela funkcija
     if mesecni_vlozki_vsota == 0:
         procentualno_zasluzek = (zasluzili / initial_investment) * 100
@@ -148,10 +148,10 @@ def izracun_dobicka_prodaj_kupi(podatki):
             print(f"Nimamo investirano pri {podatki[i]}")
 
     print("--------------------------------")
-    print(f"Zacetna investicija je bila {formatiraj_kes(initial_investment)}")
+    print(f"Zacetna investicija je bila {formatiraj_kes_eur(initial_investment)}")
     print("Zasluzili smo tok eur:")
     zasluzili = investment if invested else ne_investiran_denar
-    print(formatiraj_kes(zasluzili))
+    print(formatiraj_kes_eur(zasluzili))
     return zasluzili
 
 def izracun_dobicka_prodaj_kupi_low(podatki):
@@ -220,10 +220,10 @@ def izracun_dobicka_prodaj_kupi_low(podatki):
             #print(f"Nov all time low je {tecaj_od_katerega_mora_zrasti}. Od te vrednosti mora zrasti {input_koliko_mora_potem_spet_zrasti}% da kupimo, torej {tecaj_od_katerega_mora_zrasti * koliko_mora_potem_zrast}eur")
 
     print("--------------------------------")
-    print(f"Zacetna investicija je bila {formatiraj_kes(initial_investment)}")
+    print(f"Zacetna investicija je bila {formatiraj_kes_eur(initial_investment)}")
     print("Zasluzili smo tok eur:")
     zasluzili = investment if invested else ne_investiran_denar
-    print(formatiraj_kes(zasluzili))
+    print(formatiraj_kes_eur(zasluzili))
     return zasluzili
 
 
@@ -239,9 +239,11 @@ def is_float(value):
     except ValueError:
         return False
 
-def formatiraj_kes(vrednost):
+def formatiraj_kes_eur(vrednost):
     return f"{vrednost:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
 
+def formatiraj_kes_dolar(vrednost):
+    return f"${vrednost:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 
