@@ -32,7 +32,7 @@ def izracun_dobicka_dca(podatki):
     Funkcija izracuna koliko imamo kesa po izbranem obdobju
     Torej: izberemo začetno investicijo + mesečne vložke(prvega v mesecu oz na zacetku meseca, se obracunajo).
     Izračuna končno vrednost investicije glede na vsakodnevno spremembo indeksa.
-    :param podatki: List of lists dogovorjen format
+    :param podatki: List of lists dogovorjen format, kerkoli indeks seveda
     :return: int končna vrednost investicije
     """
    # TA FUNKCIJA DEJANSKO DELA ZELO DOBR

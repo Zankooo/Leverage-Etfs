@@ -189,6 +189,7 @@ def kdaj_kupiti_katerega_ta_dela(podatki):
 
 
 
+#TO FUNKCIJO SPROBAT NA NEKEM PRIMERU, NISEM FIX CE CISTO PRAV DELA
 def kdaj_kupiti_katerega_ta_dela(podatki):
     """Ta funkcija zgleda dela, ker zgornja pac ne... Preverit ce prav dela
     Funkcija pac kupuje prvega v mesecu, naredit se da vedno ko pade recimo x da kupi, in to samo enkrat v mesecu
@@ -211,7 +212,8 @@ def kdaj_kupiti_katerega_ta_dela(podatki):
     koliko_mora_pasti = float(input("Koliko mora biti prvega v mestu osnoven dol da kupimo leverage? "))
     v_cifri_koliko_mora_pasti = 1 - (koliko_mora_pasti / 100)
 
-    mesecni_vlozki_vsota = 0
+    mesecni_vlozki_navaden_vsota = 0
+    mesecni_vlozki_leverage_vsota = 0
     print("---------")
     # Prisili pretvorbo v float in odstrani nezaželene znake
     try:
@@ -220,13 +222,17 @@ def kdaj_kupiti_katerega_ta_dela(podatki):
         print(f"Napaka pri pretvorbi podatki[{indeks_zacetka}][1]: {podatki[indeks_zacetka][1]}")
         return
 
+    #dolocimo v katerega damo zacetno investicijo
+    osnoven_zacetna = False
     if v_kater_zacetno == 1:
         investment_navaden = zacetna_investicija
+        osnoven_zacetna = True
     elif v_kater_zacetno == 2:
         investment_leverage = zacetna_investicija
     else:
         print("Napacna cifra")
 
+    #dobimo trenutni mesec
     trenutni_mesec = datetime.strptime(podatki[indeks_zacetka][0], "%Y-%m-%d").month
 
     for i in range(indeks_zacetka + 1, indeks_konca + 1):
@@ -240,26 +246,31 @@ def kdaj_kupiti_katerega_ta_dela(podatki):
 
         if current_price > all_time_high:
             all_time_high = current_price
-            print(f"Nov all time high je osnovnega: {osnoven_indeks[i][0]}; ${all_time_high}")
+            print(f"Nov all time high je osnovnega: {osnoven_indeks[i][0]}; ${round(all_time_high,2)}")
 
-        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+        mesec = datetime.strptime(podatki[i][0], "%Y-%m-%d").month
 
-        if date.month != trenutni_mesec:
+        # TUKAJ KO JE NOV MESEC, SE POL ODLOCIMO KDAJ V KATEREGA INVESTAMO
+        if mesec != trenutni_mesec:
+            # tuki fiksat ker on investa takoj prvega in pokasera donos tega dneva, more pa ob koncu dneva
             if current_price < (all_time_high * v_cifri_koliko_mora_pasti):
-                investment_leverage += monthly_investment
+                investment_leverage = investment_leverage + monthly_investment
+                mesecni_vlozki_leverage_vsota = mesecni_vlozki_leverage_vsota + monthly_investment
                 #koliko je dol od ath
                 padec_od_ath = ((all_time_high - current_price) / all_time_high) * 100
-                print(f"Ker je {koliko_mora_pasti}% dol (dejansko je dol {round(padec_od_ath,2)}%) od ATH, smo dali {monthly_investment} ta mesec v leverage,")
-
+                print(f"Ker je osnoven več kot {koliko_mora_pasti}% dol, (dejansko je dol {round(padec_od_ath,2)}%) od ATH, smo dali {monthly_investment} ta mesec v leverage")
+                trenutni_mesec = mesec
             else:
-                investment_navaden += monthly_investment
-                print(f"Ta mesec investirali {monthly_investment} v navaden indeks")
-            mesecni_vlozki_vsota += monthly_investment
-            trenutni_mesec = date.month
+                investment_navaden = investment_navaden + monthly_investment
+                mesecni_vlozki_navaden_vsota = mesecni_vlozki_navaden_vsota + monthly_investment
+                padec_od_ath = ((all_time_high - current_price) / all_time_high) * 100
+                print(f"Ker je osnoven manj kot {koliko_mora_pasti}% dol, (dejansko je dol {round(padec_od_ath, 2)}%) od ATH, smo dali {monthly_investment} ta mesec v osnovnega")
+                trenutni_mesec = mesec
 
+        # TUKI JE OBRESTOVANJE V VSAKI ITERACIJI
         investment_navaden *= (1 + daily_change_navaden)
         investment_leverage *= (1 + daily_change_leverage)
-
+        # IN IZPIS STANJA
         print(
             f"{podatki[i][0]} - NAVADEN -> {formatiraj_kes_eur(investment_navaden)} (tecaj: {float(osnoven_indeks[i][1]):.2f}), dnevna sprememba: {daily_change_navaden * 100:.2f}% | "
             f"LEVERAGE -> {formatiraj_kes_eur(investment_leverage)} (tecaj: {float(leverage_indeks[i][1]):.2f}), dnevna sprememba: {daily_change_leverage * 100:.2f}%")
@@ -267,8 +278,16 @@ def kdaj_kupiti_katerega_ta_dela(podatki):
     print("-----------\nREZULTATI:")
     print(f"{podatki[indeks_zacetka][0]} do {podatki[indeks_konca][0]}")
     print(f"Začetna investicija: {formatiraj_kes_eur(zacetna_investicija)} 📌")
-    print(f"Vseh mesečnih investicij: {formatiraj_kes_eur(mesecni_vlozki_vsota)} 💸")
-    print(f"Total contribution: {formatiraj_kes_eur(zacetna_investicija + mesecni_vlozki_vsota)} 🔢")
-    print(f"V navadnem indeksu: {formatiraj_kes_eur(investment_navaden)}, v leverage: {formatiraj_kes_eur(investment_leverage)}")
-    zasluzili = (investment_navaden + investment_leverage) - (zacetna_investicija + mesecni_vlozki_vsota)
+
+   #da vemo kateremu pristet zacetno
+    if osnoven_zacetna == True:
+        print(f"Vseh investicij v osnovnega je bilo: {formatiraj_kes_eur(mesecni_vlozki_navaden_vsota + zacetna_investicija)}")
+        print(f"Vseh investicij v leverage je bilo: {formatiraj_kes_eur(mesecni_vlozki_leverage_vsota)}")
+    else:
+        print(f"Vseh investicij v osnovnega je bilo: {formatiraj_kes_eur(mesecni_vlozki_navaden_vsota)}")
+        print(f"Vseh investicij v leverage je bilo: {formatiraj_kes_eur(mesecni_vlozki_leverage_vsota  + zacetna_investicija)}")
+
+    print(f"Total investicij: {formatiraj_kes_eur(zacetna_investicija + mesecni_vlozki_navaden_vsota + mesecni_vlozki_leverage_vsota)} 💸")
+    print(f"V Navadnem indeksu imamo: {formatiraj_kes_eur(investment_navaden)}, v Leverage imamo: {formatiraj_kes_eur(investment_leverage)}")
+    zasluzili = (investment_navaden + investment_leverage) - (zacetna_investicija + mesecni_vlozki_navaden_vsota + mesecni_vlozki_leverage_vsota)
     print(f"Torej zaslužili / izgubili: {formatiraj_kes_eur(zasluzili)} 🏆")
