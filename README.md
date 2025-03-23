@@ -40,3 +40,7 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
 - leverage se zelo dobro ujema z mojimi, ampak se preverit zakaj ni se boljsi match. (papirji scena)
 - ce dam leverage faktor 1 ne dobim isto kot je osnovni, to mi je smeh pac
 - unedve funkcije buy sell nisem ziher ce prav delata
+
+## Kaj je narejeno (v classu glavna funkcija)
+- prva funkcija "kdaj_kupiti_katerega" je blizu ampak ne dela, in sem dal chatu in je popravi in to je funkcija "kdaj_kupiti_katerega_ta_dela". Ta funkcija kupuje le prvega v mesecu
+- naredit funkcijo le enkrat na mesec; ampak takoj ko je osnoven x dol

@@ -186,3 +186,89 @@ def kdaj_kupiti_katerega_ta_dela(podatki):
     print(f"V navadnem indeksu: {formatiraj_kes_eur(investment_navaden)}, v leverage: {formatiraj_kes_eur(investment_leverage)}")
     zasluzili = (investment_navaden + investment_leverage) - (zacetna_investicija + mesecni_vlozki_vsota)
     print(f"Torej zaslužili / izgubili: {formatiraj_kes_eur(zasluzili)} 🏆")
+
+
+
+def kdaj_kupiti_katerega_ta_dela(podatki):
+    """Ta funkcija zgleda dela, ker zgornja pac ne... Preverit ce prav dela
+    Funkcija pac kupuje prvega v mesecu, naredit se da vedno ko pade recimo x da kupi, in to samo enkrat v mesecu
+    in se prilagodit na vec nacinov in taktik"""
+    print("Glavna funkcija laufa!")
+    osnoven_indeks = izracun_dnevnih_sprememb(podatki)
+    leverage_indeks = calculate_leverage(podatki)
+
+    indeksa_zacetka_in_konca = najdi_indekse_zacetka_in_konca(podatki)
+    indeks_zacetka = indeksa_zacetka_in_konca[0]
+    indeks_konca = indeksa_zacetka_in_konca[1]
+
+    investment_navaden = 0
+    investment_leverage = 0
+    zacetna_investicija = float(input("Koliko bo zacetka investicija? "))
+
+    print("V kater indeks dam zacetno investicijo? ")
+    v_kater_zacetno = int(input("1. Navaden, 2. Leverage? "))
+    monthly_investment = float(input("Koliko vsak mesec? "))
+    koliko_mora_pasti = float(input("Koliko mora biti prvega v mestu osnoven dol da kupimo leverage? "))
+    v_cifri_koliko_mora_pasti = 1 - (koliko_mora_pasti / 100)
+
+    mesecni_vlozki_vsota = 0
+    print("---------")
+    # Prisili pretvorbo v float in odstrani nezaželene znake
+    try:
+        all_time_high = float(str(podatki[indeks_zacetka][1]).replace(",", "").strip())
+    except ValueError:
+        print(f"Napaka pri pretvorbi podatki[{indeks_zacetka}][1]: {podatki[indeks_zacetka][1]}")
+        return
+
+    if v_kater_zacetno == 1:
+        investment_navaden = zacetna_investicija
+    elif v_kater_zacetno == 2:
+        investment_leverage = zacetna_investicija
+    else:
+        print("Napacna cifra")
+
+    trenutni_mesec = datetime.strptime(podatki[indeks_zacetka][0], "%Y-%m-%d").month
+
+    for i in range(indeks_zacetka + 1, indeks_konca + 1):
+        try:
+            daily_change_navaden = float(osnoven_indeks[i][2].replace("%", "")) / 100
+            daily_change_leverage = float(leverage_indeks[i][2].replace("%", "")) / 100
+            current_price = float(str(osnoven_indeks[i][1]).replace(",", "").strip())
+        except ValueError:
+            print(f"Napaka pri pretvorbi vrednosti na indeksu {i}: {osnoven_indeks[i]}")
+            continue
+
+        if current_price > all_time_high:
+            all_time_high = current_price
+            print(f"Nov all time high je osnovnega: {osnoven_indeks[i][0]}; ${all_time_high}")
+
+        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+
+        if date.month != trenutni_mesec:
+            if current_price < (all_time_high * v_cifri_koliko_mora_pasti):
+                investment_leverage += monthly_investment
+                #koliko je dol od ath
+                padec_od_ath = ((all_time_high - current_price) / all_time_high) * 100
+                print(f"Ker je {koliko_mora_pasti}% dol (dejansko je dol {round(padec_od_ath,2)}%) od ATH, smo dali {monthly_investment} ta mesec v leverage,")
+
+            else:
+                investment_navaden += monthly_investment
+                print(f"Ta mesec investirali {monthly_investment} v navaden indeks")
+            mesecni_vlozki_vsota += monthly_investment
+            trenutni_mesec = date.month
+
+        investment_navaden *= (1 + daily_change_navaden)
+        investment_leverage *= (1 + daily_change_leverage)
+
+        print(
+            f"{podatki[i][0]} - NAVADEN -> {formatiraj_kes_eur(investment_navaden)} (tecaj: {float(osnoven_indeks[i][1]):.2f}), dnevna sprememba: {daily_change_navaden * 100:.2f}% | "
+            f"LEVERAGE -> {formatiraj_kes_eur(investment_leverage)} (tecaj: {float(leverage_indeks[i][1]):.2f}), dnevna sprememba: {daily_change_leverage * 100:.2f}%")
+
+    print("-----------\nREZULTATI:")
+    print(f"{podatki[indeks_zacetka][0]} do {podatki[indeks_konca][0]}")
+    print(f"Začetna investicija: {formatiraj_kes_eur(zacetna_investicija)} 📌")
+    print(f"Vseh mesečnih investicij: {formatiraj_kes_eur(mesecni_vlozki_vsota)} 💸")
+    print(f"Total contribution: {formatiraj_kes_eur(zacetna_investicija + mesecni_vlozki_vsota)} 🔢")
+    print(f"V navadnem indeksu: {formatiraj_kes_eur(investment_navaden)}, v leverage: {formatiraj_kes_eur(investment_leverage)}")
+    zasluzili = (investment_navaden + investment_leverage) - (zacetna_investicija + mesecni_vlozki_vsota)
+    print(f"Torej zaslužili / izgubili: {formatiraj_kes_eur(zasluzili)} 🏆")

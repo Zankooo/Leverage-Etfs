@@ -1,4 +1,4 @@
-from glavna_funkcija import kdaj_kupiti_katerega, kdaj_kupiti_kateregaaaa, kdaj_kupiti_katerega_ta_dela
+from glavna_funkcija import kdaj_kupiti_katerega, kdaj_kupiti_katerega_ta_dela
 from izracuni import izracun_dobicka_dca
 from ne_pogosto_uporabljene.data_printer import *
 from csv_operacije import *
