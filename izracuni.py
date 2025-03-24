@@ -65,7 +65,7 @@ def izracun_dobicka_dca(podatki):
             current_month = date.month
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
-        print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
+        print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {formatiraj_kes_eur(investment)} EUR ({daily_change}%)")
     print("-----------")
     print("REZULTATI:")
     print(f"{podatki[index_zacetka][0]} do {podatki[index_konca][0]}:")
