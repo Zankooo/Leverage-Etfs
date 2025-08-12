@@ -28,6 +28,7 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
 - potem sprogramirat da das lahko kes kadarkolli notri ne samo prvega v mesecu
 - potem pa zacet uporabljat strategije, rado in reddit in tko. torej vkljucit v projekt
 
+## Kje dobit podatke
 
 ### Sp500 (ustvarjen leta 1927)
 - https://www.kaggle.com/datasets/paveljurke/s-and-p-500-gspc-historical-data - do danes 
