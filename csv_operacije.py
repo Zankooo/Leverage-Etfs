@@ -74,6 +74,7 @@ def spremeni_format_datumov(podatki):
 def izbaci_ven_holidayse(podatki):
     """
     Odstrani vrstice, ki vsebujejo samo datum (tj. en element v seznamu) basicaly holidays izbaci ven
+    To funkcijo dejmo klicat ko ze klicemo funkcijo za izbris nepotrebnih stolpev
     :param podatki: List of lists
     :return list of lists brez vrstic holidaysov
     """
@@ -156,3 +157,10 @@ def ustvari_nov_csv_file(podatki):
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
     print(f"Dodana je bila v directory: 'podatki_obdelani'")
 
+
+
+
+
+
+
+# funkcija ki zaokrozi na dve decimalki tecaj 

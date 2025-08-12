@@ -11,7 +11,6 @@ def izracun_dnevnih_sprememb(podatki):
     Funkcija, ki izracuna dnevne spremembe indeksa
     :param list of lists (dogovorjen format)
     :return list of lists tak kot je bil podan in mu doda dnevne spremembe "daily changes"
-
     """
     # Dodamo stolpec 'Daily Change (%)' prvo vrstico
     result = [podatki[0]]
@@ -24,7 +23,7 @@ def izracun_dnevnih_sprememb(podatki):
         trenutni_tecaj = float(podatki[i][1])
         dan_prej_tecaj = float(podatki[i - 1][1])
         daily_change = ((trenutni_tecaj - dan_prej_tecaj) / dan_prej_tecaj) * 100
-        sprememba_procentualno = f"{'+' if daily_change > 0 else ''}{round(daily_change, 2)}%"
+        sprememba_procentualno = f"{'+' if daily_change > 0 else ''}{daily_change}%"
         result.append(podatki[i] + [sprememba_procentualno])
     return result
 
@@ -45,39 +44,39 @@ def izracun_dca_metoda(podatki):
     monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
     mesecni_vlozki_vsota = 0
+
+# PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
     datum_zacetka = input("Začetek investiranja datum: ")
     datum_konca = input("Konec investiranja datum: ")
 
     # Nastavimo začetni mesec za mesečne vložke
     current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
-    
+
     # to rabimo da lahko pozenemo loop cez vse dneve
-    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka)) + 1
-    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca)) + 1
-    
-    # od kere do kere vrstice gre?
-    
-    for i in range(vrstica_zacetka, vrstica_konca + 1):
+    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
+    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
+
+    # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
+    for i in range(vrstica_zacetka + 1, vrstica_konca + 1):
         # odstranimo %, da pac lahko delamo z podatkom ane
-        daily_change = podatki_daily_changes[i][2].replace("%", "")  
+        daily_change = podatki_daily_changes[i][2].replace("%", "")
         # Pretvori v decimalno vrednost
-        daily_change_cifra = round(float(daily_change), 2) / 100  
-        
+        daily_change_cifra = round(float(daily_change), 2) / 100
+
         # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
         date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
-        
+
         # Če je nov mesec, dodamo mesečni vložek
         if date.month != current_month:
             investment = investment + monthly_investment
             print(f"Mesecna investicija investirana: {monthly_investment}eur")
             mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
             current_month = date.month
-        
+
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
         print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
-    
-    
+
     print("-----------")
     print(f"Od {datum_zacetka} do {datum_konca}:")
     print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
@@ -96,8 +95,6 @@ def izracun_dca_metoda(podatki):
     # procentualno je izracunano ->  (donos/cela investicija)*100
     # tukaj ce so mesecne investicije je malo drugace in treba nekako fiksat
     return round(investment, 2)
-
-
 
 
 def izracun_letnih_donosov(podatki):
@@ -140,7 +137,10 @@ def izracun_letnih_donosov(podatki):
         first_price = float(yearly_data.iloc[0]["Close"])
         last_price = float(yearly_data.iloc[-1]["Close"])
         return_pct = float(((last_price / first_price) - 1) * 100)
-        annual_returns.append([int(year), round(first_price,2), round(last_price,2), round(return_pct,2)])
+        return_str = f"{round(return_pct, 2):+.2f}%"
+        annual_returns.append([int(year), round(first_price, 2), round(last_price, 2), return_str])
+
+
     return annual_returns
 
 #----------- POMOZNE FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
