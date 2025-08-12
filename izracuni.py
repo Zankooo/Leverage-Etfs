@@ -45,28 +45,43 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
     monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
     investment = initial_investment
     mesecni_vlozki_vsota = 0
-    zacetek = int(input("Začetek investiranja (katera vrstica)(indeks vrstice naj 2 ali več): "))
-    konec = int(input("Konec investiranja (katera vrstica): "))
+    datum_zacetka = input("Začetek investiranja datum: ")
+    datum_konca = input("Konec investiranja datum: ")
+
     # Nastavimo začetni mesec za mesečne vložke
-    current_month = datetime.strptime(podatki[zacetek][0], "%Y-%m-%d").month
-    for i in range(zacetek, konec + 1):
-        daily_change = podatki_daily_changes[i][2].replace("%", "")  # Odstrani "%"
-        daily_change_cifra = round(float(daily_change), 2) / 100  # Pretvori v decimalno vrednost
-        # Pridobimo mesec trenutnega datuma
+    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+    
+    # to rabimo da lahko pozenemo loop cez vse dneve
+    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka)) + 1
+    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca)) + 1
+    
+    # od kere do kere vrstice gre?
+    
+    for i in range(vrstica_zacetka, vrstica_konca + 1):
+        # odstranimo %, da pac lahko delamo z podatkom ane
+        daily_change = podatki_daily_changes[i][2].replace("%", "")  
+        # Pretvori v decimalno vrednost
+        daily_change_cifra = round(float(daily_change), 2) / 100  
+        
+        # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
         date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+        
         # Če je nov mesec, dodamo mesečni vložek
         if date.month != current_month:
             investment = investment + monthly_investment
             print(f"Mesecna investicija investirana: {monthly_investment}eur")
             mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
             current_month = date.month
+        
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
         print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
+    
+    
     print("-----------")
-    print(f"{podatki[zacetek][0]} do {podatki[konec][0]}:")
+    print(f"Od {datum_zacetka} do {datum_konca}:")
     print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
-    print(f"Vseh mesečnih investicij je bilo: {mesecni_vlozki_vsota}EUR 💸,")
+    print(f"Vseh mesečnih investicij je bilo skupaj: {mesecni_vlozki_vsota}EUR 💸,")
     print("-----------")
     print(f"Total contribution(zacentna + mesecne): {initial_investment + mesecni_vlozki_vsota}EUR 🔢,")
     zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
@@ -84,52 +99,6 @@ def izracun_dobicka_mesecne_investicije_prvega(podatki):
 
 
 
-def izracun_dobicka_prodaj_kuppi(podatki):
-
-    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
-    print(f"Dolzina listov je (indeksi), {len(podatki)-1}, torej zacetek je lahko 2 in konec {len(podatki) - 1}")
-    initial_investment = int(input("Vpisi začetno investicijo: "))
-    investment = initial_investment
-    # dodat pol tukaj da 2 ali vec je lahko indes
-    zacetek = int(input("Začetek (katera vrstica): "))
-    konec = int(input("Konec (katera vrstica): "))
-    input_koliko_more_padet_da_prodas = float(input("Koliko mora padet da prodas? (%): "))
-    input_koliko_mora_potem_spet_zrasti = float(input("Koliko mora potem spet zrasti da nazaj kupis? (%): "))
-    # pretvorba v format za izracunanje
-    koliko_more_padet = 1 - (input_koliko_more_padet_da_prodas / 100)
-    koliko_mora_potem_zrast = 1 + (input_koliko_mora_potem_spet_zrasti / 100)
-    # ta metoda dela tako da kupis ko zraste od tok kokr si prodal, in ne od all time low
-    ne_investiran_denar = 0
-    invested = True
-    prodal_pri = None
-    ath = float(podatki[zacetek][1])
-    print("--------------------------------")
-    for i in range(zacetek, konec + 1):
-        trenutni_tecaj = float(podatki[i][1])
-        if invested and trenutni_tecaj > ath:
-            ath = trenutni_tecaj
-        if invested and trenutni_tecaj <= ath * koliko_more_padet:
-            print(f"Prodal pri {podatki[i]}")
-            prodal_pri = trenutni_tecaj
-            ne_investiran_denar = investment
-            investment = 0
-            invested = False
-        elif not invested and trenutni_tecaj >= prodal_pri * koliko_mora_potem_zrast:
-            print(f"Kupil pri {podatki[i]}")
-            investment = ne_investiran_denar
-            ne_investiran_denar = 0
-            invested = True
-            ath = trenutni_tecaj
-        elif invested:
-            dnevna_sprememba = float(podatki_daily_changes[i][2].replace("%", "")) / 100
-            # tuki prej delil z 100 ampak je ze deljeno z sto v zgornji vrstici.
-            # preverit na listu papirja ce deluje
-            investment = investment * (1 + dnevna_sprememba)
-    print("--------------------------------")
-    print(f"Zacetna investicija je bila {initial_investment}")
-    print("Zasluzili smo tok eur:")
-    print(investment if invested else ne_investiran_denar)
-    return investment if invested else ne_investiran_denar
 
 def izracun_letnih_donosov(podatki):
     """

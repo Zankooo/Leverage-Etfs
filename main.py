@@ -5,12 +5,13 @@ from fancy_zakljucki_programa import *
 
 print('----------')
 
-podatki = load_csv('podatki/spx.csv')
+podatki = load_csv('podatki_obdelani/sp-500.csv')
 print('----------')
 
 
-
 izracun_dobicka_mesecne_investicije_prvega(podatki)
+
+
 fancy1()
 
 
