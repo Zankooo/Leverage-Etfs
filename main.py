@@ -9,7 +9,7 @@ podatki = load_csv('podatki_obdelani/sp-500.csv')
 print('----------')
 
 
-izracun_dobicka_mesecne_investicije_prvega(podatki)
+izracun_dca_metoda(podatki)
 
 
 fancy1()

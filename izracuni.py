@@ -28,7 +28,7 @@ def izracun_dnevnih_sprememb(podatki):
         result.append(podatki[i] + [sprememba_procentualno])
     return result
 
-def izracun_dobicka_mesecne_investicije_prvega(podatki):
+def izracun_dca_metoda(podatki):
     """
     Funkcija izracuna koliko imamo kesa po izbranem obdobju
     Torej: izberemo začetno investicijo + mesečne vložke(prvega v mesecu oz na zacetku meseca, se obracunajo).

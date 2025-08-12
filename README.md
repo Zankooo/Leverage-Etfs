@@ -27,3 +27,14 @@ Delat program, da je sam zame in moje analize! Ce bom hotel naknadno za webapp i
 - potem ko bom ta csv naredil -> naredit kak primer ze
 - potem sprogramirat da das lahko kes kadarkolli notri ne samo prvega v mesecu
 - potem pa zacet uporabljat strategije, rado in reddit in tko. torej vkljucit v projekt
+
+
+### Sp500 (ustvarjen leta 1927)
+- https://www.kaggle.com/datasets/paveljurke/s-and-p-500-gspc-historical-data - do danes 
+
+### Nasdaq composite (ustvarjen bil 1971)
+- https://www.macrotrends.net/1320/nasdaq-historical-chart -> ampak je le chart
+- https://fred.stlouisfed.org/series/NASDAQCOM  -> od leta 1971
+
+### Nasdaq 100 (ustvarjen bil 1985)
+- https://fred.stlouisfed.org/series/NASDAQ100 - od leta 1986, eno leto kasneje
