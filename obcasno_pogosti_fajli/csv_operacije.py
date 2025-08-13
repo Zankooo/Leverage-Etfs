@@ -140,6 +140,48 @@ def izbrisi_nezelene_stoplce(podatki):
     return filtrirani_podatki
 
 
+def naredi_leverage_iz_osnovnega(podatki_dnevne_spremembe):
+    """
+    Funkcija ki sprejme podatke z dnevnimi spremembami in naredi nek leverage
+    Recimo 2x naredimo
+    Kako pa izracunamo da imamo csv z datumi, tecajem in dnevnimi spremembami. - podatki z dnevnimi spremembami
+    Je funkcija v fajlu izracuni.
+    In csv file mora biti v dogovorjenem formatu
+    In prvi tecaj v 3 vrstici je 0% ker pac ni donosa
+    @return vrne pa list of lists z dnevnimi spremembami
+
+    Sicer ne razumem cisto kako funkcija deluje ampak deluje
+    """
+    podatki = podatki_dnevne_spremembe
+
+    vzvod_koliko = float(input("Vnesi vzvod (npr. 2 za 2x): "))
+    
+    # Kopija vhodnih podatkov
+    out = podatki.copy()
+    
+    # 1. vrstica – dodamo oznako vzvoda
+    out[0][0] = f"{out[0][0]} {int(vzvod_koliko)}x"
+    
+    # 2. vrstico ohranimo brez 'Daily Change'
+    out[1] = out[1][:2]
+    
+    # Začetna cena iz 3. vrstice
+    lev_prev = float(podatki[2][1])
+    out[2] = [podatki[2][0], f"{lev_prev:.6f}"]
+    
+    # Od 4. vrstice naprej računamo leveraged ceno
+    for i in range(3, len(podatki)):
+        daily_change = float(podatki[i][2].strip('%')) / 100
+        lev_prev *= 1 + vzvod_koliko * daily_change
+        out[i] = [podatki[i][0], f"{lev_prev:.6f}"]
+    
+    return out
+
+
+
+
+
+
 # ta funkcija je zadnja ker pac ustvari podatke
 def ustvari_nov_csv_file(podatki):
     """
@@ -157,10 +199,3 @@ def ustvari_nov_csv_file(podatki):
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
     print(f"Dodana je bila v directory: 'podatki_obdelani'")
 
-
-
-
-
-
-
-# funkcija ki zaokrozi na dve decimalki tecaj 

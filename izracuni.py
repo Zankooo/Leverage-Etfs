@@ -2,7 +2,7 @@ import re
 
 import pandas as pd
 
-from csv_operacije import *
+from obcasno_pogosti_fajli.csv_operacije import *
 # karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
 # dogovorjen format podatkov oz csv.ja
 
@@ -46,6 +46,7 @@ def izracun_dca_metoda(podatki):
     mesecni_vlozki_vsota = 0
 
 # PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
+# zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
     datum_zacetka = input("Začetek investiranja datum: ")
     datum_konca = input("Konec investiranja datum: ")
 
@@ -57,7 +58,7 @@ def izracun_dca_metoda(podatki):
     vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
 
     # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
-    for i in range(vrstica_zacetka + 1, vrstica_konca + 1):
+    for i in range(vrstica_zacetka, vrstica_konca + 1):
         # odstranimo %, da pac lahko delamo z podatkom ane
         daily_change = podatki_daily_changes[i][2].replace("%", "")
         # Pretvori v decimalno vrednost
