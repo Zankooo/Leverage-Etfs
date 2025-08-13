@@ -6,18 +6,19 @@ import pandas as pd
 
 print('----------')
 
-podatki = load_csv('podatki_obdelani/nasdaq-100.csv')
+podatki = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
 print('----------')
 
-podatki_dnevne_spremembe = izracun_dnevnih_sprememb(podatki)
-leverage = naredi_leverage_iz_osnovnega(podatki_dnevne_spremembe)
+
+#izracunamo dnevne spremembe
+dnevni_izracuni = izracun_dnevnih_sprememb(podatki)
+
+#damo to v funkcijo da dobimo leverage ven
+leverage = naredi_leverage_iz_osnovnega(dnevni_izracuni)
 
 
-
-#dodajmo leverage se dnevne spremembe pa ga ustvarimo kot file
-leverage_z_dnevnimi_spremembami = izracun_dnevnih_sprememb(leverage)
-
-ustvari_nov_csv_file(leverage_z_dnevnimi_spremembami)
+# ustvarimo nov file z leverage
+ustvari_nov_csv_file(leverage)
 
 
 

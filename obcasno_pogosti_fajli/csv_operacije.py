@@ -151,6 +151,7 @@ def naredi_leverage_iz_osnovnega(podatki_dnevne_spremembe):
     @return vrne pa list of lists z dnevnimi spremembami
 
     Sicer ne razumem cisto kako funkcija deluje ampak deluje
+    Za izpis da vidis da je res dnevne spremmbe uporabi dnevne spremembe funkcijo
     """
     podatki = podatki_dnevne_spremembe
 
@@ -192,10 +193,10 @@ def ustvari_nov_csv_file(podatki):
     print("--------------------------------")
     print("Funkcija ki ustvari nov csv file laufa!")
     ime_novega = input("Kako naj bo ime novega csv file-a? ")
-    file_path = f"podatki_obdelani/{ime_novega}.csv"
+    file_path = f"podatki_ustvarjeni/{ime_novega}.csv"
     with open(file_path, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerows(podatki)
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
-    print(f"Dodana je bila v directory: 'podatki_obdelani'")
+    print(f"Dodana je bila v directory: 'podatki_ustvarjeni'")
 
