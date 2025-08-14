@@ -156,8 +156,69 @@ def is_float(value):
 
 
 
+# -------------------------- spremenjena funkcija dca za testing
+# --------------------------------------------
 
+def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca):
+    """
+    Funkcija ista kot una zgoraj le da prejmemo kot parametri 
+    in ne izpisujemo vsega
+    prilagojena je da delamo testing na njen
+    testing pa delamo tako da ji damo razlicne datum zacetka in datum konca...
+    te datum zacetka pa konca pa dobim iz funkcije "generiraj_intervale_15let_leto"
+    """
+    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
+    # ampak tega verjetno ne bi smel upostevat, idk
+   # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
 
+    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
+     # Nov vnos za mesečno investicijo
+    investment = initial_investment
+    mesecni_vlozki_vsota = 0
 
+# PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
+# zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
+    
 
+    # Nastavimo začetni mesec za mesečne vložke
+    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+
+    # to rabimo da lahko pozenemo loop cez vse dneve
+    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
+    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
+
+    # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
+    for i in range(vrstica_zacetka, vrstica_konca + 1):
+        # odstranimo %, da pac lahko delamo z podatkom ane
+        daily_change = podatki_daily_changes[i][2].replace("%", "")
+        # Pretvori v decimalno vrednost
+        daily_change_cifra = round(float(daily_change), 2) / 100
+
+        # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
+        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+
+        # Če je nov mesec, dodamo mesečni vložek
+        if date.month != current_month:
+            investment = investment + monthly_investment
+            mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
+            current_month = date.month
+
+        # Izračun vrednosti portfelja
+        investment = investment * (1 + daily_change_cifra)
+        
+
+    
+    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
+   
+
+    
+    # da bi v csv file pisal ane..
+    # od kdaj do kdaj, zacetna investicija, vse mesecne investicije, total contribution, zasluzili in koliko imamo
+    vrstica = [datum_zacetka + "-" + datum_konca, initial_investment, mesecni_vlozki_vsota, initial_investment+mesecni_vlozki_vsota, zasluzili, investment]
+    
+    with open("rezultat-sp500-2x.csv", mode="a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(vrstica)
+    
+    return 0

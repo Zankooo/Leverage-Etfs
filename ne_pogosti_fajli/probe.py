@@ -1,23 +1,13 @@
-import pandas as pd
+import csv
 
-# Branje podatkov (brez headerja, ker je tvoj primer surov)
-df = pd.read_csv("sp500.csv", header=None, names=["Date", "Close"])
+def my_function():
+    # primer funkcije, ki vrne seznam vrednosti
+    return [1927, 1942, "1927-01-03", "1942-12-31", 10000, 300, 54000, 64000, 100000, 36000, 56.25]
 
-# Pretvori datum
-df["Date"] = pd.to_datetime(df["Date"])
+# Pokličemo funkcijo
+row_data = my_function()
 
-# Izračun dnevnih sprememb (returns)
-df["DailyChange"] = df["Close"].pct_change()
-
-# 2x leveraged dnevne spremembe
-df["DailyChange_2x"] = df["DailyChange"] * 2
-
-# Simulacija cene leveraged indeksa (začnemo pri 100)
-start_value = 100
-df["Close_2x"] = (1 + df["DailyChange_2x"]).cumprod() * start_value
-
-# Rezultat
-print(df)
-
-# Po želji izvoziš v CSV
-df.to_csv("sp500_2x.csv", index=False)
+# Zapišemo v CSV kot eno vrstico
+with open("rezultat.csv", mode="a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(row_data)
