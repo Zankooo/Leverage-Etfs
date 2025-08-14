@@ -40,8 +40,8 @@ def generiraj_intervale_15let_leto(podatki):
 
 def primerjaj_stolpec(file1, file2, stolpec=4):
     """
-    Primerja določen stolpec med dvema CSV datotekama in prešteje,
-    v koliko primerih ima prvi ali drugi višjo vrednost.
+    Primerjava dveh csv file rezultatov. En navaden drug leverage
+    Face to face
     
     :param file1: ime prve CSV datoteke
     :param file2: ime druge CSV datoteke
