@@ -1,6 +1,8 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from csv import reader
+from csv import reader
+
 
 def generiraj_intervale_15let_leto(podatki):
     """
@@ -34,7 +36,7 @@ def generiraj_intervale_15let_leto(podatki):
     return intervali
 
 
-from csv import reader
+
 
 def primerjaj_stolpec(file1, file2, stolpec=4):
     """

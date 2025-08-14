@@ -217,8 +217,11 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     # od kdaj do kdaj, zacetna investicija, vse mesecne investicije, total contribution, zasluzili in koliko imamo
     vrstica = [datum_zacetka + "-" + datum_konca, initial_investment, mesecni_vlozki_vsota, initial_investment+mesecni_vlozki_vsota, zasluzili, investment]
     
-    with open("rezultat-sp500-2x.csv", mode="a", newline="") as f:
+    poimenovanje = input("Kako poimenujem file v katerega dam rezultate: ")
+    
+    with open(f"testing/{poimenovanje}.csv", mode="w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(vrstica)
     
+
     return 0

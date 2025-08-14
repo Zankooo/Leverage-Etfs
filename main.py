@@ -27,7 +27,7 @@ intervali = generiraj_intervale_15let_leto(podatki)
 #for i in range(0, len(intervali)):
     #metoda_dca_za_testing_prilagojena(podatki, 10000, 100, intervali[i][0], intervali[i][1])
 
-primerjaj_stolpec("rezultat-sp-500.csv", "rezultat-sp500-2x.csv")
+# primerjaj_stolpec("rezultat-sp-500.csv", "rezultat-sp500-2x.csv")
 
 
 
