@@ -54,7 +54,9 @@ def primerjaj_stolpec(file1, file2, stolpec=4):
 
     stevec1 = 0
     stevec2 = 0
-
+    print()
+    print()
+    print("Datum od kdaj do kdaj, Zacetna investicija, vse mesecne investicije, skupaj vse invesiticije, koliko smo v plusu oz minusu, koliko imamo vse skupaj")
     # preskočimo header (če ga je)
     for i in range(1, min(len(podatki1), len(podatki2))):
         try:
@@ -64,11 +66,26 @@ def primerjaj_stolpec(file1, file2, stolpec=4):
             continue  # preskočimo, če ni številka
 
         if vrednost1 > vrednost2:
+            print(f"\033[95m{podatki1[i]}\033[0m", " -- ", f"\033[94m{podatki2[i]}\033[0m")
+
+
             stevec1 += 1
         elif vrednost2 > vrednost1:
+            print(f"\033[94m{podatki2[i]}\033[0m -- \033[95m{podatki1[i]}\033[0m")
             stevec2 += 1
 
-    print(f"{file1} ima večjo vrednost v {stevec1} primerih")
-    print(f"{file2} ima večjo vrednost v {stevec2} primerih")
+    print("---------------")
+    print(f"Tole je direktna primerjava; {file1} in {file2}. Na levi so tisti ki so bili boljsi v tistem obdobju, na desni pa uni ki so bili slabsi")
+    print(f"\033[95m{file1} --> je bil boljsi  v {stevec1} primerih\033[0m")
+    print(f"\033[94m{file2} --> je bil boljsi v {stevec2} primerih\033[0m")
+
+    print()
+    procent_stevec_1 = round((stevec1 / (stevec1 + stevec2)) * 100, 2)
+    procent_stevec_2 = round((stevec2 / (stevec1 + stevec2)) * 100, 2)
+
+
+
+    print(f"\033[92mV {procent_stevec_1}% je bil boljsi {file1}, v {procent_stevec_2}% pa je bil boljsi {file2}!\033[0m")
+
 
     return stevec1, stevec2
