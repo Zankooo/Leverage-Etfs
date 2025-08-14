@@ -7,7 +7,7 @@ import pandas as pd
 
 print('----------')
 
-podatki = load_csv('2x-leverage/sp-500-2x.csv')
+podatki = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
 print('----------')
 
 
@@ -15,12 +15,15 @@ print('----------')
 
 
 
-intervali = generiraj_intervale_15let_leto(podatki)
+intervali = generiraj_intervale_leto(podatki,15)
+print_vsak_v_svoji_vrstici(intervali)
+
 
 #for i in range(0, len(intervali)):
-    #metoda_dca_za_testing_prilagojena(podatki, 10000, 100, intervali[i][0], intervali[i][1])
+   # metoda_dca_za_testing_prilagojena(podatki, 10000, 100, intervali[i][0], intervali[i][1], "rezultati-nasdaq-comp")
 
-primerjaj_stolpec("testing/rezultat-sp-500.csv", "testing/rezultat-sp500-2x.csv")
+
+primerjaj_stolpec("testing/rezultati-nasdaq-100.csv", "testing/rezultati-nasdaq-100-2x.csv")
 
 
 

@@ -1,5 +1,5 @@
 import re
-
+import os
 import pandas as pd
 
 from obcasno_pogosti_fajli.csv_operacije import *
@@ -159,26 +159,34 @@ def is_float(value):
 # -------------------------- spremenjena funkcija dca za testing
 # --------------------------------------------
 
-def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca):
+def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca, ime_novega_filea):
     """
-    Funkcija ista kot una zgoraj le da prejmemo kot parametri 
-    in ne izpisujemo vsega
+    Funkcija ista kot una zgoraj le da prejmemo kot parametri in ne izpisujemo vsega
     prilagojena je da delamo testing na njen
     testing pa delamo tako da ji damo razlicne datum zacetka in datum konca...
     te datum zacetka pa konca pa dobim iz funkcije "generiraj_intervale_15let_leto"
+    @param podakti v dogovorjeni obliki
+    @param zacetna investicija
+    @param mesecne investicije
+    @param datum zacetka
+    @param datum konca
+    @param ime novega fajla
+    @return nic -> v bistvu v nov csv file izpise rezultate
     """
+    # ta funkcija je misljena da se jo klice v mainu v for loopu toliko koliko je intervalov in da se ji podaja razlicne datume pridobljena iz intervali letni
     #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
     # ampak tega verjetno ne bi smel upostevat, idk
-   # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
+    # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
 
+    
     podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
      # Nov vnos za mesečno investicijo
     investment = initial_investment
     mesecni_vlozki_vsota = 0
 
-# PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
-# zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
+    # PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
+    # zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
     
 
     # Nastavimo začetni mesec za mesečne vložke
@@ -207,21 +215,36 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
         
-
-    
     zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
    
-
-    
+    # od tukaj naprej je pa pisanje v file
     # da bi v csv file pisal ane..
     # od kdaj do kdaj, zacetna investicija, vse mesecne investicije, total contribution, zasluzili in koliko imamo
-    vrstica = [datum_zacetka + "-" + datum_konca, initial_investment, mesecni_vlozki_vsota, initial_investment+mesecni_vlozki_vsota, zasluzili, investment]
+    vrstica = [datum_zacetka + "-" + datum_konca, initial_investment, mesecni_vlozki_vsota, initial_investment + mesecni_vlozki_vsota, zasluzili, investment]
     
-    poimenovanje = input("Kako poimenujem file v katerega dam rezultate: ")
-    
-    with open(f"testing/{poimenovanje}.csv", mode="w", newline="") as f:
+    ime_novega_filea = ime_novega_filea + ".csv"
+    pot = f"testing/{ime_novega_filea}"
+
+    # Ustvari mapo testing, če ne obstaja
+    os.makedirs("testing", exist_ok=True)
+
+    # Če datoteka obstaja, dodaj v obstoječo, drugače ustvari novo
+    mode = "a" if os.path.exists(pot) else "w"
+
+    with open(pot, mode=mode, newline="") as f:
         writer = csv.writer(f)
+        
+        if mode == "w":  # pišemo header samo če ustvarjamo novo datoteko
+            writer.writerow([ime_novega_filea])
+            writer.writerow([
+                "Datum od kdaj do kdaj",
+                "Zacetna investicija",
+                "vse mesecne investicije",
+                "skupaj vse investicije",
+                "koliko smo v plusu oz minusu",
+                "koliko imamo vse skupaj"
+            ])
+        
         writer.writerow(vrstica)
     
-
     return 0
