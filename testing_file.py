@@ -2,6 +2,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from csv import reader
 from csv import reader
+from colorama import Fore, Style
 
 
 def generiraj_intervale_leto(podatki, dolzina_intervala_let):
@@ -36,9 +37,6 @@ def generiraj_intervale_leto(podatki, dolzina_intervala_let):
 
     return intervali
 
-
-
-
 def primerjaj_stolpec(file1, file2, stolpec=5):
     """
     Primerjava dveh csv file rezultatov. En navaden drug leverage
@@ -57,7 +55,11 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
     stevec2 = 0
     print()
     print()
-    print("Datum od kdaj do kdaj, Zacetna investicija, vse mesecne investicije, skupaj vse invesiticije, koliko smo v plusu oz minusu, koliko imamo vse skupaj")
+    print("Datum od kdaj do kdaj, koliko smo v plusu oz minusu, koliko imamo vse skupaj")
+    print()
+
+    # dodat: Zacetna investicija, vse mesecne investicije, skupaj vse invesiticije
+
     # preskočimo header (če ga je)
     for i in range(1, min(len(podatki1), len(podatki2))):
         try:
@@ -68,29 +70,49 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
 
         if vrednost1 > vrednost2:
             zmaga_koliko_posto = round(((vrednost1 - vrednost2) / vrednost2) * 100, 2)
-            print(f"\033[95m{podatki1[i]}\033[0m", f"- zmaga za: {zmaga_koliko_posto}%", f"\033[94m{podatki2[i]}\033[0m")
+            # izpisemo samo; datum, koliko smo v plusu oz minusu, in koliko imamo skupaj
+            # to pa zato ker drugace je prevec izpisanega
+            print(
+            f"\033[95m{podatki1[i][0]}, {float(podatki1[i][4]):,.2f}, {float(podatki1[i][5]):,.2f}\033[0m",
+            f"- zmaga za: {zmaga_koliko_posto}%",
+            f"\033[94m{podatki2[i][0]}, {float(podatki2[i][4]):,.2f}, {float(podatki2[i][5]):,.2f}\033[0m")
             stevec1 += 1
-
+            print()
 
         elif vrednost2 > vrednost1:
             zmaga_koliko_posto = round(((vrednost2 - vrednost1) / vrednost1) * 100, 2)
-            print(f"\033[94m{podatki2[i]}\033[0m - zmaga za: {zmaga_koliko_posto}% - \033[95m{podatki1[i]}\033[0m")
+            # izpisemo samo; datum, koliko smo v plusu oz minusu, in koliko imamo skupaj
+            # to pa zato ker drugace je prevec izpisanega
+            print(
+            f"\033[94m{podatki2[i][0]}, {float(podatki2[i][4]):,.2f}, {float(podatki2[i][5]):,.2f}\033[0m "
+            f"- zmaga za: {zmaga_koliko_posto}% - "
+            f"\033[95m{podatki1[i][0]}, {float(podatki1[i][4]):,.2f}, {float(podatki1[i][5]):,.2f}\033[0m")
             stevec2 += 1
+            print()
 
 
-    print("---------------")
-    print(f"Tole je direktna primerjava; {file1} in {file2}. Na levi so tisti ki so bili boljsi v tistem obdobju, na desni pa uni ki so bili slabsi")
-    print(f"\033[95m{file1} --> je bil boljsi  v {stevec1} primerih\033[0m")
-    print(f"\033[94m{file2} --> je bil boljsi v {stevec2} primerih\033[0m")
+    print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
+    print(Fore.CYAN + f"📊 Direktna primerjava med {file1} in {file2}" + Style.RESET_ALL)
+    print(Fore.LIGHTBLACK_EX + "Na levi ➜ boljši v obdobju | Na desni ➜ slabši" + Style.RESET_ALL)
+    print()
+    print(Fore.YELLOW + f"💰 Začetna investicija: {podatki1[5][1]}" + Style.RESET_ALL)
+    print(Fore.YELLOW + f"📈 Mesečne investicije: {podatki1[5][2]}" + Style.RESET_ALL)
+    print(Fore.YELLOW + f"💵 Skupno investirano: {podatki1[5][3]}" + Style.RESET_ALL)
+    print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
+
+    print()
+    print(Fore.LIGHTMAGENTA_EX + f"✔ {file1} je bil boljši v {stevec1} primerih" + Style.RESET_ALL)
+    print(Fore.LIGHTBLUE_EX + f"✔ {file2} je bil boljši v {stevec2} primerih" + Style.RESET_ALL)
 
     print()
     procent_stevec_1 = round((stevec1 / (stevec1 + stevec2)) * 100, 2)
     procent_stevec_2 = round((stevec2 / (stevec1 + stevec2)) * 100, 2)
 
-
-    print("Dodali smo se za koliko je 'zmagal kater', to pa na podlagi zadnjega parametra - koliko imamo skupaj")
+    print(Fore.GREEN + "🏆 Zmaga tisti, ki ima več na podlagi zadnjega parametra – 'koliko imamo skupaj'" + Style.RESET_ALL)
     print()
-    print(f"\033[92mV {procent_stevec_1}% je bil boljsi {file1}, v {procent_stevec_2}% pa je bil boljsi {file2}!\033[0m")
+    print(Fore.GREEN + f"👉 V {procent_stevec_1}% primerov je bil boljši {file1}" + Style.RESET_ALL)
+    print(Fore.GREEN + f"👉 V {procent_stevec_2}% primerov je bil boljši {file2}" + Style.RESET_ALL)
+    print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
 
 
     return stevec1, stevec2
