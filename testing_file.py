@@ -41,12 +41,9 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
     """
     Primerjava dveh csv file rezultatov. En navaden drug leverage
     Face to face
-    
-    :param file1: ime prve CSV datoteke
-    :param file2: ime druge CSV datoteke
-    :param stolpec: indeks stolpca za primerjavo (privzeto 5)
-    :return: (stevec1, stevec2)
     """
+    
+
     with open(file1, "r") as f1, open(file2, "r") as f2:
         podatki1 = list(reader(f1))
         podatki2 = list(reader(f2))
@@ -55,10 +52,8 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
     stevec2 = 0
     print()
     print()
-    print("Datum od kdaj do kdaj, koliko smo v plusu oz minusu, koliko imamo vse skupaj")
+    print("Datum | boljši (vrednost, skupaj) | slabši (vrednost, skupaj) | razlika")
     print()
-
-    # dodat: Zacetna investicija, vse mesecne investicije, skupaj vse invesiticije
 
     # preskočimo header (če ga je)
     for i in range(1, min(len(podatki1), len(podatki2))):
@@ -68,45 +63,36 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
         except ValueError:
             continue  # preskočimo, če ni številka
 
+        datum = podatki1[i][0]  # ob predpostavki, da imata oba fajla isti datum v 0. stolpcu
+
         if vrednost1 > vrednost2:
             zmaga_koliko_posto = round(((vrednost1 - vrednost2) / vrednost2) * 100, 2)
-            # izpisemo samo; datum, koliko smo v plusu oz minusu, in koliko imamo skupaj
-            # to pa zato ker drugace je prevec izpisanega
             print(
-            f"\033[95m{podatki1[i][0]}, {float(podatki1[i][4]):,.2f}, {float(podatki1[i][5]):,.2f}\033[0m",
-            f"- zmaga za: {zmaga_koliko_posto}%",
-            f"\033[94m{podatki2[i][0]}, {float(podatki2[i][4]):,.2f}, {float(podatki2[i][5]):,.2f}\033[0m")
+                f"{Fore.YELLOW}{datum}{Style.RESET_ALL} | "
+                f"{Fore.MAGENTA}{float(podatki1[i][4]):,.2f}, {float(podatki1[i][5]):,.2f}{Style.RESET_ALL} "
+                f">> {Fore.GREEN}+{zmaga_koliko_posto}%{Style.RESET_ALL} >> "
+                f"{Fore.BLUE}{float(podatki2[i][4]):,.2f}, {float(podatki2[i][5]):,.2f}{Style.RESET_ALL}")
             stevec1 += 1
-            print()
 
         elif vrednost2 > vrednost1:
             zmaga_koliko_posto = round(((vrednost2 - vrednost1) / vrednost1) * 100, 2)
-            # izpisemo samo; datum, koliko smo v plusu oz minusu, in koliko imamo skupaj
-            # to pa zato ker drugace je prevec izpisanega
             print(
-            f"\033[94m{podatki2[i][0]}, {float(podatki2[i][4]):,.2f}, {float(podatki2[i][5]):,.2f}\033[0m "
-            f"- zmaga za: {zmaga_koliko_posto}% - "
-            f"\033[95m{podatki1[i][0]}, {float(podatki1[i][4]):,.2f}, {float(podatki1[i][5]):,.2f}\033[0m")
+                f"{Fore.YELLOW}{datum}{Style.RESET_ALL} | "
+                f"{Fore.BLUE}{float(podatki2[i][4]):,.2f}, {float(podatki2[i][5]):,.2f}{Style.RESET_ALL} "
+                f">> {Fore.GREEN}+{zmaga_koliko_posto}%{Style.RESET_ALL} >> "
+                f"{Fore.MAGENTA}{float(podatki1[i][4]):,.2f}, {float(podatki1[i][5]):,.2f}{Style.RESET_ALL}")
             stevec2 += 1
-            print()
 
-
+    # povzetek
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
     print(Fore.CYAN + f"📊 Direktna primerjava med {file1} in {file2}" + Style.RESET_ALL)
-    print(Fore.LIGHTBLACK_EX + "Na levi ➜ boljši v obdobju | Na desni ➜ slabši" + Style.RESET_ALL)
-    print()
-    print(Fore.YELLOW + f"💰 Začetna investicija: {podatki1[5][1]}" + Style.RESET_ALL)
-    print(Fore.YELLOW + f"📈 Mesečne investicije: {podatki1[5][2]}" + Style.RESET_ALL)
-    print(Fore.YELLOW + f"💵 Skupno investirano: {podatki1[5][3]}" + Style.RESET_ALL)
-    print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
-
     print()
     print(Fore.LIGHTMAGENTA_EX + f"✔ {file1} je bil boljši v {stevec1} primerih" + Style.RESET_ALL)
     print(Fore.LIGHTBLUE_EX + f"✔ {file2} je bil boljši v {stevec2} primerih" + Style.RESET_ALL)
 
     print()
-    procent_stevec_1 = round((stevec1 / (stevec1 + stevec2)) * 100, 2)
-    procent_stevec_2 = round((stevec2 / (stevec1 + stevec2)) * 100, 2)
+    procent_stevec_1 = round((stevec1 / (stevec1 + stevec2 or 1)) * 100, 2)
+    procent_stevec_2 = round((stevec2 / (stevec1 + stevec2 or 1)) * 100, 2)
 
     print(Fore.GREEN + "🏆 Zmaga tisti, ki ima več na podlagi zadnjega parametra – 'koliko imamo skupaj'" + Style.RESET_ALL)
     print()
@@ -114,5 +100,5 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
     print(Fore.GREEN + f"👉 V {procent_stevec_2}% primerov je bil boljši {file2}" + Style.RESET_ALL)
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
 
-
     return stevec1, stevec2
+
