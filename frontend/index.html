@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vzvodno investiranje</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827cc;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --primary: #22c55e;
+      --primary-900: #166534;
+      --ring: #34d39955;
+      --input: #1f2937;
+      --border: #334155;
+      --error: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      margin-top: 30px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
+      background: rgb(231, 230, 230);
+      color: var(--text);
+    }
+
+    .wrapper {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background-color: white;
+      border-radius: 24px;
+      box-shadow: 0 0px 15px rgba(0,0,0,0.5);
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 6px 0;
+      font-size: 28px;
+      letter-spacing: 1px;
+      color: black;
+      text-align: center;
+    }
+    .subtitle {
+      margin: 0 0 24px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    form { display: grid; gap: 14px; }
+
+    .field { display: grid; gap: 8px; }
+    label { font-size: 15px; color: black; }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      box-shadow: 10px;
+      color: black;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      font-size: 15px;
+      background: white;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus {
+      border-color: black;
+      box-shadow: 0 0 0 6px var(--ring);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .actions { margin-top: 8px; }
+    .primary-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0px;
+      background: linear-gradient(180deg, #16a34a, #198749);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      letter-spacing: .2px;
+      cursor: pointer;
+      transition: transform .06s ease, filter .2s ease;
+    }
+    .primary-btn:hover { filter: brightness(1.05); }
+    .primary-btn:active { transform: translateY(1px) scale(.997); }
+
+    .result {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: #0b1222;
+      color: #e5e7eb;
+    }
+    .hidden { display: none; }
+
+    .footnote {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .error { color: var(--error); font-size: 12px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <main class="wrapper">
+    <section class="card" aria-labelledby="title">
+      <h1 id="title">Vzvodno investiranje</h1>
+      <p class="subtitle">Vnesi parametre in pripravi simulacijo rasti portfelja.</p>
+
+      <form id="invest-form" novalidate>
+        <div class="field">
+          <label for="initial">Začetna investicija (€)</label>
+          <input type="text" id="initial" name="initial" inputmode="numeric" placeholder="npr. 1.000 €" required />
+          <div class="error" id="err-initial"></div>
+        </div>
+
+        <div class="field">
+          <label for="monthly">Mesečni vložek (€)</label>
+          <input type="text" id="monthly" name="monthly" inputmode="numeric" placeholder="npr. 100 €" required />
+          <div class="error" id="err-monthly"></div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="index">Indeks</label>
+            <select id="index" name="index" required>
+              <option value="sp500">S&amp;P 500</option>
+              <option value="nasdaq100">NASDAQ-100</option>
+              <option value="nasdaqcomposite">NASDAQ Composite</option>
+            </select>
+            <div class="error" id="err-index"></div>
+          </div>
+
+          <div class="field">
+            <label for="interval">Interval</label>
+            <select id="interval" name="interval" required>
+              <option value="15">15 let</option>
+              <option value="10">10 let</option>
+              <option value="5">5 let</option>
+              <option value="3">3 let</option>
+              <option value="1">1 leto</option>
+            </select>
+            <div class="error" id="err-interval"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary-btn" type="submit" id="submitBtn" aria-label="Izračunaj">
+            <span>Izračunaj</span>
+          </button>
+        </div>
+      </form>
+
+      <div id="result" class="result hidden" aria-live="polite">
+        <strong>Predogled vnosa</strong>
+        <div id="summary"></div>
+        <div class="footnote">Tukaj bo graf in rezultat po povezavi s tvojim backendom.</div>
+      </div>
+
+      <div class="footnote">Opomba: Stran je zasnovana kot "login-page" kartica — sredinsko, čista in osredotočena na vnos.</div>
+    </section>
+  </main>
+
+  <script>
+    // Formatter brez decimalk
+    const fmtEUR0 = new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    // Pretvori npr. "1.234 €" ali "1234,56 €" -> 1234 (CELO število; decimalke se ignorirajo)
+    function parseSlCurrencyInt(str){
+      if (!str) return NaN;
+      let s = String(str).trim();
+      s = s.replace(/\s/g,'');   // odstrani presledke
+      s = s.replace(/€/g,'');    // odstrani €
+      s = s.replace(/\./g,'');   // odstrani tisočice
+      // odstrani decimalni del, če ga je uporabnik vpisal (vejica ali pika)
+      s = s.replace(/[,.].*$/, '');
+      const n = Number(s);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    // Ob fokusu: odstrani format (pusti golo celo število)
+    function unformatInputToPlainInt(el){
+      const n = parseSlCurrencyInt(el.value);
+      if (Number.isFinite(n)){
+        el.value = String(n); // brez ločil, brez €
+        setTimeout(()=>el.select(), 0);
+      } else {
+        el.value = '';
+      }
+    }
+
+    // Ob blur: format z ločili tisočic in € (brez decimalk)
+    function formatInputAsCurrencyInt(el){
+      const n = parseSlCurrencyInt(el.value);
+      if (Number.isFinite(n)){
+        el.value = fmtEUR0.format(n); // npr. "1.234 €"
+      } else {
+        el.value = '';
+      }
+    }
+
+    const form = document.getElementById('invest-form');
+    const result = document.getElementById('result');
+    const summary = document.getElementById('summary');
+    const initialInput = document.getElementById('initial');
+    const monthlyInput = document.getElementById('monthly');
+
+    // Format-on-focus/blur za obe polji
+    initialInput.addEventListener('focus', (e)=> unformatInputToPlainInt(e.target));
+    initialInput.addEventListener('blur',  (e)=> formatInputAsCurrencyInt(e.target));
+    monthlyInput.addEventListener('focus', (e)=> unformatInputToPlainInt(e.target));
+    monthlyInput.addEventListener('blur',  (e)=> formatInputAsCurrencyInt(e.target));
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const initial = parseSlCurrencyInt(form.initial.value);
+      const monthly = parseSlCurrencyInt(form.monthly.value);
+      const index = form.index.value;
+      const interval = parseInt(form.interval.value, 10);
+
+      let valid = true;
+      const setErr = (id, msg) => { document.getElementById(id).textContent = msg || ''; if (msg) valid = false; };
+      setErr('err-initial', (!Number.isFinite(initial) || initial < 0) ? 'Vnesi veljavno začetno investicijo (≥ 0).' : '');
+      setErr('err-monthly', (!Number.isFinite(monthly) || monthly < 0) ? 'Vnesi veljaven mesečni vložek (≥ 0).' : '');
+      setErr('err-index', !index ? 'Izberi indeks.' : '');
+      setErr('err-interval', !interval ? 'Izberi interval.' : '');
+      if (!valid) return;
+
+      const indexLabel = {
+        sp500: 'S&P 500',
+        nasdaq100: 'NASDAQ-100',
+        nasdaqcomposite: 'NASDAQ Composite'
+      }[index] || index;
+
+      summary.innerHTML = `
+        <ul style="list-style:none; padding-left: 0; margin: 10px 0 0 0; display:grid; gap:6px;">
+          <li><span style="color:#94a3b8">Začetna investicija:</span> <strong>${fmtEUR0.format(initial)}</strong></li>
+          <li><span style="color:#94a3b8">Mesečni vložek:</span> <strong>${fmtEUR0.format(monthly)}</strong></li>
+          <li><span style="color:#94a3b8">Indeks:</span> <strong>${indexLabel}</strong></li>
+          <li><span style="color:#94a3b8">Interval:</span> <strong>${interval} let</strong></li>
+        </ul>`;
+
+      result.classList.remove('hidden');
+
+      // const payload = { initial, monthly, index, interval };
+      // const res = await fetch('/api/calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      // const json = await res.json();
+    });
+  </script>
+</body>
+</html>

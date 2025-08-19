@@ -15,18 +15,21 @@ print('----------')
 
 
 
-intervali = generiraj_intervale_leto(podatki,15)
-print_vsak_v_svoji_vrstici(intervali)
+#intervali = generiraj_intervale_leto(podatki,15)
+#print_vsak_v_svoji_vrstici(intervali)
 
 #for i in range(0, len(intervali)):
   # metoda_dca_za_testing_prilagojena(podatki, 10000, 100, intervali[i][0], intervali[i][1], "rezultati-sp-500-1x")
 
 
-primerjaj_stolpec("testing/rezultati-sp-500-1x.csv", "testing/rezultati-sp-500-2x.csv")
+#primerjaj_stolpec("testing/rezultati-sp-500-1x.csv", "testing/rezultati-sp-500-2x.csv")
 
 
+izracun_dca_metoda(podatki)
 
 fancy1()
 
 
 
+# za vsako obdobje un interval pac da nardim graficno
+# in user interface
