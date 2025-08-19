@@ -7,7 +7,7 @@ import pandas as pd
 
 print('----------')
 
-podatki = load_csv('3x-leverage/sp-500-3x.csv')
+podatki = load_csv('podatki_ustvarjeni/sp-500.csv')
 print('----------')
 
 
@@ -19,10 +19,10 @@ intervali = generiraj_intervale_leto(podatki,15)
 print_vsak_v_svoji_vrstici(intervali)
 
 #for i in range(0, len(intervali)):
-  # metoda_dca_za_testing_prilagojena(podatki, 10000, 100, intervali[i][0], intervali[i][1], "rezultati-sp-500-3x")
+  # metoda_dca_za_testing_prilagojena(podatki, 10000, 100, intervali[i][0], intervali[i][1], "rezultati-sp-500-1x")
 
 
-primerjaj_stolpec("testing/rezultati-sp-500-2x.csv", "testing/rezultati-sp-500-3x.csv")
+primerjaj_stolpec("testing/rezultati-sp-500-1x.csv", "testing/rezultati-sp-500-2x.csv")
 
 
 

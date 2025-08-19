@@ -52,7 +52,7 @@ def primerjaj_stolpec(file1, file2, stolpec=5):
     stevec2 = 0
     print()
     print()
-    print("Datum | boljši (vrednost, skupaj) | slabši (vrednost, skupaj) | razlika")
+    print("Datum | boljši (vrednost, skupaj) | razlika | slabši (vrednost, skupaj) ")
     print()
 
     # preskočimo header (če ga je)
