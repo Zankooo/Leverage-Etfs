@@ -194,6 +194,7 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
 
     # to rabimo da lahko pozenemo loop cez vse dneve
     vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
+    
     vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
 
     # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
