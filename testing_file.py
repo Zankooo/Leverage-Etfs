@@ -86,7 +86,8 @@ def primerjaj_dva_indeksa(file1, file2, stolpec=5):
     # povzetek
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
     print(Fore.CYAN + f"📊 Direktna primerjava med {file1} in {file2}" + Style.RESET_ALL)
-    
+    print()
+    print(Fore.CYAN + f"💰 Začetna investicija {podatki1[10][1]} , vse mesečne investicije {podatki1[10][2]}, vse skupaj investirano: {podatki1[10][3]}")
     print()
     print(Fore.CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'")
     print()
@@ -113,7 +114,12 @@ def primerjaj_dva_indeksa(file1, file2, stolpec=5):
 
 def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     """
-    Primerjava treh CSV rezultatov (npr. 1x, 2x, 3x).
+    ta funkcija je ista kokr zgornja le da prejme tri indekse in ne dva kokr zgornja -> logika je pa ista samo koda je drugacna ker ja tuki ai naredu zgornjo pa jst
+    Primerjava treh CSV rezultatov (npr. 1x, 2x, 3x) -> format mora biti pri vseh enak, prva vrstica ime, druga opisi in 3 in naprej stevilke
+    Pac filei morajo biti narejeni to kar naredi funkcija metoda_dca_za_testing_prilagojena v for loopu za vsa leta. torej 
+    to kar naredijo funkcija_naredi_1x_rezultate in funkcija_naredi_2x_rezultate in funkcija_naredi_3x_rezultate
+    
+    
     Za vsak datum najde najboljšega po `stolpec` (privzeto 5 = 'koliko imamo vse skupaj'),
     izpiše redosled BEST >> SECOND >> THIRD z % razlikama,
     in na koncu povzame, kolikokrat je zmagal kateri file.
@@ -193,8 +199,14 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
 
     # Povzetek
     total_compared = sum(wins.values())
+
+
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
     print(Fore.CYAN + f"📊 Direktna primerjava med {file1}, {file2} in {file3}" + Style.RESET_ALL)
+    print()
+    # te podatke sem vzel iz podatki1, lahko bi vzel iz katerega koli od teh treh, ker so usi enaki
+    # in iz katere koli vrstice, ker so itak vsi enaki.. vzel sem iz 10, ker mi je cifra vsec
+    print(Fore.CYAN + f"💰 Začetna investicija {podatki1[10][1]}, vse mesečne investicije {podatki1[10][2]}, vse skupaj investirano: {podatki1[10][3]}")
     print()
     print(Fore.CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'")
     print()
@@ -209,5 +221,7 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     print()
     print(Fore.GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'" + Style.RESET_ALL)
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
+
+
 
     return wins[file1], wins[file2], wins[file3], ties
