@@ -1,12 +1,12 @@
-from obcasno_pogosti_fajli.data_printer import *
+
 from izracuni import *
 from testing_file import *
 from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
-import pandas as pd
-from tqdm import tqdm
 from rich.progress import Progress
 from colorama import init, Fore, Style
+import os
+import glob
 init(autoreset=True)
 
 
@@ -115,10 +115,17 @@ def pridobi_zneske():
 
 
 def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indeksi):
-   funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0])
-   funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1])
-   funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2])
-   return 0
+    # preverimo ce so od prejsnega zagona programa ze kaksne datoteke v testing mapi, 
+    # in ce so jih izbrisemo, da ustvarimo prostor da se ustvarijo nove -> brez tega filtra moramo sami zbrisat rocno
+    test_files = glob.glob('testing/*.csv')
+    if test_files:
+        for file in test_files:
+            os.remove(file)
+
+    funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0])
+    funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1])
+    funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2])
+    return 0
 
 
 
