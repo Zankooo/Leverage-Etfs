@@ -1,6 +1,5 @@
 import sys
 def fancy1():
-    print("----------")
     # print("✔️ Program uspešno končan!")
     print("""
     📈 "The stock market rewards patience" 🥱 
@@ -9,7 +8,6 @@ def fancy1():
 
 
 def fancy2():
-    print("----------")
     print("""
         🎉 PROGRAM KONČAN 🎉
        ************************

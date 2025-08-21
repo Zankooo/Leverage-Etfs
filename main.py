@@ -6,6 +6,10 @@ from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
 import pandas as pd
 from tqdm import tqdm
 from rich.progress import Progress
+from colorama import init, Fore, Style
+init(autoreset=True)
+
+
 
 print('----------')
 
@@ -25,13 +29,12 @@ nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
 def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
     # izracuna intervale
     intervali = generiraj_intervale_leto(indeks, interval)
-    print('----------')
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
         task = progress.add_task("[cyan]Računam 1x...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):
-            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "rezultati-1")
+            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "osnoven")
             progress.advance(task)
     return 0
 
@@ -43,7 +46,7 @@ def funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, inter
         task = progress.add_task("[magenta]Računam 2x...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):
-            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "rezultati-2")
+            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "vzvod-2x")
             progress.advance(task)
     return 0
 
@@ -55,41 +58,61 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
         task = progress.add_task("[orange1]Računam 3x...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):
-            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "rezultati-3")
+            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "vzvod-3x")
             progress.advance(task)
     return 0
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# PRIDOBIVANJE PODATKOV 
+# Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
+# in koda bo krajsa, in ostala bo samo funkcionalnost
+
+
+LINE = "═" * 54
+
 def pridobi_indekse():
-   print("Izberi indeks:")
-   print("1. S&P 500")
-   print("2. Nasdaq 100")
-   print("3. Nasdaq Composite")
+    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
+    print(Fore.CYAN + "📊 Izberi indeks:" + Style.RESET_ALL)
+    print()
 
-   izbira = input("Vnesi številko (1/2/3): ")
+    print(Fore.GREEN + "1. S&P 500" + Style.RESET_ALL)
+    print(Fore.LIGHTCYAN_EX + "2. Nasdaq 100" + Style.RESET_ALL)
+    print(Fore.LIGHTYELLOW_EX + "3. Nasdaq Composite" + Style.RESET_ALL)    
+    print()
 
-   if izbira == "1":
-      indeksi = [sp_500, sp_500_2x, sp_500_3x]
-   elif izbira == "2":
-      indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
-   elif izbira == "3":
-      indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
-   else:
-      print("Napačna izbira!")
-      indeksi = []
-      
-   return indeksi
+    izbira = input(Fore.CYAN + "Vnesi številko (1/2/3): " + Style.RESET_ALL)
+
+    if izbira == "1":
+        indeksi = [sp_500, sp_500_2x, sp_500_3x]
+    elif izbira == "2":
+        indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
+    elif izbira == "3":
+        indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
+    else:
+        print(Fore.YELLOW + "Napačna izbira!" + Style.RESET_ALL)
+        indeksi = []
+
+    return indeksi
 
 
 def pridobi_zneske():
-    return [
-        int(input("Začetna investicija? ")),
-        int(input("Mesečne investicije? ")),
-        int(input("Dolžina intervalov? "))
-    ]
+    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
+    print(Fore.CYAN + "💰 Vnesi zneske" + Style.RESET_ALL)
+    print()
+
+    zacetna = int(input(Fore.CYAN + "Začetna investicija? " + Style.RESET_ALL))
+    mesecne = int(input(Fore.CYAN + "Mesečne investicije? " + Style.RESET_ALL))
+    dolzina = int(input(Fore.CYAN + "Dolžina intervalov? " + Style.RESET_ALL))
+
+    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
+    return [zacetna, mesecne, dolzina]
    
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indeksi):
    funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0])
@@ -98,24 +121,36 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
    return 0
 
 
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
 # GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
 indeksi = pridobi_indekse()
 zneski = pridobi_zneske()
 funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
 
+
 print('----------')
 
-#print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
+
+print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
 
 #primerjaj_dva_indeksa("testing/rezultati-1.csv", "testing/rezultati-2.csv")
-primerjaj_tri_indekse("testing/rezultati-1.csv", "testing/rezultati-2.csv", "testing/rezultati-3.csv")
+primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
 
 
-fancy1()
+
+
 
 # CILJ JE NAREDITI WEB APP IN DA POTEM V WEBAPPU DOLOCIS PARAMETRE 
 # IN TI IZPISE TAKO KOT TI TUKAJ IZPISE KATER JE BIL BOLJSI
 # AMPAK DA TI LAHKO KLIKNES SE NA VRSTICO IN TI POKAZE GRAF VSEH TREH KAKO JE POTEKAL
+
+
+
+
+fancy1()
+
+
 
 

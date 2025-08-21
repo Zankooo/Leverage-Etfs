@@ -202,14 +202,21 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
 
 
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
+    
     print(Fore.CYAN + f"📊 Direktna primerjava med {file1}, {file2} in {file3}" + Style.RESET_ALL)
     print()
+
     # te podatke sem vzel iz podatki1, lahko bi vzel iz katerega koli od teh treh, ker so usi enaki
     # in iz katere koli vrstice, ker so itak vsi enaki.. vzel sem iz 10, ker mi je cifra vsec
-    print(Fore.CYAN + f"💰 Začetna investicija {podatki1[10][1]}, vse mesečne investicije {podatki1[10][2]}, vse skupaj investirano: {podatki1[10][3]}")
+    print(Fore.CYAN + f"💰 Začetna investicija: {podatki1[10][1]}")
+    print(Fore.CYAN + f"📈 Vse mesečne investicije: {podatki1[10][2]}")
+    print(Fore.CYAN + f"💵 Vse skupaj investirano: {podatki1[10][3]}")
+
+
     print()
     print(Fore.CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'")
     print()
+
     for fname, color in [(file1, Fore.LIGHTMAGENTA_EX), (file2, Fore.BLUE), (file3, Fore.RED)]:
         w = wins[fname]
         pct = round((w / (total_compared or 1)) * 100, 2)
@@ -219,7 +226,9 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
         print(Fore.YELLOW + f"⚖ Neodločeno (vsi enaki): {ties}" + Style.RESET_ALL)
 
     print()
+
     print(Fore.GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'" + Style.RESET_ALL)
+    
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
 
 
