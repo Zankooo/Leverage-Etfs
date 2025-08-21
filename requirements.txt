@@ -1,0 +1,6 @@
+colorama
+rich
+pandas
+python-dateutil
+
+

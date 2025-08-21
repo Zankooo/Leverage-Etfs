@@ -74,6 +74,9 @@ Procenti so izračunani na podlagi 'koliko imamo vse skupaj'
 ## Namestitev programa
 1. Kloniraj repozitorij:
    - git clone https://github.com/Zankooo/Leverage-Etfs.git
+2. Instaliraj depencenciese:
+   - python3 -m pip install -r requirements.txt (za MacOs)
+   - python3 -m pip install -r requirements.txt (Windows)
 2. Ustvari in aktiviraj virtualno okolje:
    - python -m venv .venv
    - Windows: .venv\Scripts\activate
