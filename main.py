@@ -7,13 +7,11 @@ import pandas as pd
 from tqdm import tqdm
 from rich.progress import Progress
 
-
 print('----------')
 
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
 sp_500_3x = load_csv('3x-leverage/sp-500-3x.csv')
-
 
 nasdaq_100 = load_csv('podatki_ustvarjeni/nasdaq-100.csv')
 nasdaq_100_2x = load_csv('2x-leverage/nasdaq-100-2x.csv')
@@ -22,10 +20,6 @@ nasdaq_100_3x = load_csv('3x-leverage/nasdaq-100-3x.csv')
 nasdaq_comp = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
 nasdaq_comp_2x = load_csv('2x-leverage/nasdaq-comp-2x.csv')
 nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
-
-
-print('----------')
-
 
 
 def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
@@ -104,23 +98,24 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
    return 0
 
 
-
-
 # GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
-#indeksi = pridobi_indekse()
-#zneski = pridobi_zneske()
-#funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
+indeksi = pridobi_indekse()
+zneski = pridobi_zneske()
+funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
 
 print('----------')
 
 #print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
 
-primerjaj_dva_indeksa("testing/rezultati-1.csv", "testing/rezultati-2.csv")
+#primerjaj_dva_indeksa("testing/rezultati-1.csv", "testing/rezultati-2.csv")
 primerjaj_tri_indekse("testing/rezultati-1.csv", "testing/rezultati-2.csv", "testing/rezultati-3.csv")
 
 
 fancy1()
 
+# CILJ JE NAREDITI WEB APP IN DA POTEM V WEBAPPU DOLOCIS PARAMETRE 
+# IN TI IZPISE TAKO KOT TI TUKAJ IZPISE KATER JE BIL BOLJSI
+# AMPAK DA TI LAHKO KLIKNES SE NA VRSTICO IN TI POKAZE GRAF VSEH TREH KAKO JE POTEKAL
 
 
