@@ -167,7 +167,7 @@ def izracun_dca_metoda(podatki, output_file="rezultati_investicije.csv"):
 
     with open(output_file, mode="w", newline="") as file:
         writer = csv.writer(file)
-        writer.writerow(["datum", "investment"])
+        writer.writerow(["date", "A"])
         writer.writerows(results)
 
     print(f"Rezultati so zapisani v {output_file}")
