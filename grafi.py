@@ -139,9 +139,9 @@ def narisi_graf(
 # -----------------------------------------------------------------------------------
 
 
-narisi_graf("rezultati_investicije.csv")
+narisi_graf("fajl-za-grafe.csv")
 
-
+# zdej ugotovit kako zbrati podatke v enem csv
 
 
 
