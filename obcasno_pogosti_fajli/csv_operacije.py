@@ -151,7 +151,7 @@ def naredi_leverage_iz_osnovnega(podatki_dnevne_spremembe):
     @return vrne pa list of lists z dnevnimi spremembami
 
     Sicer ne razumem cisto kako funkcija deluje ampak deluje
-    Za izpis da vidis da je res dnevne spremmbe uporabi dnevne spremembe funkcijo
+    Za izpis da vidis da je res dnevne spremembe uporabi dnevne spremembe funkcijo
     """
     podatki = podatki_dnevne_spremembe
 
@@ -186,7 +186,7 @@ def naredi_leverage_iz_osnovnega(podatki_dnevne_spremembe):
 # ta funkcija je zadnja ker pac ustvari podatke
 def ustvari_nov_csv_file(podatki):
     """
-    Funkcija ki sprejme dvojni list/array, pac podatki
+    Funkcija ki sprejme list of list /array, pac podatki
     in ustvari iz nje novo csv datoteko, ki bo imenovana pod kot zelimo"
     @:param dvojni array/list
     """
