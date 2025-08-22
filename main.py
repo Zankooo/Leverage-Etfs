@@ -131,22 +131,22 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
-indeksi = pridobi_indekse()
-zneski = pridobi_zneske()
-funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
+#indeksi = pridobi_indekse()
+#zneski = pridobi_zneske()
+#funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
 
 
 print('----------')
 
 
-print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
+#print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
 
 #primerjaj_dva_indeksa("testing/rezultati-1.csv", "testing/rezultati-2.csv")
-primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
+#primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
 
-
-
+# 2009-02-19 do 2016-03-31
+izracun_dca_metoda(sp_500)
 
 
 # CILJ JE NAREDITI WEB APP IN DA POTEM V WEBAPPU DOLOCIS PARAMETRE 

@@ -27,75 +27,7 @@ def izracun_dnevnih_sprememb(podatki):
         result.append(podatki[i] + [sprememba_procentualno])
     return result
 
-def izracun_dca_metoda(podatki):
-    """
-    Funkcija izracuna koliko imamo kesa po izbranem obdobju
-    Torej: izberemo začetno investicijo + mesečne vložke(prvega v mesecu oz na zacetku meseca, se obracunajo).
-    Izračuna končno vrednost investicije glede na vsakodnevno spremembo indeksa.
-    :param podatki: List of lists dogovorjen format
-    :return: int končna vrednost investicije
-    """
-    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
-    # ampak tega verjetno ne bi smel upostevat, idk
-   # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
-    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
-    initial_investment = int(input("Vpisi začetno investicijo: "))
-    monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
-    investment = initial_investment
-    mesecni_vlozki_vsota = 0
-
-# PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
-# zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
-    datum_zacetka = input("Začetek investiranja datum: ")
-    datum_konca = input("Konec investiranja datum: ")
-
-    # Nastavimo začetni mesec za mesečne vložke
-    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
-
-    # to rabimo da lahko pozenemo loop cez vse dneve
-    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
-    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
-
-    # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
-    for i in range(vrstica_zacetka, vrstica_konca + 1):
-        # odstranimo %, da pac lahko delamo z podatkom ane
-        daily_change = podatki_daily_changes[i][2].replace("%", "")
-        # Pretvori v decimalno vrednost
-        daily_change_cifra = round(float(daily_change), 2) / 100
-
-        # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
-        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
-
-        # Če je nov mesec, dodamo mesečni vložek
-        if date.month != current_month:
-            investment = investment + monthly_investment
-            print(f"Mesecna investicija investirana: {monthly_investment}eur")
-            mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
-            current_month = date.month
-
-        # Izračun vrednosti portfelja
-        investment = investment * (1 + daily_change_cifra)
-        print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
-
-    print("-----------")
-    print(f"Od {datum_zacetka} do {datum_konca}:")
-    print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
-    print(f"Vseh mesečnih investicij je bilo skupaj: {mesecni_vlozki_vsota}EUR 💸,")
-    print("-----------")
-    print(f"Total contribution(zacentna + mesecne): {initial_investment + mesecni_vlozki_vsota}EUR 🔢,")
-    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
-    print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
-    print(f"Imamo vse skupaj: {investment:.2f} EUR 💰✈️🌍")
-
-    # to prikazemo samo ce imamo brez mescecnih. Edini namen je dokaz/prikazati, da pac ce potegnemo na google grafu da pac res dela funkcija
-    if mesecni_vlozki_vsota == 0:
-        procentualno_zasluzek = (zasluzili / initial_investment) * 100
-        procentualno_zasluzek = round(procentualno_zasluzek, 2)
-        print(f"Procentualno: {procentualno_zasluzek}%. Lahko preveris na google stock grafu da je zelo zelo podobno")
-    # procentualno je izracunano ->  (donos/cela investicija)*100
-    # tukaj ce so mesecne investicije je malo drugace in treba nekako fiksat
-    return round(investment, 2)
 
 
 def izracun_letnih_donosov(podatki):
@@ -155,6 +87,91 @@ def is_float(value):
         return False
 
 
+# ----------------------------------------------------------------
+def izracun_dca_metoda(podatki, output_file="rezultati_investicije.csv"):
+    """
+    Funkcija izracuna koliko imamo kesa po izbranem obdobju
+    Torej: izberemo začetno investicijo + mesečne vložke(prvega v mesecu oz na zacetku meseca, se obracunajo).
+    Izračuna končno vrednost investicije glede na vsakodnevno spremembo indeksa.
+    :param podatki: List of lists dogovorjen format
+    :return: int končna vrednost investicije
+    """
+    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
+    # ampak tega verjetno ne bi smel upostevat, idk
+   # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
+    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
+
+    initial_investment = int(input("Vpisi začetno investicijo: "))
+    monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
+    investment = initial_investment
+    mesecni_vlozki_vsota = 0
+
+# PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
+# zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
+    #datum_zacetka = input("Začetek investiranja datum: ")
+    #datum_konca = input("Konec investiranja datum: ")
+    # za namen testiranja da ne rabim skos pisat notr
+    datum_zacetka = "2009-02-19"
+    datum_konca = "2016-03-31"
+
+    # Nastavimo začetni mesec za mesečne vložke
+    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+
+    # to rabimo da lahko pozenemo loop cez vse dneve
+    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
+    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
+
+    results = []
+    # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
+    for i in range(vrstica_zacetka, vrstica_konca + 1):
+        # odstranimo %, da pac lahko delamo z podatkom ane
+        daily_change = podatki_daily_changes[i][2].replace("%", "")
+        # Pretvori v decimalno vrednost
+        daily_change_cifra = round(float(daily_change), 2) / 100
+
+        # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
+        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+
+        # Če je nov mesec, dodamo mesečni vložek
+        if date.month != current_month:
+            investment = investment + monthly_investment
+            #print(f"Mesecna investicija investirana: {monthly_investment}eur")
+            mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
+            current_month = date.month
+
+        # Izračun vrednosti portfelja
+        investment = investment * (1 + daily_change_cifra)
+        # print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
+        # print(f"{investment:.2f},")
+        results.append([podatki[i][0], round(investment, 2)])
+
+
+    print("-----------")
+    print(f"Od {datum_zacetka} do {datum_konca}:")
+    print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
+    print(f"Vseh mesečnih investicij je bilo skupaj: {mesecni_vlozki_vsota}EUR 💸,")
+    print("-----------")
+    print(f"Total contribution(zacentna + mesecne): {initial_investment + mesecni_vlozki_vsota}EUR 🔢,")
+    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
+    print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
+    print(f"Imamo vse skupaj: {investment:.2f} EUR 💰✈️🌍")
+
+    # to prikazemo samo ce imamo brez mescecnih. Edini namen je dokaz/prikazati, da pac ce potegnemo na google grafu da pac res dela funkcija
+    if mesecni_vlozki_vsota == 0:
+        procentualno_zasluzek = (zasluzili / initial_investment) * 100
+        procentualno_zasluzek = round(procentualno_zasluzek, 2)
+        print(f"Procentualno: {procentualno_zasluzek}%. Lahko preveris na google stock grafu da je zelo zelo podobno")
+    # procentualno je izracunano ->  (donos/cela investicija)*100
+    # tukaj ce so mesecne investicije je malo drugace in treba nekako fiksat
+    
+
+    with open(output_file, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["datum", "investment"])
+        writer.writerows(results)
+
+    print(f"Rezultati so zapisani v {output_file}")
+    return round(investment, 2)
 
 # -------------------------- spremenjena funkcija dca za testing
 # --------------------------------------------
