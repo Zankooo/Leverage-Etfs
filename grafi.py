@@ -29,20 +29,6 @@ def narisi_navadne_grafe(
     y_tickformat: str = ",.0f",              # formatiranje Y osi
     hover_fmt: str = "%{y:,.2f}"             # format za številke v hoverju (npr. dodaj " €" če želiš)
 ):
-    """
-    Nimam pojma kako ta funkcija dela, to je chat skuhu.
-    Vem sam da dela to kar hočem da dela..
-    Kot parameter funkciji daš csv file ki je take oblike:
-    date,A,B,C
-    2025-02-06,6444.75,6510.10,6420.20
-    2025-02-07,6468.56,6522.40,6432.10
-    2025-02-08,6617.75,6543.20,6454.55
-    2025-02-09,6591.32,6530.15,6460.75
-    2025-02-10,6524.19,6509.85,6415.90
-    2025-02-11,6520.28,6512.10,6409.40
-    Stolpcev je poljubno ;)
-    In pol ti funkcija ustvari html file in ta html je v bistvu graf
-    """
     # preberi CSV
     df = pd.read_csv(csv_path, parse_dates=["date"])
 
@@ -56,7 +42,7 @@ def narisi_navadne_grafe(
         raise ValueError("Ni najdenih stolpcev za izris (potrebujem vsaj enega poleg 'date').")
 
     # po želji preimenuj stolpce
-    rename_map = {}
+    rename_map: Dict[str, str] = {}
     if custom_labels:
         rename_map.update(custom_labels)
     if rename_to_graf:
@@ -91,7 +77,7 @@ def narisi_navadne_grafe(
         xaxis_title="Datum",
         yaxis_title="Vrednost",
         font=dict(family="Arial, Helvetica, sans-serif", size=14),
-        margin=dict(l=60, r=30, t=120, b=60),
+        margin=dict(l=60, r=30, t=150, b=60),   # ↑ več prostora zgoraj
         hoverlabel=dict(font_size=13),
         legend_title_text=""   # odstrani "variable"
     )
@@ -132,6 +118,21 @@ def narisi_navadne_grafe(
         )
     )
 
+    # ➕ NAPIS NAD GRAFOM (rahlo nižje, da je viden)
+    start_date_str = pd.to_datetime(df["date"].min()).strftime("%Y-%m-%d")
+    end_date_str   = pd.to_datetime(df["date"].max()).strftime("%Y-%m-%d")
+
+    fig.add_annotation(
+        x=0.5, y=1.07,               # sredinsko nad grafom
+        xref="paper", yref="paper",
+        xanchor="center", yanchor="bottom",
+        text=f"<b style='font-size:18px'>{start_date_str} → {end_date_str}</b>",
+        showarrow=False, align="center",
+        bgcolor="rgba(255,255,255,0.95)",
+        bordercolor="rgba(0,0,0,0.2)", borderwidth=1, borderpad=6,
+        font=dict(size=18)
+    )
+
     # shrani in odpri
     fig.write_html(output_html, auto_open=True)
 
@@ -142,7 +143,9 @@ def narisi_navadne_grafe(
 # LOGARITMICNA, KER ZGORNJA JE NAVADNA
 
 
+
 def narisi_logaritmicne_grafe(
+    
     csv_path: str,
     columns: Optional[List[str]] = None,     # katere stolpce narisati; če None -> vsi razen 'date'
     rename_to_graf: bool = True,             # preimenuj izbrane stolpce v "Graf 1..n"
@@ -164,7 +167,7 @@ def narisi_logaritmicne_grafe(
         raise ValueError("Ni najdenih stolpcev za izris (potrebujem vsaj enega poleg 'date').")
 
     # po želji preimenuj stolpce
-    rename_map = {}
+    rename_map: Dict[str, str] = {}
     if custom_labels:
         rename_map.update(custom_labels)
     if rename_to_graf:
@@ -177,7 +180,7 @@ def narisi_logaritmicne_grafe(
         df = df.rename(columns=rename_map)
         y_cols = [rename_map.get(c, c) for c in y_cols]
 
-    # ✅ varovalo za log skalo: vse vrednosti morajo biti > 0
+    # varovalo za log skalo
     if (df[y_cols] <= 0).to_numpy().any():
         raise ValueError("Logaritmična os Y zahteva pozitivne vrednosti (> 0) v vseh izbranih stolpcih.")
 
@@ -210,12 +213,11 @@ def narisi_logaritmicne_grafe(
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
         showspikes=True, spikemode="across", spikesnap="cursor", spikedash="solid"
     )
-    # 🔥 LOG SKALA NA Y OSI
     fig.update_yaxes(
-        type="log",                   # <<— tukaj preklopimo na log
+        type="log",                   # log skala
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
         tickformat=y_tickformat,
-        zeroline=False               # na log osi “zeroline” nima smisla
+        zeroline=False
     )
 
     # rangeselector med naslovom in legendo
@@ -243,5 +245,23 @@ def narisi_logaritmicne_grafe(
         )
     )
 
+    # ⬇️ Anotacija z začetnim in končnim datumom na SREDINI figure (vedno vidna)
+    # ➕ NAPIS NAD GRAFOM (rahlo nižje, da je viden)
+    start_date_str = pd.to_datetime(df["date"].min()).strftime("%Y-%m-%d")
+    end_date_str   = pd.to_datetime(df["date"].max()).strftime("%Y-%m-%d")
+
+    fig.add_annotation(
+        x=0.5, y=1.07,               # ↓ bilo je 1.16; zdaj je malo nižje
+        xref="paper", yref="paper",
+        xanchor="center", yanchor="bottom",
+        text=f"<b style='font-size:18px'>{start_date_str} → {end_date_str}</b>",
+        showarrow=False, align="center",
+        bgcolor="rgba(255,255,255,0.95)",
+        bordercolor="rgba(0,0,0,0.2)", borderwidth=1, borderpad=6,
+        font=dict(size=18)
+    )
+
+
     # shrani in odpri
     fig.write_html(output_html, auto_open=True)
+

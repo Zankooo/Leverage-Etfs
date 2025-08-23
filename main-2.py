@@ -142,6 +142,9 @@ def funkcija_ki_narise_grafe():
 
     ker_graf = input(Fore.CYAN + "Vnesi številko (1/2): " + Style.RESET_ALL)
 
+    
+
+
     # ce izberemo 1 naredi logaritmicne, ce 2 naredimo navadne
     if ker_graf == 1:
         for i in range (1,stevilo_csvjev + 1):
@@ -167,12 +170,12 @@ def funkcija_zbrisi_kar_je_v_mapi():
 # ---------------------------------------------------------------------------------------------
 # POKLICEMO OBE GLAVNI FUNKCIJI KI NAREDITA VSE, SIUMM!
 
-funkcija_naredi_rezultat_za_csvje()
-funkcija_ki_narise_grafe()
+#funkcija_naredi_rezultat_za_csvje()
+#funkcija_ki_narise_grafe()
 
 
-
-
+# SE ZACETNO INVESTICIJO IN MESECNE IN SKUPAJ
+narisi_logaritmicne_grafe("rezultati-vsak-interval-vsi-indeksi/rezultati_investicije1.csv")
 
 
 
