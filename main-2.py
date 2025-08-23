@@ -5,7 +5,7 @@ from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
 from rich.progress import Progress
 from colorama import init, Fore, Style
-from grafi import narisi_graf
+from grafi import narisi_graf, narisi_graf_logaritmicen
 import os
 import glob
 from pathlib import Path
@@ -141,7 +141,7 @@ stevilo_csvjev = len(list(mapa.glob("*.csv")))
 
 
 for i in range (1,stevilo_csvjev + 1):
-    narisi_graf(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
+    narisi_graf_logaritmicen(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
 
 
 

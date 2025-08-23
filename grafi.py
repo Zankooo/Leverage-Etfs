@@ -137,3 +137,111 @@ def narisi_graf(
 
 
 # -----------------------------------------------------------------------------------
+
+
+# LOGARITMICNA, KER ZGORNJA JE NAVADNA
+
+
+def narisi_graf_logaritmicen(
+    csv_path: str,
+    columns: Optional[List[str]] = None,     # katere stolpce narisati; če None -> vsi razen 'date'
+    rename_to_graf: bool = True,             # preimenuj izbrane stolpce v "Graf 1..n"
+    custom_labels: Optional[Dict[str,str]] = None,  # alternativno: {"A":"Moja A", "B":"Druga"}
+    naslov: str = "Več krivulj skozi čas (log skala)",
+    output_html: str = "graf_vec.html",
+    y_tickformat: str = ",.0f",              # formatiranje Y osi (uporablja se tudi na log osi)
+    hover_fmt: str = "%{y:,.2f}"             # format za številke v hoverju
+):
+    # preberi CSV
+    df = pd.read_csv(csv_path, parse_dates=["date"])
+
+    # izberi stolpce za izris
+    if columns is None:
+        y_cols = [c for c in df.columns if c.lower() != "date"]
+    else:
+        y_cols = columns
+    if not y_cols:
+        raise ValueError("Ni najdenih stolpcev za izris (potrebujem vsaj enega poleg 'date').")
+
+    # po želji preimenuj stolpce
+    rename_map = {}
+    if custom_labels:
+        rename_map.update(custom_labels)
+    if rename_to_graf:
+        cnt = 1
+        for c in y_cols:
+            if c not in rename_map:
+                rename_map[c] = f"Graf {cnt}"
+                cnt += 1
+    if rename_map:
+        df = df.rename(columns=rename_map)
+        y_cols = [rename_map.get(c, c) for c in y_cols]
+
+    # ✅ varovalo za log skalo: vse vrednosti morajo biti > 0
+    if (df[y_cols] <= 0).to_numpy().any():
+        raise ValueError("Logaritmična os Y zahteva pozitivne vrednosti (> 0) v vseh izbranih stolpcih.")
+
+    # osnovni graf
+    fig = px.line(
+        df, x="date", y=y_cols,
+        template="simple_white", markers=False
+    )
+
+    # stil črt in hover
+    fig.update_traces(
+        line=dict(width=2.5),
+        hovertemplate= hover_fmt + " $ ali €"
+    )
+
+    # layout
+    fig.update_layout(
+        hovermode="x unified",
+        title=dict(text=naslov, x=0.0, xanchor="left", y=0.98),
+        xaxis_title="Datum",
+        yaxis_title="Vrednost (log)",
+        font=dict(family="Arial, Helvetica, sans-serif", size=14),
+        margin=dict(l=60, r=30, t=120, b=60),
+        hoverlabel=dict(font_size=13),
+        legend_title_text=""
+    )
+
+    # osi + spike line
+    fig.update_xaxes(
+        showgrid=True, gridcolor="rgba(0,0,0,0.08)",
+        showspikes=True, spikemode="across", spikesnap="cursor", spikedash="solid"
+    )
+    # 🔥 LOG SKALA NA Y OSI
+    fig.update_yaxes(
+        type="log",                   # <<— tukaj preklopimo na log
+        showgrid=True, gridcolor="rgba(0,0,0,0.08)",
+        tickformat=y_tickformat,
+        zeroline=False               # na log osi “zeroline” nima smisla
+    )
+
+    # rangeselector med naslovom in legendo
+    fig.update_layout(
+        xaxis=dict(
+            rangeselector=dict(
+                x=0, xanchor="left",
+                y=1.05, yanchor="top",
+                buttons=list([
+                    dict(count=7,   label="7D",  step="day",  stepmode="backward"),
+                    dict(count=1,   label="1M",  step="month",stepmode="backward"),
+                    dict(count=3,   label="3M",  step="month",stepmode="backward"),
+                    dict(count=6,   label="6M",  step="month",stepmode="backward"),
+                    dict(count=1,   label="YTD", step="year", stepmode="todate"),
+                    dict(count=1,   label="1Y",  step="year", stepmode="backward"),
+                    dict(step="all",label="All")
+                ])
+            ),
+            rangeslider=dict(visible=True)
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="top", y=1.0,
+            xanchor="left", x=0
+        )
+    )
+
+    # shrani in odpri
+    fig.write_html(output_html, auto_open=True)
