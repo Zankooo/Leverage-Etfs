@@ -124,15 +124,10 @@ def funkcija_zbrisi_kar_je_v_mapi():
         for file in test_files:
             os.remove(file)
 
-
-#funkcija_zbrisi_kar_je_v_mapi()
+funkcija_zbrisi_kar_je_v_mapi()
 
 #funkcija_naredi_rezultat_za_csvje()
 
-#izracun_dca_metoda_prilagojena_da_naredi_csv(nasdaq_100,nasdaq_100_2x,nasdaq_100_3x, 1000,100)
-
-# izberes kater graf narise
-# kasneje dam for loop cez vse in narisal bo vse
 
 
 
