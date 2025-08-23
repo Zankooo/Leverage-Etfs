@@ -1,5 +1,5 @@
 import sys
-def fancy1():
+def fancy_zakljucek_1():
     # print("✔️ Program uspešno končan!")
     print("""
     📈 "The stock market rewards patience" 🥱 
@@ -7,7 +7,7 @@ def fancy1():
     sys.exit(0)
 
 
-def fancy2():
+def fancy_zakljucek_2():
     print("""
         🎉 PROGRAM KONČAN 🎉
        ************************

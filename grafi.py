@@ -19,7 +19,7 @@ from typing import List, Optional, Dict
 
 
 
-def narisi_graf(
+def narisi_navadne_grafe(
     csv_path: str,
     columns: Optional[List[str]] = None,     # katere stolpce narisati; če None -> vsi razen 'date'
     rename_to_graf: bool = True,             # preimenuj izbrane stolpce v "Graf 1..n"
@@ -142,7 +142,7 @@ def narisi_graf(
 # LOGARITMICNA, KER ZGORNJA JE NAVADNA
 
 
-def narisi_graf_logaritmicen(
+def narisi_logaritmicne_grafe(
     csv_path: str,
     columns: Optional[List[str]] = None,     # katere stolpce narisati; če None -> vsi razen 'date'
     rename_to_graf: bool = True,             # preimenuj izbrane stolpce v "Graf 1..n"

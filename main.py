@@ -25,7 +25,7 @@ nasdaq_comp_2x = load_csv('2x-leverage/nasdaq-comp-2x.csv')
 nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-
+# GLAVNE FUNKCIJE
 def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
     # izracuna intervale
     intervali = generiraj_intervale_leto(indeks, interval)
@@ -65,7 +65,7 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# PRIDOBIVANJE PODATKOV 
+# PRIDOBIVANJE PODATKOV - pomozne funkcije, ki jih rabimo
 # Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
 # in koda bo krajsa, in ostala bo samo funkcionalnost
 
@@ -109,7 +109,7 @@ def pridobi_zneske():
     return [zacetna, mesecne, dolzina]
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#FUNKCIJA KI KLICE une tri zgoraj
 def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indeksi):
     # preverimo ce so od prejsnega zagona programa ze kaksne datoteke v testing mapi, 
     # in ce so jih izbrisemo, da ustvarimo prostor da se ustvarijo nove -> brez tega filtra moramo sami zbrisat rocno
@@ -117,14 +117,13 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
     if test_files:
         for file in test_files:
             os.remove(file)
-
     funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0])
     funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1])
     funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2])
     return 0
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
+# GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ IN NAREDIJO TO KAR HOCEMO
 
 # indeksi[0] = osnoven, indeksi[1] = 2x, indeksi[2] = 3x
 indeksi = pridobi_indekse()
@@ -144,7 +143,17 @@ primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vz
 
 
 
-fancy1()
+
+
+
+
+
+
+
+
+
+
+fancy_zakljucek_1()
 
 
 

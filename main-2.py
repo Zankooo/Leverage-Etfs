@@ -5,7 +5,7 @@ from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
 from rich.progress import Progress
 from colorama import init, Fore, Style
-from grafi import narisi_graf, narisi_graf_logaritmicen
+from grafi import narisi_navadne_grafe, narisi_logaritmicne_grafe
 import os
 import glob
 from pathlib import Path
@@ -16,6 +16,7 @@ init(autoreset=True)
 
 print('----------')
 
+# PREBEREMO PODATKE
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
 sp_500_3x = load_csv('3x-leverage/sp-500-3x.csv')
@@ -31,7 +32,7 @@ nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# PRIDOBIVANJE PODATKOV 
+# PRIDOBIVANJE PODATKOV - pomozne funkcije, ki jih upoabljamo v glavnima dvema funkcijama!
 # Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
 # in koda bo krajsa, in ostala bo samo funkcionalnost
 
@@ -74,20 +75,22 @@ def pridobi_zneske():
     print(Fore.MAGENTA + LINE + Style.RESET_ALL)
     return [zacetna, mesecne, dolzina]
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
+# GLAVNI FUNKCIJI
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNa FUNKCIJA KI KLIČEJO USE VSE ZGORAJ
-
+# 1. GLAVNA FUNKCIJA - ustvari csvje 
 def funkcija_naredi_rezultat_za_csvje():
-    # na zacetku; ce so od prej fajli, jih zbrise da je plac za nove
-    test_files = glob.glob('rezultati-vsak-interval-vsi-indeksi/*.csv')
-    if test_files:
-        for file in test_files:
-            os.remove(file)
+    # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
+    # ce se ni ustvarjena jo ustvarimo
+    folder = "rezultati-vsak-interval-vsi-indeksi"
+    os.makedirs(folder, exist_ok=True)  # Ustvari mapo (če še ne obstaja)
 
+    # da pripravimo prostor da nove fajle damo notri moremo prej use zbrisat. to naredi pa ta koda
+    for csv_file in glob.glob(os.path.join(folder, "*.csv")):  # 🔍 Najdi vse CSV datoteke
+        os.remove(csv_file)
+
+    # tukaj se pa zacne glavni del te nase famozne funkcije
     # indeksi[0] = osnoven indeks, indeksi[1] = 2x indeks, indeksi[2] = 3x indeks
     indeksi = pridobi_indekse()
     #zneski[0] = zacetna investicija, zneski[1] = mesecne investicije, zneski[2] = dolzina intervala, 
@@ -98,7 +101,7 @@ def funkcija_naredi_rezultat_za_csvje():
     intervali = generiraj_intervale_leto(indeksi[0], zneski[2])
 
     with Progress() as progress:
-        task = progress.add_task("[cyan]Računam 1x...", total=len(intervali))
+        task = progress.add_task("[cyan]Računam...", total=len(intervali))
         # števec začnemo pri 1, da bo ...1.csv, ...2.csv, ...
         stevec = 1
         for i in range(len(intervali)):
@@ -116,32 +119,70 @@ def funkcija_naredi_rezultat_za_csvje():
             progress.advance(task)
     return 0
 
+# -----------------
+
+# 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
+def funkcija_ki_narise_grafe():
+    # prvo fancy print da locimo od preostale kode
+    print()
+
+    # mormo dobit koliko elementov je v mapi da vemo koliko grafov moramo narest - 
+    # kolikokrat more for loop it
+    mapa = Path("rezultati-vsak-interval-vsi-indeksi")
+    stevilo_csvjev = len(list(mapa.glob("*.csv")))
+
+    # fancy vprasanje ker graf hocemo
+    
+    print(Fore.CYAN + "📈 Izberi vrsto grafa:" + Style.RESET_ALL)
+    print()
+
+    print(Fore.GREEN + "1. Logaritemski (priporočeno)" + Style.RESET_ALL)
+    print(Fore.LIGHTCYAN_EX + "2. Navaden" + Style.RESET_ALL)
+    print()
+
+    ker_graf = input(Fore.CYAN + "Vnesi številko (1/2): " + Style.RESET_ALL)
+
+    # ce izberemo 1 naredi logaritmicne, ce 2 naredimo navadne
+    if ker_graf == 1:
+        for i in range (1,stevilo_csvjev + 1):
+            narisi_logaritmicne_grafe(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
+    else:
+        for i in range (1,stevilo_csvjev + 1):
+            narisi_navadne_grafe(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
 
 
+# ---------------------------------------------------------------------------------------------
+
+# POMOZNA FUNKCIJA (KI JE NITI NE RABIMO) KI ZBRISE VSE KAR JE V MAPI 'rezultati-vsak-interval-vsi-indeksi'
+# ce se nam neda rocno zbrisat in predvsem da ko nocemo meti vec fajlov - recimo preden pushamo na github
 def funkcija_zbrisi_kar_je_v_mapi():
     test_files = glob.glob('rezultati-vsak-interval-vsi-indeksi/*.csv')
     if test_files:
         for file in test_files:
             os.remove(file)
 
-funkcija_zbrisi_kar_je_v_mapi()
-
-#funkcija_naredi_rezultat_za_csvje()
+#funkcija_zbrisi_kar_je_v_mapi()
 
 
+# ---------------------------------------------------------------------------------------------
+# POKLICEMO OBE GLAVNI FUNKCIJI KI NAREDITA VSE, SIUMM!
 
-
-mapa = Path("rezultati-vsak-interval-vsi-indeksi")
-stevilo_csvjev = len(list(mapa.glob("*.csv")))
-
-
-for i in range (1,stevilo_csvjev + 1):
-    narisi_graf_logaritmicen(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
+funkcija_naredi_rezultat_za_csvje()
+funkcija_ki_narise_grafe()
 
 
 
 
-fancy1()
+
+
+
+
+
+
+
+
+
+fancy_zakljucek_1()
 
 
 
