@@ -1,6 +1,5 @@
-colorama
-rich
 pandas
+plotly
+rich
+colorama
 python-dateutil
-
-

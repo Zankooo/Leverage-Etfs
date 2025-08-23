@@ -3,6 +3,11 @@ import plotly.express as px
 import pandas as pd
 import plotly.express as px
 from typing import List, Optional, Dict
+
+
+
+
+
 # to dela perfektno, 
 # mores dat pa csv v takem formatu:
 # date,A,B,C
