@@ -28,13 +28,11 @@ def izracun_dnevnih_sprememb(podatki):
     return result
 
 
-
-
 def izracun_letnih_donosov(podatki):
     """
     Ne vem kako ta funkcija dela ampak dela!
     Funkcija ki sprejme podatke, list of lists
-    In izracuna donos za Vsako leto.
+    In izracuna donos za Vsako leto. -> to funkcijo nikjer ne uporabim ampak je za vsak slucaj kle ce me kdaj zanima
     :param list of lists podatki indeksa
     :return: list of lists donosov za vsako leto
     """
@@ -178,13 +176,13 @@ def izracun_dca_metoda(podatki, output_file="rezultati_investicije.csv"):
 # -------------------------- spremenjena funkcija dca za testing
 # --------------------------------------------
 
-
-
-
-# ta funkcija tocno zracuna istok kot funkcija 'izracun dca metoda' le da vse tri 1x in 2x in 3x naredi
+# ta funkcija tocno zracuna isto k kot funkcija 'izracun dca metoda' le da vse tri 1x in 2x in 3x naredi
 # in jih da v locen csv!!
+import csv
+from datetime import datetime
+
 def izracun_dca_metoda_prilagojena_da_naredi_csv(
-    podatki1, podatki2, podatki3, # morajo biti isti indeks le pač da je osnoven, 2x, 3x
+    podatki1, podatki2, podatki3,  # morajo biti isti indeks: osnovni, 2x, 3x
     initial_investment: float,
     monthly_investment: float,
     datum_zacetka: str = "2009-02-19",
@@ -195,7 +193,7 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     DCA simulacija za 3 serije z ISTO začetno investicijo in ISTIM mesečnim vložkom.
     Mesečni vložek se doda ob prvem razpoložljivem dnevu NOVEGA meseca (po podatkih serije 1).
     Zapiše CSV: date, A, B, C in vrne končne vrednosti (A, B, C).
-    Zahteva funkcijo izracun_dnevnih_sprememb(podatkiX) -> ...[i][2] = '±x.xx%'.
+    Zahteva: izracun_dnevnih_sprememb(podatkiX) -> ...[i][2] = '±x.xx%'.
     """
 
     # dnevne spremembe (nizi s percenti)
@@ -215,12 +213,16 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     len2 = e2 - s2 + 1
     len3 = e3 - s3 + 1
     if not (len1 == len2 == len3):
-        raise ValueError(f"Intervali se ne ujemajo (len1={len1}, len2={len2}, len3={len3}).")
+        raise ValueError(f"Intervali serij se ne ujemajo (len1={len1}, len2={len2}, len3={len3}).")
 
-    # vsi trije imajo enake start & mesečne vložke
+    # začetno stanje (enako za vse tri)
     inv1 = float(initial_investment)
     inv2 = float(initial_investment)
     inv3 = float(initial_investment)
+
+    # števci mesečnih vložkov (na serijo)
+    vsota_mesecnih_vlozkov = 0.0
+    st_vplacil = 0
 
     current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
     results = []
@@ -229,17 +231,19 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
         i1, i2, i3 = s1 + k, s2 + k, s3 + k
         date_str = podatki1[i1][0]
 
-        # sanity check poravnave datumov
+        # poravnava datumov
         if podatki2[i2][0] != date_str or podatki3[i3][0] != date_str:
             raise ValueError(f"Datumi se ne ujemajo pri k={k}: {date_str} vs {podatki2[i2][0]} / {podatki3[i3][0]}")
 
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
-        # ob prehodu v nov mesec dodamo mesečni vložek vsem trem
+        # ob prehodu v nov mesec dodamo mesečni vložek vsem trem (vplačilo šteje ENKRAT na serijo)
         if date_obj.month != current_month:
             inv1 += monthly_investment
             inv2 += monthly_investment
             inv3 += monthly_investment
+            vsota_mesecnih_vlozkov += monthly_investment
+            st_vplacil += 1
             current_month = date_obj.month
 
         # % → decimal
@@ -259,8 +263,13 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
         w.writerow(["date", "A", "B", "C"])
         w.writerows(results)
 
+    # izpis povzetka (na serijo)
     
+    print(f"Začetna investicija (na serijo): {initial_investment:.2f} EUR")
+    print(f"Vsota mesečnih vložkov (na serijo): {vsota_mesecnih_vlozkov:.2f} EUR  (št. vplačil: {st_vplacil})")
+
     return round(inv1, 2), round(inv2, 2), round(inv3, 2)
+
 
 
 

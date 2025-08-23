@@ -137,11 +137,3 @@ def narisi_graf(
 
 
 # -----------------------------------------------------------------------------------
-
-
-narisi_graf("fajl-za-grafe.csv")
-
-# zdej ugotovit kako zbrati podatke v enem csv
-
-
-

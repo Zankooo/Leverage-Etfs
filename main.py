@@ -9,10 +9,9 @@ import os
 import glob
 init(autoreset=True)
 
-
-
 print('----------')
 
+# UPLOAD PODATKOV DA JIH PREBEREMO
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
 sp_500_3x = load_csv('3x-leverage/sp-500-3x.csv')
@@ -25,6 +24,7 @@ nasdaq_comp = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
 nasdaq_comp_2x = load_csv('2x-leverage/nasdaq-comp-2x.csv')
 nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
 
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
     # izracuna intervale
@@ -69,7 +69,6 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
 # Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
 # in koda bo krajsa, in ostala bo samo funkcionalnost
 
-
 LINE = "═" * 54
 
 def pridobi_indekse():
@@ -108,11 +107,8 @@ def pridobi_zneske():
 
     print(Fore.MAGENTA + LINE + Style.RESET_ALL)
     return [zacetna, mesecne, dolzina]
-   
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indeksi):
     # preverimo ce so od prejsnega zagona programa ze kaksne datoteke v testing mapi, 
@@ -127,8 +123,6 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
     funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2])
     return 0
 
-
-
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
 
@@ -139,11 +133,9 @@ zneski = pridobi_zneske()
 
 funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
 
-
 print('----------')
 
-
-#print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
+print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
 primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
 

@@ -5,8 +5,10 @@ from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
 from rich.progress import Progress
 from colorama import init, Fore, Style
+from grafi import narisi_graf
 import os
 import glob
+from pathlib import Path
 from rich.progress import Progress  # če še ni uvoženo
 init(autoreset=True)
 
@@ -75,25 +77,9 @@ def pridobi_zneske():
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
-#indeksi = pridobi_indekse()
-#zneski = pridobi_zneske()
-#funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
-
-
-#primerjaj_dva_indeksa("testing/rezultati-1.csv", "testing/rezultati-2.csv")
-#primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
-
-# izracun_dca_metoda(sp_500_3x)
-
-
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ
-
-
-
-
+# GLAVNa FUNKCIJA KI KLIČEJO USE VSE ZGORAJ
 
 def funkcija_naredi_rezultat_za_csvje():
     # na zacetku; ce so od prej fajli, jih zbrise da je plac za nove
@@ -139,28 +125,25 @@ def funkcija_zbrisi_kar_je_v_mapi():
             os.remove(file)
 
 
-funkcija_zbrisi_kar_je_v_mapi()
+#funkcija_zbrisi_kar_je_v_mapi()
 
 #funkcija_naredi_rezultat_za_csvje()
-# izracun_dca_metoda_prilagojena_da_naredi_csv(nasdaq_100,nasdaq_100_2x,nasdaq_100_3x, 1000,100)
+
+#izracun_dca_metoda_prilagojena_da_naredi_csv(nasdaq_100,nasdaq_100_2x,nasdaq_100_3x, 1000,100)
+
+# izberes kater graf narise
+# kasneje dam for loop cez vse in narisal bo vse
 
 
 
+mapa = Path("rezultati-vsak-interval-vsi-indeksi")
+stevilo_csvjev = len(list(mapa.glob("*.csv")))
 
 
+for i in range (1,stevilo_csvjev + 1):
+    narisi_graf(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
 
 
-
-
-# CILJ JE NAREDITI WEB APP IN DA POTEM V WEBAPPU DOLOCIS PARAMETRE 
-# IN TI IZPISE TAKO KOT TI TUKAJ IZPISE KATER JE BIL BOLJSI
-# AMPAK DA TI LAHKO KLIKNES SE NA VRSTICO IN TI POKAZE GRAF VSEH TREH KAKO JE POTEKAL
-
-
-# v enem csv file moram imeti 
-# od tega leta pa do tega, koliko imamo pri 1x, koliko imamo pri 2x, koliko imamo pri 3x
-# datumi, tecaj, tecaj, tecaj
-# in iz tega pol narisemo grafe
 
 
 fancy1()
