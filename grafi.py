@@ -144,8 +144,14 @@ def narisi_navadne_grafe(
 
 
 
+from typing import Optional, List, Dict
+import pandas as pd
+import plotly.express as px
+
 def narisi_logaritmicne_grafe(
-    
+    zacetna_investicija,
+    mesecna_investicija,
+    vse_investicije_skupaj,
     csv_path: str,
     columns: Optional[List[str]] = None,     # katere stolpce narisati; če None -> vsi razen 'date'
     rename_to_graf: bool = True,             # preimenuj izbrane stolpce v "Graf 1..n"
@@ -203,7 +209,7 @@ def narisi_logaritmicne_grafe(
         xaxis_title="Datum",
         yaxis_title="Vrednost (log)",
         font=dict(family="Arial, Helvetica, sans-serif", size=14),
-        margin=dict(l=60, r=30, t=120, b=60),
+        margin=dict(l=60, r=30, t=160, b=60),   # malo več prostora zgoraj za anotacijo
         hoverlabel=dict(font_size=13),
         legend_title_text=""
     )
@@ -245,22 +251,29 @@ def narisi_logaritmicne_grafe(
         )
     )
 
-    # ⬇️ Anotacija z začetnim in končnim datumom na SREDINI figure (vedno vidna)
-    # ➕ NAPIS NAD GRAFOM (rahlo nižje, da je viden)
+    # ➕ NAPIS NAD GRAFOM: datumi + tri vrednosti
+    # ➕ NAPIS NAD GRAFOM: datumi + tri vrednosti (rahlo večji font)
     start_date_str = pd.to_datetime(df["date"].min()).strftime("%Y-%m-%d")
     end_date_str   = pd.to_datetime(df["date"].max()).strftime("%Y-%m-%d")
 
+    z_str = f"{float(zacetna_investicija):,.2f} €"
+    m_str = f"{float(mesecna_investicija):,.2f} €"
+    s_str = f"{float(vse_investicije_skupaj):,.2f} €"
+
     fig.add_annotation(
-        x=0.5, y=1.07,               # ↓ bilo je 1.16; zdaj je malo nižje
+        x=0.5, y=1.07,
         xref="paper", yref="paper",
         xanchor="center", yanchor="bottom",
-        text=f"<b style='font-size:18px'>{start_date_str} → {end_date_str}</b>",
+        text=(
+            f"<b style='font-size:20px'>{start_date_str} → {end_date_str}</b><br>"
+            f"<span style='font-size:16px'>Začetna: {z_str} &nbsp;•&nbsp; "
+            f"Mesečna: {m_str} &nbsp;•&nbsp; Skupaj: {s_str}</span>"
+        ),
         showarrow=False, align="center",
         bgcolor="rgba(255,255,255,0.95)",
         bordercolor="rgba(0,0,0,0.2)", borderwidth=1, borderpad=6,
-        font=dict(size=18)
+        font=dict(size=20)  # fallback velikost
     )
-
 
     # shrani in odpri
     fig.write_html(output_html, auto_open=True)

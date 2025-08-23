@@ -79,6 +79,16 @@ def pridobi_zneske():
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # GLAVNI FUNKCIJI
 
+# tukaj se pa zacne glavni del te nase famozne funkcije
+
+# to smo dali ven iz funkcije ker pac potrebujemo to v dveh funkcijah (prvi in drugi) in drugace ne gre
+
+
+
+
+
+
+
 # 1. GLAVNA FUNKCIJA - ustvari csvje 
 def funkcija_naredi_rezultat_za_csvje():
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
@@ -89,12 +99,6 @@ def funkcija_naredi_rezultat_za_csvje():
     # da pripravimo prostor da nove fajle damo notri moremo prej use zbrisat. to naredi pa ta koda
     for csv_file in glob.glob(os.path.join(folder, "*.csv")):  # 🔍 Najdi vse CSV datoteke
         os.remove(csv_file)
-
-    # tukaj se pa zacne glavni del te nase famozne funkcije
-    # indeksi[0] = osnoven indeks, indeksi[1] = 2x indeks, indeksi[2] = 3x indeks
-    indeksi = pridobi_indekse()
-    #zneski[0] = zacetna investicija, zneski[1] = mesecne investicije, zneski[2] = dolzina intervala, 
-    zneski = pridobi_zneske()
 
     # izračuna intervale -> na podlagi osnovnega indeksa.. pac itak bodo imeli vsi iste intervale 
     # in iste datume imajo.. teoreticno bi lahko tudi dali ker kol indeksi[1] ali indeksi[2]
@@ -122,36 +126,47 @@ def funkcija_naredi_rezultat_za_csvje():
 # -----------------
 
 # 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
-def funkcija_ki_narise_grafe():
-    # prvo fancy print da locimo od preostale kode
+def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj):
     print()
 
-    # mormo dobit koliko elementov je v mapi da vemo koliko grafov moramo narest - 
-    # kolikokrat more for loop it
+    # preštej csv-je v mapi
     mapa = Path("rezultati-vsak-interval-vsi-indeksi")
     stevilo_csvjev = len(list(mapa.glob("*.csv")))
 
-    # fancy vprasanje ker graf hocemo
-    
     print(Fore.CYAN + "📈 Izberi vrsto grafa:" + Style.RESET_ALL)
     print()
-
     print(Fore.GREEN + "1. Logaritemski (priporočeno)" + Style.RESET_ALL)
     print(Fore.LIGHTCYAN_EX + "2. Navaden" + Style.RESET_ALL)
     print()
 
-    ker_graf = input(Fore.CYAN + "Vnesi številko (1/2): " + Style.RESET_ALL)
+    ker_graf = input(Fore.CYAN + "Vnesi številko (1/2): " + Style.RESET_ALL).strip()
 
-    
-
-
-    # ce izberemo 1 naredi logaritmicne, ce 2 naredimo navadne
-    if ker_graf == 1:
-        for i in range (1,stevilo_csvjev + 1):
-            narisi_logaritmicne_grafe(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
+    if ker_graf == "1":
+        # LOG: prikazuje tudi začetno, mesečno in skupaj (v anotaciji)
+        for i in range(1, stevilo_csvjev + 1):
+            pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
+            narisi_logaritmicne_grafe(
+                zacetna_investicija,
+                mesecna_investicija,
+                cela_investicija_skupaj,
+                pot
+            )
+    elif ker_graf == "2":
+        # Navaden graf (če želiš, lahko podobno dodaš anotacijo tudi sem)
+        for i in range(1, stevilo_csvjev + 1):
+            pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
+            narisi_navadne_grafe(pot)
     else:
-        for i in range (1,stevilo_csvjev + 1):
-            narisi_navadne_grafe(f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv")
+        print(Fore.YELLOW + "Neveljavna izbira, privzeto rišem logaritemske grafe." + Style.RESET_ALL)
+        for i in range(1, stevilo_csvjev + 1):
+            pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
+            narisi_logaritmicne_grafe(
+                zacetna_investicija,
+                mesecna_investicija,
+                cela_investicija_skupaj,
+                pot
+            )
+
 
 
 # ---------------------------------------------------------------------------------------------
@@ -168,14 +183,24 @@ def funkcija_zbrisi_kar_je_v_mapi():
 
 
 # ---------------------------------------------------------------------------------------------
-# POKLICEMO OBE GLAVNI FUNKCIJI KI NAREDITA VSE, SIUMM!
+# POKLICEMO TO KAR JE TUKAJ IN JE TO TO
 
-#funkcija_naredi_rezultat_za_csvje()
-#funkcija_ki_narise_grafe()
+# to rabimo ker te podatke uporabljata obe glavni funkciji
+indeksi = pridobi_indekse()
+
+zneski = pridobi_zneske()
+# zacetna investicija
+zacetna_investicija = int(zneski[0])
+# mesecne investicije
+mesecna_investicija = int(zneski[1])
+# interval, recimo 10
+interval = int(zneski[2])
+
+cela_investicija_skupaj = zacetna_investicija + 12 * interval * mesecna_investicija
 
 
-# SE ZACETNO INVESTICIJO IN MESECNE IN SKUPAJ
-narisi_logaritmicne_grafe("rezultati-vsak-interval-vsi-indeksi/rezultati_investicije1.csv")
+funkcija_naredi_rezultat_za_csvje()
+funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj)
 
 
 
