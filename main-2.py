@@ -210,6 +210,7 @@ funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investic
 
 
 
+
 fancy_zakljucek_1()
 
 

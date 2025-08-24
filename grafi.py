@@ -163,9 +163,18 @@ def narisi_logaritmicne_grafe(
     custom_labels: Optional[Dict[str,str]] = None,  # alternativno: {"A":"Moja A", "B":"Druga"}
     naslov: str = "Več krivulj skozi čas (log skala)",
     output_html: str = "graf_vec.html",
-    y_tickformat: str = ",.0f",              # formatiranje Y osi (uporablja se tudi na log osi)
-    hover_fmt: str = "%{y:,.2f}"             # format za številke v hoverju
+    y_tickformat: str = ",.0f",              # formatiranje Y osi (d3-format; separators poskrbi za EU)
+    hover_fmt: str = "%{y:,.2f}"             # format za številke v hoverju (EU z separators)
 ):
+    # EU format helper (npr. 12.345,67)
+    def fmt_eu(x, decimals=2):
+        try:
+            x = float(x)
+        except (TypeError, ValueError):
+            return str(x)
+        s = f"{x:,.{decimals}f}"
+        return s.replace(",", "X").replace(".", ",").replace("X", ".")
+
     # preberi CSV
     df = pd.read_csv(csv_path, parse_dates=["date"])
 
@@ -201,7 +210,7 @@ def narisi_logaritmicne_grafe(
         template="simple_white", markers=False
     )
 
-    # stil črt in hover
+    # stil črt in hover (EU format bo prek layout.separators)
     fig.update_traces(
         line=dict(width=2.5),
         hovertemplate= hover_fmt + " $ ali €"
@@ -210,19 +219,21 @@ def narisi_logaritmicne_grafe(
     # layout
     fig.update_layout(
         hovermode="x unified",
-        title=dict(text=naslov, x=0.0, xanchor="left", y=0.98),
         xaxis_title="Datum",
         yaxis_title="Vrednost (log)",
         font=dict(family="Arial, Helvetica, sans-serif", size=14),
-        margin=dict(l=60, r=30, t=160, b=60),   # malo več prostora zgoraj za anotacijo
+        margin=dict(l=60, r=30, t=190, b=60),   # več prostora zgoraj za daljši tekst
         hoverlabel=dict(font_size=13),
-        legend_title_text=""
+        legend_title_text="",
+        separators=",."  # KLJUČNO: decimalna vejica, tisočice s piko
     )
 
     # osi + spike line
     fig.update_xaxes(
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
-        showspikes=True, spikemode="across", spikesnap="cursor", spikedash="solid"
+        showspikes=True, spikemode="across", spikesnap="cursor", spikedash="solid",
+        tickformat="%d.%m.%Y",   # EU datum na osi
+        hoverformat="%d.%m.%Y"   # EU datum v hover headerju
     )
     fig.update_yaxes(
         type="log",                   # log skala
@@ -243,7 +254,7 @@ def narisi_logaritmicne_grafe(
                     dict(count=3,   label="3M",  step="month",stepmode="backward"),
                     dict(count=6,   label="6M",  step="month",stepmode="backward"),
                     dict(count=1,   label="YTD", step="year", stepmode="todate"),
-                    dict(count=1,   label="1Y",  step="year", stepmode="backward"),
+                    dict(count=1,   label="1Y",  step="year",  stepmode="backward"),
                     dict(step="all",label="All")
                 ])
             ),
@@ -256,30 +267,46 @@ def narisi_logaritmicne_grafe(
         )
     )
 
-    # ➕ NAPIS NAD GRAFOM: datumi + tri vrednosti
-    # ➕ NAPIS NAD GRAFOM: datumi + tri vrednosti (rahlo večji font)
-    start_date_str = pd.to_datetime(df["date"].min()).strftime("%Y-%m-%d")
-    end_date_str   = pd.to_datetime(df["date"].max()).strftime("%Y-%m-%d")
+    # ➕ NAPIS NAD GRAFOM: datumi + tri vrednosti + končni tečaji vseh serij
+    start_date_str = pd.to_datetime(df["date"].min()).strftime("%d.%m.%Y")
+    end_date_str   = pd.to_datetime(df["date"].max()).strftime("%d.%m.%Y")
 
-    z_str = f"{float(zacetna_investicija):,.2f} €"
-    m_str = f"{float(mesecna_investicija):,.2f} €"
-    s_str = f"{float(vse_investicije_skupaj):,.2f} €"
+    z_str = f"{fmt_eu(zacetna_investicija, 2)} €"
+    m_str = f"{fmt_eu(mesecna_investicija, 2)} €"
+    s_str = f"{fmt_eu(vse_investicije_skupaj, 2)} €"
 
-    fig.add_annotation(
-        x=0.5, y=1.07,
-        xref="paper", yref="paper",
-        xanchor="center", yanchor="bottom",
-        text=(
-            f"<b style='font-size:20px'>{start_date_str} → {end_date_str}</b><br>"
-            f"<span style='font-size:16px'>Začetna: {z_str} &nbsp;•&nbsp; "
-            f"Mesečna: {m_str} &nbsp;•&nbsp; Skupaj: {s_str}</span>"
-        ),
-        showarrow=False, align="center",
-        bgcolor="rgba(255,255,255,0.95)",
-        bordercolor="rgba(0,0,0,0.2)", borderwidth=1, borderpad=6,
-        font=dict(size=20)  # fallback velikost
+    # končni tečaji (zadnja vrstica) za vsako serijo v y_cols
+    last_row = df.iloc[-1]
+    finals_str = " &nbsp;•&nbsp; ".join(
+        f"{col}: {fmt_eu(last_row[col], 2)} €" for col in y_cols
     )
 
-    # shrani in odpri
+    # fancy napis nad grafom (z EU številkami in datumi)
+    fig.add_annotation(
+        x=0.5, y=1.08,
+        xref="paper", yref="paper",
+        xanchor="center", yanchor="bottom",
+        showarrow=False, align="center",
+        bgcolor="rgba(255,255,255,0.96)",
+        bordercolor="rgba(0,0,0,0.15)", borderwidth=1, borderpad=10,
+        font=dict(size=18),
+        text=(
+            f"<span style='font-size:26px; font-weight:800'>"
+            f"🗓️ <span style='color:#6C63FF'>{start_date_str}</span> "
+            f"<span style='color:#9AA0A6'>→</span> "
+            f"<span style='color:#6C63FF'>{end_date_str}</span>"
+            f"</span><br>"
+            f"<span style='font-size:21px; color:#444'>"
+            f"💰 Začetna investicija: <b style='color:#111'>{z_str}</b> &nbsp;•&nbsp; "
+            f"📈 Mesečne investicije: <b style='color:#111'>{m_str}</b> &nbsp;•&nbsp; "
+            f"Σ Vse skupaj: <b style='color:#111'>{s_str}</b>"
+            f"</span><br>"
+            f"<span style='font-size:21px; color:#444'>"
+            f"🏁 Končne vrednosti: <b style='color:#111'>{finals_str}</b>"
+            f"</span>"
+        )
+    )
+
+    # shrani in odpri (separators poskrbi za EU ločila na osi in v hoverju)
     fig.write_html(output_html, auto_open=True)
 
