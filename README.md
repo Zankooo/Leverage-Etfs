@@ -25,25 +25,21 @@
 - torej volatilnost uničuje donos. Zato ni fajn kupovat vzvoda individualnih delnic ker individualne delnice še toliko bolj nihajo in donos se drastično izgubi. 
 - za vzvod je idealno da je čim manj gor dol in počasna a vztrajno rast. 
 
-## Aplikacija kaj dela?
+## Aplikacija kaj dela - funkcionalnost 1 (file: main.py) - CLI verzija?
 
-Primerja donosov 1x, 2x in 3x različic izbranega indeksa (S&P 500, Nasdaq 100 ali Nasdaq Composite) ob vnosu:
+Na podlagi: 
 - začetne investicije,
 - mesečnih vplačil,
-- dolžine vlaganja (v letih).
+- dolžine vlaganja (v letih)
 
-## Kako deluje
-1. Uporabnik vnese:
-   - začetno investicijo,
-   - mesečno investicijo,
-   - dolžino investiranja v letih (interval),
-   - indeksa (S&P 500 / Nasdaq 100 / Nasdaq Composite).
-2. Program nato naredi izračune na vsakem obdobju. Recimo da smo izbrali S&P 500, naredi na navadnem, na 2x in 3x na vsakem obdobju za izbran interval
-3. Za vsako celo leto do izbranega intervala izračuna “koliko imamo vse skupaj” ob upoštevanju začetnega in mesečnih vplačil.
-4. V vsakem intervalu potem nam program pove kater je bil najboljši. In nam rezultate tudi izpiše 
+Primerja donosov osnovnega indeksa, in 2x vzvoda in 3x vzvoda. (podprti indeksi: S&P 500, Nasdaq 100 in Nasdaq Composite)
+
+Program nam nato face to face pokaže v katerem intervalu v zgodovini je bila boljša katera različica.
+
+Pravtako izpiše statistiko!
 
 
-## Rezultati prikazani v konzoli
+## Prikaz rezultatov danih za funkcionalnost 1:
 
 ```
 Datum | NAJBOLJSI (narejen plus/minus, vse skupaj) >> +% >> DRUGI (narejen plus/minus, vse skupaj) >> +% >> TRETJI (narejen plus/minus, vse skupaj)

@@ -185,15 +185,29 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     podatki1, podatki2, podatki3,  # morajo biti isti indeks: osnovni, 2x, 3x
     initial_investment: float,
     monthly_investment: float,
-    datum_zacetka: str = "2009-02-19",
-    datum_konca: str   = "2016-03-31",
-    output_file: str   = "rezultati_investicije.csv",
+    datum_zacetka: str,
+    datum_konca: str,
+    output_file: str  = "rezultati_investicije.csv",
 ):
     """
-    DCA simulacija za 3 serije z ISTO začetno investicijo in ISTIM mesečnim vložkom.
-    Mesečni vložek se doda ob prvem razpoložljivem dnevu NOVEGA meseca (po podatkih serije 1).
-    Zapiše CSV: date, A, B, C in vrne končne vrednosti (A, B, C).
-    Zahteva: izracun_dnevnih_sprememb(podatkiX) -> ...[i][2] = '±x.xx%'.
+    Funkcija prejme tri vrste podatkov (osnovne, 2x, 3x) v taki obliki;
+    Nasdaq-100, 1986-2025
+    Date, close-price
+    1986-01-02,131.250
+    1986-01-03,130.550
+    1986-01-06,130.350
+    1986-01-07,132.790
+    Vsak indeks je v taki obliki seveda, vsi podatki.
+    In funkcija ustvari en csv v katerem so vsi donosi za vsakega. Na podlagi zacetnega datuma in koncnega
+
+    To funkcija ustvari
+    date, A,B,C
+    1928-01-03,1005.7,1011.3,1017.0
+    1928-01-04,1003.39,1006.75,1010.08
+    1928-01-05,993.75,987.42,980.99
+    1928-01-06,1000.02,999.76,999.44
+    1928-01-09,990.91,981.67,972.25
+
     """
 
     # dnevne spremembe (nizi s percenti)

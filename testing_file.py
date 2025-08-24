@@ -1,18 +1,33 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from csv import reader
-from csv import reader
-from colorama import Fore, Style
-from csv import reader
 from colorama import Fore, Style
 
 def generiraj_intervale_leto(podatki, dolzina_intervala_let):
     """
     Funkcija generira intervale za izbrano število let
     Da nato lahko naredimo testing na teh datumih 
-    :param podatki: List of lists (dogovorjen format, prve 2 vrstice sta naslova)
+    :param podatki: List of lists (dogovorjen format, prve 2 vrstice sta naslova): 
+    Nasdaq-composite, 1971-2025
+    Date, Close-price
+    1971-02-05,100.000
+    1971-02-08,100.840
+    1971-02-09,100.760
     :param dolzina_intervala_let: int, dolžina intervala v letih
-    :return: list of lists [[zacetni_datum, koncni_datum], ...]
+    :return: list of lists [[zacetni_datum, koncni_datum], ...]: 
+    [
+    ['1962-01-02', '1967-01-03']
+    ['1963-01-02', '1968-01-02']
+    ['1964-01-02', '1969-01-02']
+    ['1965-01-04', '1970-01-05']
+    ['1966-01-03', '1971-01-04']
+    ['1967-01-03', '1972-01-03']
+    ['1968-01-02', '1973-01-02']
+    ['1969-01-02', '1974-01-02']
+    ['1970-01-02', '1975-01-02']
+    ['1971-01-04', '1976-01-05']
+    ['1972-01-03', '1977-01-03']
+    ]
     """
     # Preskoči naslovne vrstice
     podatki = podatki[2:]
@@ -111,14 +126,20 @@ def primerjaj_dva_indeksa(file1, file2, stolpec=5):
 
 
 
-
-
-
-from csv import reader
-
-from csv import reader
-
 def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
+    """
+    Tak format csvja more bit
+    vzvod-3x.csv
+    "Datum od kdaj do kdaj,Zacetna investicija,vse mesecne investicije,skupaj vse investicije,koliko smo v plusu oz minusu,koliko imamo vse skupaj"
+    "1927-12-30-2022-12-30,1000,114000,115000,1400258538.15,1400373538.148123"
+    "1928-01-03-2023-01-03,1000,114000,115000,1383427739.07,1383542739.0715628"
+
+    :param file1: csv osnoven
+    :param file2: csv 2x leverage
+    :param file3: csv 3x leverage
+
+    :return: nic pametnega ne returna le izpise kater je bil boljsi v katerem intervalu in primerjava
+    """
     # --- ANSI RGB helper ---
     def rgb(r, g, b): return f"\033[38;2;{r};{g};{b}m"
     RESET = "\033[0m"
@@ -132,6 +153,24 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     FILE2_COLOR = rgb(85, 193, 255)   # file2
     FILE3_COLOR = rgb(255, 183, 3)    # file3
 
+    # EU format helper: 12345.67 -> 12.345,67
+    def fmt_eu(x, decimals=2):
+        try:
+            val = float(x)
+        except (TypeError, ValueError):
+            return str(x)
+        s = f"{val:,.{decimals}f}"  # 12,345.67
+        return s.replace(",", "X").replace(".", ",").replace("X", ".")
+
+    # EU percent helper s predznakom: +12,34% ali -5,67%
+    def fmt_pct_eu(x, decimals=2):
+        try:
+            val = float(x)
+        except (TypeError, ValueError):
+            return str(x)
+        sign = "+" if val >= 0 else "-"
+        return f"{sign}{fmt_eu(abs(val), decimals)}%"
+
     # Preberi vse tri datoteke
     with open(file1, "r") as f1, open(file2, "r") as f2, open(file3, "r") as f3:
         podatki1 = list(reader(f1))
@@ -142,7 +181,7 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     ties = 0
 
     print()
-    print("Datum | NAJBOLJSI (narejen plus/minus, vse skupaj)  >>  +%  >>  DRUGI (narejen plus/minus, vse skupaj)  >>  +%  >>  TRETJI (narejen plus/minus, vse skupaj)")
+    print("Datum | NAJBOLJŠI (narejen plus/minus, vse skupaj)  >>  +%  >>  DRUGI (narejen plus/minus, vse skupaj)  >>  +%  >>  TRETJI (narejen plus/minus, vse skupaj)")
     print()
 
     rows = min(len(podatki1), len(podatki2), len(podatki3))
@@ -160,11 +199,15 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
 
         datum = podatki1[i][0]
 
-        # Priprava za razvrščanje: (naziv, vrednost, obarvan izpis, vrednost)
+        # Obarvani EU izpisi (gain, total)
+        c1_str = f"{FILE1_COLOR}{fmt_eu(f1_gain,2)}, {fmt_eu(f1_tot,2)}{RESET}"
+        c2_str = f"{FILE2_COLOR}{fmt_eu(f2_gain,2)}, {fmt_eu(f2_tot,2)}{RESET}"
+        c3_str = f"{FILE3_COLOR}{fmt_eu(f3_gain,2)}, {fmt_eu(f3_tot,2)}{RESET}"
+
         candidates = [
-            (file1, v1, f"{FILE1_COLOR}{f1_gain:,.2f}, {f1_tot:,.2f}{RESET}", v1),
-            (file2, v2, f"{FILE2_COLOR}{f2_gain:,.2f}, {f2_tot:,.2f}{RESET}", v2),
-            (file3, v3, f"{FILE3_COLOR}{f3_gain:,.2f}, {f3_tot:,.2f}{RESET}", v3),
+            (file1, v1, c1_str, v1),
+            (file2, v2, c2_str, v2),
+            (file3, v3, c3_str, v3),
         ]
 
         if v1 == v2 == v3:
@@ -177,7 +220,7 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
 
         def pct_diff(a, b):
             try:
-                return f"+{round((a - b) / b * 100, 2)}%"
+                return fmt_pct_eu((a - b) / b * 100, 2)
             except ZeroDivisionError:
                 return "+inf%"
 
@@ -198,23 +241,35 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     print(FILE1_COLOR + "══════════════════════════════════════════════════════" + RESET)
     print(CYAN + f"📊 Direktna primerjava med {file1}, {file2} in {file3}" + RESET)
     print()
-    print(CYAN + f"💰 Začetna investicija: {podatki1[2][1]}" + RESET)
-    print(CYAN + f"📈 Vse mesečne investicije: {podatki1[2][2]}" + RESET)
-    print(CYAN + f"💵 Vse skupaj investirano: {podatki1[2][3]}" + RESET)
+
+    # Povzetek: preberi in formatiraj v EU (če ni številka, izpiši surovo)
+    def safe_fmt(val):
+        try:
+            return fmt_eu(float(val), 2)
+        except (TypeError, ValueError):
+            return str(val)
+
+    print(CYAN + f"💰 Začetna investicija: {safe_fmt(podatki1[2][1])}$" + RESET)
+    print(CYAN + f"📈 Vse mesečne investicije: {safe_fmt(podatki1[2][2])}$" + RESET)
+    print(CYAN + f"💵 Vse skupaj investirano: {safe_fmt(podatki1[2][3])}$" + RESET)
     print()
-    print(CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'" + RESET)
+    print(CYAN + f"Procenti so izračunani na podlagi 'koliko imamo vse skupaj'" + RESET)
     print()
+    print(GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj:'" + RESET)
 
     for fname, color in [(file1, FILE1_COLOR), (file2, FILE2_COLOR), (file3, FILE3_COLOR)]:
         w = wins[fname]
-        pct = round((w / (total_compared or 1)) * 100, 2)
-        print(color + f"✔ {fname} je bil najboljši v {w} primerih ({pct}%)" + RESET)
+        pct = (w / (total_compared or 1)) * 100
+        # EU integer za število primerov, EU percent za odstotek
+        w_eu = fmt_eu(w, 0)
+        pct_eu = fmt_eu(pct, 2)
+        print(color + f"✔ {fname} je bil najboljši v {w_eu} primerih ({pct_eu}%)" + RESET)
 
     if ties:
-        print(DATE_COLOR + f"⚖ Neodločeno (vsi enaki): {ties}" + RESET)
+        ties_eu = fmt_eu(ties, 0)
+        print(DATE_COLOR + f"⚖ Neodločeno (vsi enaki): {ties_eu}" + RESET)
 
     print()
-    print(GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'" + RESET)
     print(FILE1_COLOR + "══════════════════════════════════════════════════════" + RESET)
 
     return wins[file1], wins[file2], wins[file3], ties

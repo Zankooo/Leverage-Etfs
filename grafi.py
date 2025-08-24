@@ -4,10 +4,6 @@ import pandas as pd
 import plotly.express as px
 from typing import List, Optional, Dict
 
-
-
-
-
 # to dela perfektno, 
 # mores dat pa csv v takem formatu:
 # date,A,B,C
@@ -16,9 +12,6 @@ from typing import List, Optional, Dict
 # 2025-02-08,6617.75,6543.20,6454.55
 # 2025-02-09,6591.32,6530.15,6460.75
 # 2025-02-10,6524.19,6509.85,6415.90
-
-
-
 
 # ------------------------------------------------------------------------------------------------------------
 
@@ -147,9 +140,7 @@ def narisi_navadne_grafe(
 
 # LOGARITMICNA, KER ZGORNJA JE NAVADNA
 
-import pandas as pd
-import plotly.express as px
-from typing import Optional, List, Dict
+
 
 def narisi_logaritmicne_grafe(
     zacetna_investicija,

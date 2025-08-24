@@ -10,7 +10,7 @@ import glob
 init(autoreset=True)
 
 print('----------')
-
+# ------------------------------------------------------------------------------------------
 # UPLOAD PODATKOV DA JIH PREBEREMO
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
@@ -24,8 +24,52 @@ nasdaq_comp = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
 nasdaq_comp_2x = load_csv('2x-leverage/nasdaq-comp-2x.csv')
 nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
 
+# -------------------------------------------------------------------------------------------------------
+# PRIDOBIVANJE PODATKOV - pomozne funkcije, ki jih rabimo
+# Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
+# in koda bo krajsa, in ostala bo samo funkcionalnost
+
+LINE = "═" * 54
+
+def pridobi_indekse():
+    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
+    print(Fore.CYAN + "📊 Izberi indeks:" + Style.RESET_ALL)
+    print()
+
+    print(Fore.GREEN + "1. S&P 500" + Style.RESET_ALL)
+    print(Fore.LIGHTCYAN_EX + "2. Nasdaq 100" + Style.RESET_ALL)
+    print(Fore.LIGHTYELLOW_EX + "3. Nasdaq Composite" + Style.RESET_ALL)
+    print()
+
+    izbira = input(Fore.CYAN + "Vnesi številko (1/2/3): " + Style.RESET_ALL)
+
+    if izbira == "1":
+        indeksi = [sp_500, sp_500_2x, sp_500_3x]
+    elif izbira == "2":
+        indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
+    elif izbira == "3":
+        indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
+    else:
+        print(Fore.YELLOW + "Napačna izbira!" + Style.RESET_ALL)
+        indeksi = []
+
+    return indeksi
+
+
+def pridobi_zneske():
+    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
+    print(Fore.CYAN + "💰 Vnesi zneske" + Style.RESET_ALL)
+    print()
+
+    zacetna = int(input(Fore.CYAN + "Začetna investicija? " + Style.RESET_ALL))
+    mesecne = int(input(Fore.CYAN + "Mesečne investicije? " + Style.RESET_ALL))
+    dolzina = int(input(Fore.CYAN + "Dolžina intervalov? " + Style.RESET_ALL))
+
+    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
+    return [zacetna, mesecne, dolzina]
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNE FUNKCIJE
+# GLAVNE TRI FUNKCIJE
 def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
     # izracuna intervale
     intervali = generiraj_intervale_leto(indeks, interval)
@@ -65,51 +109,10 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# PRIDOBIVANJE PODATKOV - pomozne funkcije, ki jih rabimo
-# Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
-# in koda bo krajsa, in ostala bo samo funkcionalnost
 
-LINE = "═" * 54
-
-def pridobi_indekse():
-    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
-    print(Fore.CYAN + "📊 Izberi indeks:" + Style.RESET_ALL)
-    print()
-
-    print(Fore.GREEN + "1. S&P 500" + Style.RESET_ALL)
-    print(Fore.LIGHTCYAN_EX + "2. Nasdaq 100" + Style.RESET_ALL)
-    print(Fore.LIGHTYELLOW_EX + "3. Nasdaq Composite" + Style.RESET_ALL)    
-    print()
-
-    izbira = input(Fore.CYAN + "Vnesi številko (1/2/3): " + Style.RESET_ALL)
-
-    if izbira == "1":
-        indeksi = [sp_500, sp_500_2x, sp_500_3x]
-    elif izbira == "2":
-        indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
-    elif izbira == "3":
-        indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
-    else:
-        print(Fore.YELLOW + "Napačna izbira!" + Style.RESET_ALL)
-        indeksi = []
-
-    return indeksi
-
-
-def pridobi_zneske():
-    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
-    print(Fore.CYAN + "💰 Vnesi zneske" + Style.RESET_ALL)
-    print()
-
-    zacetna = int(input(Fore.CYAN + "Začetna investicija? " + Style.RESET_ALL))
-    mesecne = int(input(Fore.CYAN + "Mesečne investicije? " + Style.RESET_ALL))
-    dolzina = int(input(Fore.CYAN + "Dolžina intervalov? " + Style.RESET_ALL))
-
-    print(Fore.MAGENTA + LINE + Style.RESET_ALL)
-    return [zacetna, mesecne, dolzina]
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-#FUNKCIJA KI KLICE une tri zgoraj
+#FUNKCIJA KI KLICE UNE TRI ZGORAJ
 def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indeksi):
     # preverimo ce so od prejsnega zagona programa ze kaksne datoteke v testing mapi, 
     # in ce so jih izbrisemo, da ustvarimo prostor da se ustvarijo nove -> brez tega filtra moramo sami zbrisat rocno
@@ -123,19 +126,22 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
     return 0
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNE FUNKCIJE KI KLIČEJO USE VSE ZGORAJ IN NAREDIJO TO KAR HOCEMO
+# GLAVNE FUNKCIJE KI KLICE ZGORNJO FUNKCIJO
 
+# Pomozni funkciji
 # indeksi[0] = osnoven, indeksi[1] = 2x, indeksi[2] = 3x
 indeksi = pridobi_indekse()
-#zneski[0] = zacetna investicija, zneski[1] = mesecne investicije, zneski[2] = dolzina intervala, 
+# zneski[0] = zacetna investicija, zneski[1] = mesecne investicije, zneski[2] = dolzina intervala,
 zneski = pridobi_zneske()
 
+# ko ta funkcija naredi, naredi csvje da lahko spodnja se zalaufa
 funkcija_naredi_vse(zneski[0],zneski[1],zneski[2], indeksi)
 
 print('----------')
 
 print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
+# funkcija 'funkcija_naredi_vse' naredi csv fajle, da jih ta funkcija lahko prejme in naredi primerjavo
 primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
 
 

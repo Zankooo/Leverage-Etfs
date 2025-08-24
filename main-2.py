@@ -110,7 +110,7 @@ def funkcija_naredi_rezultat_za_csvje():
         stevec = 1
         for i in range(len(intervali)):
             output_file = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{stevec}.csv"
-
+            # ker v for loopu klicemo je to zato ker za razlicne intervale
             izracun_dca_metoda_prilagojena_da_naredi_csv(
                 indeksi[0], indeksi[1], indeksi[2],
                 initial_investment = zneski[0],
