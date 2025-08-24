@@ -192,12 +192,15 @@ def narisi_logaritmicne_grafe(
     rename_map: Dict[str, str] = {}
     if custom_labels:
         rename_map.update(custom_labels)
+        
     if rename_to_graf:
-        cnt = 1
-        for c in y_cols:
-            if c not in rename_map:
-                rename_map[c] = f"Graf {cnt}"
-                cnt += 1
+        fixed_names = ["Osnoven indeks", "Vzvod 2x", "Vzvod 3x"]
+        for i, c in enumerate(y_cols):
+            if i < len(fixed_names):
+                rename_map[c] = fixed_names[i]
+            else:
+                rename_map[c] = f"Graf {i+1}"  # če bi bilo stolpcev več kot 3
+    
     if rename_map:
         df = df.rename(columns=rename_map)
         y_cols = [rename_map.get(c, c) for c in y_cols]
