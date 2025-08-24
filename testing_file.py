@@ -87,7 +87,7 @@ def primerjaj_dva_indeksa(file1, file2, stolpec=5):
     print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
     print(Fore.CYAN + f"📊 Direktna primerjava med {file1} in {file2}" + Style.RESET_ALL)
     print()
-    print(Fore.CYAN + f"💰 Začetna investicija {podatki1[10][1]} , vse mesečne investicije {podatki1[10][2]}, vse skupaj investirano: {podatki1[10][3]}")
+    print(Fore.CYAN + f"💰 Začetna investicija {podatki1[10][1]} , vse mesečne investicije {podatki1[2][2]}, vse skupaj investirano: {podatki1[10][3]}")
     print()
     print(Fore.CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'")
     print()
@@ -112,18 +112,25 @@ def primerjaj_dva_indeksa(file1, file2, stolpec=5):
 
 
 
+
+
+from csv import reader
+
+from csv import reader
+
 def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
-    """
-    ta funkcija je ista kokr zgornja le da prejme tri indekse in ne dva kokr zgornja -> logika je pa ista samo koda je drugacna ker ja tuki ai naredu zgornjo pa jst
-    Primerjava treh CSV rezultatov (npr. 1x, 2x, 3x) -> format mora biti pri vseh enak, prva vrstica ime, druga opisi in 3 in naprej stevilke
-    Pac filei morajo biti narejeni to kar naredi funkcija metoda_dca_za_testing_prilagojena v for loopu za vsa leta. torej 
-    to kar naredijo funkcija_naredi_1x_rezultate in funkcija_naredi_2x_rezultate in funkcija_naredi_3x_rezultate
-    
-    
-    Za vsak datum najde najboljšega po `stolpec` (privzeto 5 = 'koliko imamo vse skupaj'),
-    izpiše redosled BEST >> SECOND >> THIRD z % razlikama,
-    in na koncu povzame, kolikokrat je zmagal kateri file.
-    """
+    # --- ANSI RGB helper ---
+    def rgb(r, g, b): return f"\033[38;2;{r};{g};{b}m"
+    RESET = "\033[0m"
+
+    # Barve (RGB)
+    DATE_COLOR = rgb(226, 226, 226)   # datumi (svetlo siva)
+    CYAN = rgb(23, 190, 207)
+    GREEN = rgb(0, 200, 83)
+
+    FILE1_COLOR = rgb(166, 130, 255)  # file1
+    FILE2_COLOR = rgb(85, 193, 255)   # file2
+    FILE3_COLOR = rgb(255, 183, 3)    # file3
 
     # Preberi vse tri datoteke
     with open(file1, "r") as f1, open(file2, "r") as f2, open(file3, "r") as f3:
@@ -131,7 +138,6 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
         podatki2 = list(reader(f2))
         podatki3 = list(reader(f3))
 
-    # Števci zmag
     wins = {file1: 0, file2: 0, file3: 0}
     ties = 0
 
@@ -139,45 +145,36 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     print("Datum | NAJBOLJSI (narejen plus/minus, vse skupaj)  >>  +%  >>  DRUGI (narejen plus/minus, vse skupaj)  >>  +%  >>  TRETJI (narejen plus/minus, vse skupaj)")
     print()
 
-    # Preskočimo header (vrstica 0)
     rows = min(len(podatki1), len(podatki2), len(podatki3))
     for i in range(1, rows):
         try:
-            # vrednosti po katerih odločamo (stolpec = 'skupaj vse skupaj')
             v1 = float(podatki1[i][stolpec])
             v2 = float(podatki2[i][stolpec])
             v3 = float(podatki3[i][stolpec])
 
-            # za lep prikaz vzamemo tudi stolpce 4 in 5 (gain, together)
             f1_gain, f1_tot = float(podatki1[i][4]), float(podatki1[i][5])
             f2_gain, f2_tot = float(podatki2[i][4]), float(podatki2[i][5])
             f3_gain, f3_tot = float(podatki3[i][4]), float(podatki3[i][5])
-
         except (ValueError, IndexError):
             continue
 
         datum = podatki1[i][0]
 
-        # Priprava za razvrščanje: (naziv, vrednost, barvni_izpis, gain, tot)
+        # Priprava za razvrščanje: (naziv, vrednost, obarvan izpis, vrednost)
         candidates = [
-            (file1, v1, f"{Fore.MAGENTA}{f1_gain:,.2f}, {f1_tot:,.2f}{Style.RESET_ALL}", v1),
-            (file2, v2, f"{Fore.BLUE}{f2_gain:,.2f}, {f2_tot:,.2f}{Style.RESET_ALL}", v2),
-            (file3, v3, f"{Fore.RED}{f3_gain:,.2f}, {f3_tot:,.2f}{Style.RESET_ALL}", v3),
+            (file1, v1, f"{FILE1_COLOR}{f1_gain:,.2f}, {f1_tot:,.2f}{RESET}", v1),
+            (file2, v2, f"{FILE2_COLOR}{f2_gain:,.2f}, {f2_tot:,.2f}{RESET}", v2),
+            (file3, v3, f"{FILE3_COLOR}{f3_gain:,.2f}, {f3_tot:,.2f}{RESET}", v3),
         ]
 
-        # Preveri neodločene (vsi enaki)
         if v1 == v2 == v3:
             ties += 1
-            print(f"{Fore.YELLOW}{datum}{Style.RESET_ALL} | "
-                  f"{Fore.WHITE}Vse tri enake (tie){Style.RESET_ALL}")
+            print(f"{DATE_COLOR}{datum}{RESET} | Vse tri enake (tie)")
             continue
 
-        # Razvrsti po vrednosti (desc)
         ordered = sorted(candidates, key=lambda x: x[3], reverse=True)
         (best_name, best_val, best_str, _), (sec_name, sec_val, sec_str, _), (third_name, third_val, third_str, _) = ordered
 
-        # % razlika BEST proti SECOND in SECOND proti THIRD
-        # (če je imenovalec 0, izpišemo 'inf')
         def pct_diff(a, b):
             try:
                 return f"+{round((a - b) / b * 100, 2)}%"
@@ -187,50 +184,38 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
         diff_best_sec = pct_diff(best_val, sec_val)
         diff_sec_third = pct_diff(sec_val, third_val)
 
-        # Izpis vrstice (barve: datum = rumen; best/sec/third ohranijo lastne barve)
         print(
-            f"{Fore.YELLOW}{datum}{Style.RESET_ALL} | "
-            f"{best_str}  >>  {Fore.GREEN}{diff_best_sec}{Style.RESET_ALL}  >>  "
-            f"{sec_str}  >>  {Fore.GREEN}{diff_sec_third}{Style.RESET_ALL}  >>  "
-            f"{third_str}")
+            f"{DATE_COLOR}{datum}{RESET} | "
+            f"{best_str}  >>  {GREEN}{diff_best_sec}{RESET}  >>  "
+            f"{sec_str}  >>  {GREEN}{diff_sec_third}{RESET}  >>  "
+            f"{third_str}"
+        )
 
-        # Zmaga pripada 'best_name'
         wins[best_name] += 1
 
-    # Povzetek
     total_compared = sum(wins.values())
 
-
-    print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
-    
-    print(Fore.CYAN + f"📊 Direktna primerjava med {file1}, {file2} in {file3}" + Style.RESET_ALL)
+    print(FILE1_COLOR + "══════════════════════════════════════════════════════" + RESET)
+    print(CYAN + f"📊 Direktna primerjava med {file1}, {file2} in {file3}" + RESET)
+    print()
+    print(CYAN + f"💰 Začetna investicija: {podatki1[2][1]}" + RESET)
+    print(CYAN + f"📈 Vse mesečne investicije: {podatki1[2][2]}" + RESET)
+    print(CYAN + f"💵 Vse skupaj investirano: {podatki1[2][3]}" + RESET)
+    print()
+    print(CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'" + RESET)
     print()
 
-    # te podatke sem vzel iz podatki1, lahko bi vzel iz katerega koli od teh treh, ker so usi enaki
-    # in iz katere koli vrstice, ker so itak vsi enaki.. vzel sem iz 10, ker mi je cifra vsec
-    print(Fore.CYAN + f"💰 Začetna investicija: {podatki1[10][1]}")
-    print(Fore.CYAN + f"📈 Vse mesečne investicije: {podatki1[10][2]}")
-    print(Fore.CYAN + f"💵 Vse skupaj investirano: {podatki1[10][3]}")
-
-
-    print()
-    print(Fore.CYAN + f"Procenti so izracunani na podlagi 'koliko imamo vse skupaj'")
-    print()
-
-    for fname, color in [(file1, Fore.LIGHTMAGENTA_EX), (file2, Fore.BLUE), (file3, Fore.RED)]:
+    for fname, color in [(file1, FILE1_COLOR), (file2, FILE2_COLOR), (file3, FILE3_COLOR)]:
         w = wins[fname]
         pct = round((w / (total_compared or 1)) * 100, 2)
-        print(color + f"✔ {fname} je bil najboljši v {w} primerih ({pct}%)" + Style.RESET_ALL)
+        print(color + f"✔ {fname} je bil najboljši v {w} primerih ({pct}%)" + RESET)
 
     if ties:
-        print(Fore.YELLOW + f"⚖ Neodločeno (vsi enaki): {ties}" + Style.RESET_ALL)
+        print(DATE_COLOR + f"⚖ Neodločeno (vsi enaki): {ties}" + RESET)
 
     print()
-
-    print(Fore.GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'" + Style.RESET_ALL)
-    
-    print(Fore.MAGENTA + "══════════════════════════════════════════════════════" + Style.RESET_ALL)
-
-
+    print(GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'" + RESET)
+    print(FILE1_COLOR + "══════════════════════════════════════════════════════" + RESET)
 
     return wins[file1], wins[file2], wins[file3], ties
+

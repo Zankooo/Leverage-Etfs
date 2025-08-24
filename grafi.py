@@ -147,38 +147,41 @@ def narisi_navadne_grafe(
 
 # LOGARITMICNA, KER ZGORNJA JE NAVADNA
 
-
-
-from typing import Optional, List, Dict
 import pandas as pd
 import plotly.express as px
+from typing import Optional, List, Dict
 
 def narisi_logaritmicne_grafe(
     zacetna_investicija,
     mesecna_investicija,
     vse_investicije_skupaj,
     csv_path: str,
-    columns: Optional[List[str]] = None,     # katere stolpce narisati; če None -> vsi razen 'date'
-    rename_to_graf: bool = True,             # preimenuj izbrane stolpce v "Graf 1..n"
-    custom_labels: Optional[Dict[str,str]] = None,  # alternativno: {"A":"Moja A", "B":"Druga"}
-    naslov: str = "Več krivulj skozi čas (log skala)",
+    columns: Optional[List[str]] = None,
+    rename_to_graf: bool = True,
+    custom_labels: Optional[Dict[str,str]] = None,
+    
     output_html: str = "graf_vec.html",
-    y_tickformat: str = ",.0f",              # formatiranje Y osi (d3-format; separators poskrbi za EU)
-    hover_fmt: str = "%{y:,.2f}"             # format za številke v hoverju (EU z separators)
+    y_tickformat: str = ",.0f",
+    hover_fmt: str = "%{y:,.2f}"
 ):
-    # EU format helper (npr. 12.345,67)
-    def fmt_eu(x, decimals=2):
+    def fmt_eu_intbold_html(x, decimals=2, int_color="#111", dec_color="#111"):
         try:
-            x = float(x)
+            val = float(x)
         except (TypeError, ValueError):
             return str(x)
-        s = f"{x:,.{decimals}f}"
-        return s.replace(",", "X").replace(".", ",").replace("X", ".")
+        s = f"{val:,.{decimals}f}"
+        s_eu = s.replace(",", "X").replace(".", ",").replace("X", ".")
+        if "," in s_eu:
+            int_part, dec_part = s_eu.split(",")
+            return (
+                f"<b style='font-weight:700; color:{int_color}'>{int_part}</b>"
+                f"<span style='font-weight:400; color:{dec_color}'>,{dec_part}</span>"
+            )
+        else:
+            return f"<b style='font-weight:700; color:{int_color}'>{s_eu}</b>"
 
-    # preberi CSV
     df = pd.read_csv(csv_path, parse_dates=["date"])
 
-    # izberi stolpce za izris
     if columns is None:
         y_cols = [c for c in df.columns if c.lower() != "date"]
     else:
@@ -186,7 +189,6 @@ def narisi_logaritmicne_grafe(
     if not y_cols:
         raise ValueError("Ni najdenih stolpcev za izris (potrebujem vsaj enega poleg 'date').")
 
-    # po želji preimenuj stolpce
     rename_map: Dict[str, str] = {}
     if custom_labels:
         rename_map.update(custom_labels)
@@ -200,88 +202,71 @@ def narisi_logaritmicne_grafe(
         df = df.rename(columns=rename_map)
         y_cols = [rename_map.get(c, c) for c in y_cols]
 
-    # varovalo za log skalo
     if (df[y_cols] <= 0).to_numpy().any():
         raise ValueError("Logaritmična os Y zahteva pozitivne vrednosti (> 0) v vseh izbranih stolpcih.")
 
-    # osnovni graf
+    color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"]
+    color_seq = color_seq[:len(y_cols)]
+
     fig = px.line(
         df, x="date", y=y_cols,
-        template="simple_white", markers=False
+        template="simple_white", markers=False,
+        
+        color_discrete_sequence=color_seq
     )
 
-    # stil črt in hover (EU format bo prek layout.separators)
-    fig.update_traces(
-        line=dict(width=2.5),
-        hovertemplate= hover_fmt + " $ ali €"
-    )
+    for i in range(min(len(fig.data), len(color_seq))):
+        fig.data[i].line.color = color_seq[i]
 
-    # layout
     fig.update_layout(
         hovermode="x unified",
         xaxis_title="Datum",
         yaxis_title="Vrednost (log)",
         font=dict(family="Arial, Helvetica, sans-serif", size=14),
-        margin=dict(l=60, r=30, t=190, b=60),   # več prostora zgoraj za daljši tekst
-        hoverlabel=dict(font_size=13),
+        margin=dict(l=60, r=30, t=190, b=80),
+        hoverlabel=dict(font_size=13, namelength=-1),
         legend_title_text="",
-        separators=",."  # KLJUČNO: decimalna vejica, tisočice s piko
+        separators=",."
     )
 
-    # osi + spike line
     fig.update_xaxes(
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
         showspikes=True, spikemode="across", spikesnap="cursor", spikedash="solid",
-        tickformat="%d.%m.%Y",   # EU datum na osi
-        hoverformat="%d.%m.%Y"   # EU datum v hover headerju
+        tickformat="%d.%m.%Y",
+        hoverformat="%d.%m.%Y",
+        rangeslider=dict(visible=True, thickness=0.08, bgcolor="rgba(108,99,255,0.08)")
     )
     fig.update_yaxes(
-        type="log",                   # log skala
+        type="log",
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
         tickformat=y_tickformat,
         zeroline=False
     )
 
-    # rangeselector med naslovom in legendo
-    fig.update_layout(
-        xaxis=dict(
-            rangeselector=dict(
-                x=0, xanchor="left",
-                y=1.05, yanchor="top",
-                buttons=list([
-                    dict(count=7,   label="7D",  step="day",  stepmode="backward"),
-                    dict(count=1,   label="1M",  step="month",stepmode="backward"),
-                    dict(count=3,   label="3M",  step="month",stepmode="backward"),
-                    dict(count=6,   label="6M",  step="month",stepmode="backward"),
-                    dict(count=1,   label="YTD", step="year", stepmode="todate"),
-                    dict(count=1,   label="1Y",  step="year",  stepmode="backward"),
-                    dict(step="all",label="All")
-                ])
-            ),
-            rangeslider=dict(visible=True)
-        ),
-        legend=dict(
-            orientation="h",
-            yanchor="top", y=1.0,
-            xanchor="left", x=0
-        )
-    )
+    euro = "<span style='font-weight:400; color:#111'> €</span>"
+    for i, col in enumerate(y_cols):
+        values_html = [fmt_eu_intbold_html(v, 2) + euro for v in df[col].tolist()]
+        fig.data[i].customdata = values_html
+        fig.data[i].hovertemplate = "<b>%{fullData.name}</b>: %{customdata}<extra></extra>"
 
-    # ➕ NAPIS NAD GRAFOM: datumi + tri vrednosti + končni tečaji vseh serij
     start_date_str = pd.to_datetime(df["date"].min()).strftime("%d.%m.%Y")
     end_date_str   = pd.to_datetime(df["date"].max()).strftime("%d.%m.%Y")
 
-    z_str = f"{fmt_eu(zacetna_investicija, 2)} €"
-    m_str = f"{fmt_eu(mesecna_investicija, 2)} €"
-    s_str = f"{fmt_eu(vse_investicije_skupaj, 2)} €"
+    z_html = fmt_eu_intbold_html(zacetna_investicija, 2) + euro
+    m_html = fmt_eu_intbold_html(mesecna_investicija, 2) + euro
+    s_html = fmt_eu_intbold_html(vse_investicije_skupaj, 2) + euro
 
-    # končni tečaji (zadnja vrstica) za vsako serijo v y_cols
+    color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"][:len(y_cols)]
+    label_colors = dict(zip(y_cols, color_seq))
+
     last_row = df.iloc[-1]
-    finals_str = " &nbsp;•&nbsp; ".join(
-        f"{col}: {fmt_eu(last_row[col], 2)} €" for col in y_cols
-    )
+    finals_parts = []
+    for col in y_cols:
+        colored_label = f"<span style='color:{label_colors[col]}; font-weight:700'>{col}</span>"
+        value_html = fmt_eu_intbold_html(last_row[col], 2) + euro
+        finals_parts.append(f"{colored_label}: {value_html}")
+    finals_html = " &nbsp;•&nbsp; ".join(finals_parts)
 
-    # fancy napis nad grafom (z EU številkami in datumi)
     fig.add_annotation(
         x=0.5, y=1.08,
         xref="paper", yref="paper",
@@ -292,21 +277,22 @@ def narisi_logaritmicne_grafe(
         font=dict(size=18),
         text=(
             f"<span style='font-size:26px; font-weight:800'>"
-            f"🗓️ <span style='color:#6C63FF'>{start_date_str}</span> "
+            f"🗓️ {start_date_str} "
             f"<span style='color:#9AA0A6'>→</span> "
-            f"<span style='color:#6C63FF'>{end_date_str}</span>"
+            f"{end_date_str}"
             f"</span><br>"
             f"<span style='font-size:21px; color:#444'>"
-            f"💰 Začetna investicija: <b style='color:#111'>{z_str}</b> &nbsp;•&nbsp; "
-            f"📈 Mesečne investicije: <b style='color:#111'>{m_str}</b> &nbsp;•&nbsp; "
-            f"Σ Vse skupaj: <b style='color:#111'>{s_str}</b>"
+            f"💰 Začetna investicija: {z_html} &nbsp;•&nbsp; "
+            f"📈 Mesečne investicije: {m_html} &nbsp;•&nbsp; "
+            f"Σ Vse skupaj: {s_html}"
             f"</span><br>"
             f"<span style='font-size:21px; color:#444'>"
-            f"🏁 Končne vrednosti: <b style='color:#111'>{finals_str}</b>"
+            f"🏁 Končne vrednosti: {finals_html}"
             f"</span>"
         )
     )
 
-    # shrani in odpri (separators poskrbi za EU ločila na osi in v hoverju)
     fig.write_html(output_html, auto_open=True)
+
+
 
