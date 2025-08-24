@@ -159,7 +159,7 @@ def narisi_logaritmicne_grafe(
     columns: Optional[List[str]] = None,
     rename_to_graf: bool = True,
     custom_labels: Optional[Dict[str,str]] = None,
-    
+
     output_html: str = "graf_vec.html",
     y_tickformat: str = ",.0f",
     hover_fmt: str = "%{y:,.2f}"
@@ -192,7 +192,7 @@ def narisi_logaritmicne_grafe(
     rename_map: Dict[str, str] = {}
     if custom_labels:
         rename_map.update(custom_labels)
-        
+
     if rename_to_graf:
         fixed_names = ["Osnoven indeks", "Vzvod 2x", "Vzvod 3x"]
         for i, c in enumerate(y_cols):
@@ -200,7 +200,7 @@ def narisi_logaritmicne_grafe(
                 rename_map[c] = fixed_names[i]
             else:
                 rename_map[c] = f"Graf {i+1}"  # če bi bilo stolpcev več kot 3
-    
+
     if rename_map:
         df = df.rename(columns=rename_map)
         y_cols = [rename_map.get(c, c) for c in y_cols]
@@ -214,7 +214,7 @@ def narisi_logaritmicne_grafe(
     fig = px.line(
         df, x="date", y=y_cols,
         template="simple_white", markers=False,
-        
+
         color_discrete_sequence=color_seq
     )
 
@@ -246,18 +246,18 @@ def narisi_logaritmicne_grafe(
         zeroline=False
     )
 
-    euro = "<span style='font-weight:400; color:#111'> €</span>"
+    dolar = "<span style='font-weight:400; color:#111'> $</span>"
     for i, col in enumerate(y_cols):
-        values_html = [fmt_eu_intbold_html(v, 2) + euro for v in df[col].tolist()]
+        values_html = [fmt_eu_intbold_html(v, 2) + dolar for v in df[col].tolist()]
         fig.data[i].customdata = values_html
         fig.data[i].hovertemplate = "<b>%{fullData.name}</b>: %{customdata}<extra></extra>"
 
     start_date_str = pd.to_datetime(df["date"].min()).strftime("%d.%m.%Y")
     end_date_str   = pd.to_datetime(df["date"].max()).strftime("%d.%m.%Y")
 
-    z_html = fmt_eu_intbold_html(zacetna_investicija, 2) + euro
-    m_html = fmt_eu_intbold_html(mesecna_investicija, 2) + euro
-    s_html = fmt_eu_intbold_html(vse_investicije_skupaj, 2) + euro
+    z_html = fmt_eu_intbold_html(zacetna_investicija, 2) + dolar
+    m_html = fmt_eu_intbold_html(mesecna_investicija, 2) + dolar
+    s_html = fmt_eu_intbold_html(vse_investicije_skupaj, 2) + dolar
 
     color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"][:len(y_cols)]
     label_colors = dict(zip(y_cols, color_seq))
@@ -266,7 +266,7 @@ def narisi_logaritmicne_grafe(
     finals_parts = []
     for col in y_cols:
         colored_label = f"<span style='color:{label_colors[col]}; font-weight:700'>{col}</span>"
-        value_html = fmt_eu_intbold_html(last_row[col], 2) + euro
+        value_html = fmt_eu_intbold_html(last_row[col], 2) + dolar
         finals_parts.append(f"{colored_label}: {value_html}")
     finals_html = " &nbsp;•&nbsp; ".join(finals_parts)
 

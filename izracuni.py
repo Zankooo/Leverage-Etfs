@@ -265,8 +265,8 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
 
     # izpis povzetka (na serijo)
     
-    print(f"Začetna investicija (na serijo): {initial_investment:.2f} EUR")
-    print(f"Vsota mesečnih vložkov (na serijo): {vsota_mesecnih_vlozkov:.2f} EUR  (št. vplačil: {st_vplacil})")
+    print(f"Začetna investicija (na serijo): {initial_investment:.2f} $")
+    print(f"Vsota mesečnih vložkov (na serijo): {vsota_mesecnih_vlozkov:.2f} $  (št. vplačil: {st_vplacil})")
 
     return round(inv1, 2), round(inv2, 2), round(inv3, 2)
 
