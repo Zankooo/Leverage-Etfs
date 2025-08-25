@@ -126,6 +126,8 @@ def funkcija_naredi_vse(zacetna_investicija,mesecne_investicije, interval, indek
     return 0
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # GLAVNE FUNKCIJE KI KLICE ZGORNJO FUNKCIJO
 
 # Pomozni funkciji
@@ -144,20 +146,7 @@ print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 # funkcija 'funkcija_naredi_vse' naredi csv fajle, da jih ta funkcija lahko prejme in naredi primerjavo
 primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 
 fancy_zakljucek_1()
 

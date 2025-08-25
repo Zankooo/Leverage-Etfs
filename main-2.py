@@ -183,6 +183,9 @@ def funkcija_zbrisi_kar_je_v_mapi():
 
 
 # ---------------------------------------------------------------------------------------------
+
+
+
 # POKLICEMO TO KAR JE TUKAJ IN JE TO TO
 
 # to rabimo ker te podatke uporabljata obe glavni funkciji
