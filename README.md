@@ -45,11 +45,13 @@ Direktna primerjava med testing/osnoven.csv, testing/vzvod-2x.csv in testing/vzv
 
 Procenti so izračunani na podlagi 'koliko imamo vse skupaj'  
 
+'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj' 
+
 ✔ testing/osnoven.csv je bil najboljši v 14 primerih (16.67%)  
 ✔ testing/vzvod-2x.csv je bil najboljši v 12 primerih (14.29%)  
 ✔ testing/vzvod-3x.csv je bil najboljši v 58 primerih (69.05%)  
 
-🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'  
+ 
 ```
 Pomembna opomba 1: vzet je osnoven (S&P indeks Nasdaq-100, Nasdaq Composite), in vzvod je narejen na podlagi ročnega vsakodnevnega balansiranja. 
 

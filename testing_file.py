@@ -255,7 +255,8 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
     print()
     print(CYAN + f"Procenti so izračunani na podlagi 'koliko imamo vse skupaj'" + RESET)
     print()
-    print(GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj:'" + RESET)
+    print(GREEN + "🏆 'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj'" + RESET)
+    print()
 
     for fname, color in [(file1, FILE1_COLOR), (file2, FILE2_COLOR), (file3, FILE3_COLOR)]:
         w = wins[fname]
