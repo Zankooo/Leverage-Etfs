@@ -125,6 +125,101 @@
     .error { color: var(--error); font-size: 12px; margin-top: 6px; }
   </style>
 </head>
+<<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form    = document.getElementById('invest-form');
+  const result  = document.getElementById('result');
+  const summary = document.getElementById('summary');
+  const btn     = document.getElementById('submitBtn');
+
+  // "1.000 €" -> 1000 (brez decimalk)
+  const parseIntFromEuro = (str) => {
+    if (!str) return NaN;
+    return Number(String(str).replace(/[^\d-]/g, ''));
+  };
+
+  const setError = (id, msg) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = msg || '';
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Počisti stare napake
+    setError('err-initial','');
+    setError('err-monthly','');
+    setError('err-index','');
+    setError('err-interval','');
+
+    const initialRaw = document.getElementById('initial').value.trim();
+    const monthlyRaw = document.getElementById('monthly').value.trim();
+    const index      = document.getElementById('index').value;
+    const interval   = parseInt(document.getElementById('interval').value, 10);
+
+    const initial = parseIntFromEuro(initialRaw);
+    const monthly = parseIntFromEuro(monthlyRaw);
+
+    // Validacija
+    let ok = true;
+    if (!Number.isFinite(initial) || initial < 0) {
+      setError('err-initial', 'Vnesi veljavno začetno investicijo (≥ 0).');
+      ok = false;
+    }
+    if (!Number.isFinite(monthly) || monthly < 0) {
+      setError('err-monthly', 'Vnesi veljaven mesečni vložek (≥ 0).');
+      ok = false;
+    }
+    if (!index) {
+      setError('err-index', 'Izberi indeks.');
+      ok = false;
+    }
+    if (!Number.isFinite(interval) || interval <= 0) {
+      setError('err-interval', 'Izberi interval.');
+      ok = false;
+    }
+    if (!ok) return;
+
+    // Debug v brskalnikovi konzoli
+    console.log('CLIENT →', { initial, monthly, index, interval });
+
+    // UI stanje
+    btn.disabled = true;
+    const oldBtnText = btn.innerHTML;
+    btn.innerHTML = 'Pošiljam…';
+
+    try {
+      const res = await fetch('/api/calc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initial, monthly, index, interval })
+      });
+
+      const json = await res.json();
+      result.classList.remove('hidden');
+
+      if (!res.ok || !json.ok) {
+        summary.textContent = (json && json.error) ? json.error : 'Napaka pri izračunu.';
+        return;
+      }
+
+      // Lep prikaz odziva
+      summary.innerHTML = `
+        <pre style="margin:0;white-space:pre-wrap;">${JSON.stringify(json.echo, null, 2)}</pre>
+      `;
+    } catch (err) {
+      result.classList.remove('hidden');
+      summary.textContent = 'Napaka povezave s strežnikom.';
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = oldBtnText;
+    }
+  });
+});
+
+</script>
+
 <body>
   <main class="wrapper">
     <section class="card" aria-labelledby="title">
@@ -148,9 +243,9 @@
           <div class="field">
             <label for="index">Indeks</label>
             <select id="index" name="index" required>
-              <option value="sp500">S&amp;P 500</option>
-              <option value="nasdaq100">NASDAQ-100</option>
-              <option value="nasdaqcomposite">NASDAQ Composite</option>
+              <option value="sp-500">S&amp;P 500</option>
+              <option value="nasdaq-100">NASDAQ-100</option>
+              <option value="nasdaq-composite">NASDAQ Composite</option>
             </select>
             <div class="error" id="err-index"></div>
           </div>
@@ -185,92 +280,8 @@
     </section>
   </main>
 
-  <script>
-    // Formatter brez decimalk
-    const fmtEUR0 = new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-    // Pretvori npr. "1.234 €" ali "1234,56 €" -> 1234 (CELO število; decimalke se ignorirajo)
-    function parseSlCurrencyInt(str){
-      if (!str) return NaN;
-      let s = String(str).trim();
-      s = s.replace(/\s/g,'');   // odstrani presledke
-      s = s.replace(/€/g,'');    // odstrani €
-      s = s.replace(/\./g,'');   // odstrani tisočice
-      // odstrani decimalni del, če ga je uporabnik vpisal (vejica ali pika)
-      s = s.replace(/[,.].*$/, '');
-      const n = Number(s);
-      return Number.isFinite(n) ? n : NaN;
-    }
 
-    // Ob fokusu: odstrani format (pusti golo celo število)
-    function unformatInputToPlainInt(el){
-      const n = parseSlCurrencyInt(el.value);
-      if (Number.isFinite(n)){
-        el.value = String(n); // brez ločil, brez €
-        setTimeout(()=>el.select(), 0);
-      } else {
-        el.value = '';
-      }
-    }
 
-    // Ob blur: format z ločili tisočic in € (brez decimalk)
-    function formatInputAsCurrencyInt(el){
-      const n = parseSlCurrencyInt(el.value);
-      if (Number.isFinite(n)){
-        el.value = fmtEUR0.format(n); // npr. "1.234 €"
-      } else {
-        el.value = '';
-      }
-    }
-
-    const form = document.getElementById('invest-form');
-    const result = document.getElementById('result');
-    const summary = document.getElementById('summary');
-    const initialInput = document.getElementById('initial');
-    const monthlyInput = document.getElementById('monthly');
-
-    // Format-on-focus/blur za obe polji
-    initialInput.addEventListener('focus', (e)=> unformatInputToPlainInt(e.target));
-    initialInput.addEventListener('blur',  (e)=> formatInputAsCurrencyInt(e.target));
-    monthlyInput.addEventListener('focus', (e)=> unformatInputToPlainInt(e.target));
-    monthlyInput.addEventListener('blur',  (e)=> formatInputAsCurrencyInt(e.target));
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const initial = parseSlCurrencyInt(form.initial.value);
-      const monthly = parseSlCurrencyInt(form.monthly.value);
-      const index = form.index.value;
-      const interval = parseInt(form.interval.value, 10);
-
-      let valid = true;
-      const setErr = (id, msg) => { document.getElementById(id).textContent = msg || ''; if (msg) valid = false; };
-      setErr('err-initial', (!Number.isFinite(initial) || initial < 0) ? 'Vnesi veljavno začetno investicijo (≥ 0).' : '');
-      setErr('err-monthly', (!Number.isFinite(monthly) || monthly < 0) ? 'Vnesi veljaven mesečni vložek (≥ 0).' : '');
-      setErr('err-index', !index ? 'Izberi indeks.' : '');
-      setErr('err-interval', !interval ? 'Izberi interval.' : '');
-      if (!valid) return;
-
-      const indexLabel = {
-        sp500: 'S&P 500',
-        nasdaq100: 'NASDAQ-100',
-        nasdaqcomposite: 'NASDAQ Composite'
-      }[index] || index;
-
-      summary.innerHTML = `
-        <ul style="list-style:none; padding-left: 0; margin: 10px 0 0 0; display:grid; gap:6px;">
-          <li><span style="color:#94a3b8">Začetna investicija:</span> <strong>${fmtEUR0.format(initial)}</strong></li>
-          <li><span style="color:#94a3b8">Mesečni vložek:</span> <strong>${fmtEUR0.format(monthly)}</strong></li>
-          <li><span style="color:#94a3b8">Indeks:</span> <strong>${indexLabel}</strong></li>
-          <li><span style="color:#94a3b8">Interval:</span> <strong>${interval} let</strong></li>
-        </ul>`;
-
-      result.classList.remove('hidden');
-
-      // const payload = { initial, monthly, index, interval };
-      // const res = await fetch('/api/calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      // const json = await res.json();
-    });
-  </script>
 </body>
 </html>
