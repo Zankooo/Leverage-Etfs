@@ -150,11 +150,34 @@ def narisi_logaritmicne_grafe(
     columns: Optional[List[str]] = None,
     rename_to_graf: bool = True,
     custom_labels: Optional[Dict[str,str]] = None,
-
     output_html: str = "graf_vec.html",
     y_tickformat: str = ",.0f",
-    hover_fmt: str = "%{y:,.2f}"
+    
 ):
+    import base64, pathlib, webbrowser
+
+    # te dve funkciji sta samo zato da je lahko favicon notri
+    def make_emoji_favicon_data_url(emoji="📈", size=64, bg=None):
+        bg_rect = f"<rect width='{size}' height='{size}' fill='{bg}'/>" if bg else ""
+        svg = (
+            f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 {size} {size}'>"
+            f"{bg_rect}"
+            f"<text x='50%' y='52%' text-anchor='middle' dominant-baseline='middle' "
+            f"font-size='{int(size*0.8)}'>{emoji}</text>"
+            f"</svg>"
+        )
+        b64 = base64.b64encode(svg.encode("utf-8")).decode("ascii")
+        return "data:image/svg+xml;base64," + b64
+
+    def inject_favicon(html: str, emoji="📈", bg=None) -> str:
+        data_url = make_emoji_favicon_data_url(emoji=emoji, bg=bg)
+        link = f"<link rel='icon' type='image/svg+xml' href='{data_url}' sizes='any'>\n"
+        if "</head>" in html:
+            return html.replace("</head>", link + "</head>", 1)
+        else:
+            return link + html
+    # --------
+
     def fmt_eu_intbold_html(x, decimals=2, int_color="#111", dec_color="#111"):
         try:
             val = float(x)
@@ -209,8 +232,7 @@ def narisi_logaritmicne_grafe(
         color_discrete_sequence=color_seq
     )
 
-    for i in range(min(len(fig.data), len(color_seq))):
-        fig.data[i].line.color = color_seq[i]
+    
 
     fig.update_layout(
         hovermode="x unified",
@@ -234,6 +256,7 @@ def narisi_logaritmicne_grafe(
         type="log",
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
         tickformat=y_tickformat,
+        ticksuffix=" $",   
         zeroline=False
     )
 
@@ -287,6 +310,10 @@ def narisi_logaritmicne_grafe(
     )
 
     fig.write_html(output_html, auto_open=True)
+    
 
-
+    html = fig.to_html(full_html=True, include_plotlyjs="cdn")
+    html = inject_favicon(html, emoji="🌳", bg=None)  # emoji lahko zamenjaš (npr. "📊", "🚀"); bg="#fff" doda belo ozadje
+    pathlib.Path(output_html).write_text(html, encoding="utf-8")
+    webbrowser.open(pathlib.Path(output_html).resolve().as_uri())
 
