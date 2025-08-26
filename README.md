@@ -19,7 +19,7 @@ Na podlagi vhodnih podatkov:
 - Indeks: S&P 500
 - Začetna investicija: 1000
 - Mesecna investicija: 100
-- Dolžina intervalov? 15
+- Dolžina intervalov: 15
 
 Rezultati:
 ```
@@ -51,13 +51,14 @@ Procenti so izračunani na podlagi 'koliko imamo vse skupaj'
 ```
 Pomembna opomba 1: vzet je osnoven (S&P indeks Nasdaq-100, Nasdaq Composite), in vzvod je narejen na podlagi ročnega vsakodnevnega balansiranja. 
 
-Pomembna opomba 3: vzeti so osnovni indeksi, torej tukaj ni upoštevanih dividend, ki so nekje 1,2% za S&P 500.
+Pomembna opomba 2: vzeti so osnovni indeksi, torej tukaj ni upoštevanih dividend, ki so nekje 1,2% za S&P 500.
 
 Čisto vse je težko upoštevati, ampak neglede na to, so izračuni precej natančnen pokazatelj realnosti. (čeprav v bodoče morda naredim posodobitev in upoštevam tudi to)
 
-V mislih sem imel; vzamem v zakup:
+V mislih sem imel; 
 - na eni strani ne upoštevanja dividend pri S&P 500, ki so cca 1,2% in
 - na drugi strani stroški pri posredniku in izdajatelju etfjev (navaden; cca 0,07% na leto, vzvod; 0,7% na leto)
+Torej da stroške pri posredniku in izdajalcu na drugi strani izenačijo dividende na drugi strani.
 
 ## Aplikacija kaj dela - funkcionalnost 2 (file: main-2.py) - CLI verzija + html 
 
