@@ -1,7 +1,4 @@
-# Vzvodni ETF primerjalnik 
-
-
-
+# ETF-ji z vzvodom - Primerjalnik donosov
 
 # Aplikacija kaj dela - 1. Funkcionalnost (file: main.py) - CLI verzija
 
@@ -10,10 +7,9 @@ Na podlagi:
 - mesečnih vplačil,
 - dolžina let (intervalov)
 
-Primerja donosov osnovnega indeksa, in 2x vzvoda in 3x vzvoda na vseh intervalih za izbrano število let (podprti indeksi: S&P 500, Nasdaq 100 in Nasdaq Composite)
+Primerja donosov osnovnega indeksa, 2x vzvoda in 3x vzvoda na vseh intervalih za izbrano število let (podprti indeksi: S&P 500, Nasdaq 100 in Nasdaq Composite)
 
 Program nam nato izpiše tudi statistiko, katera različica je bila najboljša in v koliko primerih. 
-
 
 Pravtako izpiše statistiko, za vse skupaj in naredi izračun kolikorat je bil kater najboljši v procentih!
 
@@ -21,7 +17,7 @@ Pravtako izpiše statistiko, za vse skupaj in naredi izračun kolikorat je bil k
 ## Prikaz rezultatov danih za 1. Funkcionalnost:
 Na podlagi vhodnih podatkov:
 - Indeks: S&P 500
-- Zacetna investicija: 1000
+- Začetna investicija: 1000
 - Mesecna investicija: 100
 - Dolžina intervalov? 15
 
