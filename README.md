@@ -1,6 +1,6 @@
 # ETF-ji z vzvodom - Primerjalnik donosov
 
-# Aplikacija kaj dela - 1. Funkcionalnost (file: main.py) - CLI verzija
+## Aplikacija kaj dela - 1. Funkcionalnost (file: main.py) - CLI verzija
 
 Na podlagi: 
 - začetne investicije,
@@ -59,7 +59,7 @@ V mislih sem imel; vzamem v zakup:
 - na eni strani ne upoštevanja dividend pri S&P 500, ki so cca 1,2% in
 - na drugi strani stroški pri posredniku in izdajatelju etfjev (navaden; cca 0,07% na leto, vzvod; 0,7% na leto)
 
-# Aplikacija kaj dela - funkcionalnost 2 (file: main-2.py) - CLI verzija + html 
+## Aplikacija kaj dela - funkcionalnost 2 (file: main-2.py) - CLI verzija + html 
 
 Moramo dati iste vhodne podatke, kot pri 1. Funkcionalnosti!
 
@@ -75,7 +75,7 @@ je tukaj prikazana v obliki grafa, kjer se nazorno vidi potek vseh treh krivulj 
 
 
 
-# Namestitev programa
+## Namestitev programa
 1. Kloniraj repozitorij:
    - ` git clone https://github.com/Zankooo/Leverage-Etfs.git `
 2. Namesti potrebne knjižnice:
@@ -86,7 +86,7 @@ je tukaj prikazana v obliki grafa, kjer se nazorno vidi potek vseh treh krivulj 
    - `.venv\Scripts\activate` (Windows)
    - `source .venv/bin/activate` (macOS/Linux)
 
-# Zagon programa
+## Zagon programa
 Zagon 1. Funkcionalnosti:
 - `python3 main.py` (macOS/Linux)
 - `python main.py` (Windows)
@@ -97,8 +97,8 @@ Zagon 2. Funkcionalnosti:
 
 <hr>
 
-# Teorija za laike
-## Prvo; kaj je ETF?
+## Teorija za laike
+### Prvo; kaj je ETF?
 - To je sklad, ki se tako kot recimo delnica podjetja Apple, trguje na borzi 
 - Glavna razlika je, da če kupimo delnico Apple, smo lastniki samo podjetja Apple, v etf skladu so pa mnoge delnice... Sp500 je recimo skupek največjih ameriških podjetij, kjer so podjetja razvrščena po velikosti. Večje kot je podjetje večji procent tega podjetja je v indeksu (etfju). V Nasdaq 100 je sto največjih tehnoloških podjetij...
 - Etf isto kupuješ/prodajaš 
@@ -106,18 +106,18 @@ Zagon 2. Funkcionalnosti:
 - Za dolg rok ima etf boljse razmerje med donosnostjo izgubo in mirnim spanjem -> in vedno se je pobral in prišel spet na vrh! Če se je vedno do sedaj v 98 letni zgodovini sp500 pobral, se bo ob kakšnih padcih v bodoče tudi zagotovo pobral. 
 
 
-## Kaj je pa ETF z vzvodom (leverage ETF)?
+### Kaj je pa ETF z vzvodom (leverage ETF)?
 - vzvod si lahko predstavljamo, da je recimo nek etf krat 2 ali krat 3.
 - torej sp500 z vzvodom dva, je sp500 2x, to pomeni da je dvakratnik sp500
 
-## Problemi oz. fora vzvoda?
+### Problemi oz. fora vzvoda?
 - zdej če to bere nek laik si misli; gremo na glavo. Če je lani sp500 zrastel za 10% je vzvod 2x zrastel za 20% in vzvod 3x 30%. 
 - ampak ni tako. Vemo da je vse 'gor dol'. 
     - Primer 1: Imamo prvi dan 100eur investirano in osnoven sp500 zraste 1% -> imamo 101eur. Drugi dan pa pade 1% -> imamo 99,99eur. Torej imamo manj kot smo imeli. Gremo naprej. Tretji dan spet zraste za 1% -> imamo 100,9899eur. Četrti dan pade za 1% -> imamo 99,98eur. In tako naprej... 
     - Primer 2: Imamo prvi dan 100eur investirano in 2x vzvod sp500 zraste 2% -> imamo 102eur. Drugi dan pa pade 2% -> imamo 99,96eur. Torej imamo manj kot smo imeli. Gremo naprej. Tretji dan spet zraste za 2% -> imamo 101,9592eur. Četrti dan pade za 2% -> imamo 99,92eur. In tako naprej...
 - vidimo problem ane? Več kot je nihanja gor dol, volatilnost, slabše je za vzvod. Ker se matematično zgublja donos. Zdej si pa predstavljajmo da imamo vzvod delnice Tesle, ki je znana da gre veliko gor dol. Osnovna 3% gor in 3% dol. Vzvod v tem primeru 6% in 6% dol. Koliko hitreje bi izgubljali!
 
-## Ugotovitev
+### Ugotovitev
 - torej za vzvod je najboljše, da čim manj niha gor dol. Potencialno če bi nekdo garantiral da bo podjetje vsak dan zraste le 0,01%, kupil bi čim večji vzvod tega podjetja in zmagal bi. 
 - torej volatilnost uničuje donos. Zato ni fajn kupovat vzvoda individualnih delnic ker individualne delnice še toliko bolj nihajo in donos se drastično izgubi. 
 - za vzvod je idealno da je čim manj gor dol in počasna a vztrajno rast. 
