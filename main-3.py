@@ -10,22 +10,16 @@ from obcasno_pogosti_fajli.csv_operacije import *
 from testing_file import *
 from izracuni import *
 from rich.progress import Progress
-
+import csv
+from datetime import datetime
+import os
 
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
 sp_500_3x = load_csv('3x-leverage/sp-500-3x.csv')
 
-# prvo ta funkcija, ki jo bomo klicali v for loopu za vse intervale
-# pol pa funkcija ki bo primerjala use in izpisala
-# datume dobis iz funkcijo naredi intervale
-from datetime import datetime
 
-
-
-import csv
-from datetime import datetime
-
+# -------------------------------------------------------------------------------------
 def to_float(x):
     if isinstance(x, (int, float)):
         return float(x)
@@ -34,10 +28,11 @@ def to_float(x):
         s = s[:-1]
     return float(s)
 
+# -------------------------------------------------------------------------------------
 
 def investicija(podatki1, podatki2, podatki3, datum_zacetka, datum_konca, 
                 zacetna_investicija, mesecna_investicija, koliko_da_kupis_2x, 
-                koliko_da_kupis_3x, output_csv_path="rezultatiii.csv"):
+                koliko_da_kupis_3x, output_csv_path):
     
     koliko_da_kupis_2x = koliko_da_kupis_2x / 100
     koliko_da_kupis_3x = koliko_da_kupis_3x / 100
@@ -100,62 +95,86 @@ def investicija(podatki1, podatki2, podatki3, datum_zacetka, datum_konca,
 
     # --- zapis v CSV (3 vrstice po tvojem vzorcu) ---
     
-    row0 = [f"Zacetna investicija {zacetna_investicija}, vseh mesecnih {skupaj_mesecno}"]
-    row1 = [
-    f"SP500 osnoven more padet {koliko_da_kupis_2x * 100}% da kupimo 2x",
-    f"in osnoven more padet {koliko_da_kupis_3x * 100}% da kupimo 3x"
-    ]
-    row2 = ["Datum", "Skupno (eur)"]
-    row3 = [f"{datum_zacetka}-{datum_konca}", f"{round(skupno, 2)}"]
-
+    # --- zapis v CSV ---
     file_exists = os.path.exists(output_csv_path)
 
-    # če ne obstaja -> ustvari in zapiši row1, row2, row3
+    row1 = [
+        f"SP500 osnoven more padet {koliko_da_kupis_2x * 100}% da kupimo 2x",
+        f"in osnoven more padet {koliko_da_kupis_3x * 100}% da kupimo 3x"
+    ]
+    # header vrstica
+    row2 = ["Datum od kdaj do kdaj", "Zacetna investicija", "vse mesecne investicije",
+            "skupaj vse investicije", "koliko smo v plusu oz minusu", "koliko imamo vse skupaj"]
+
+    # izračuni za row3
+    skupaj_vlozeno = zacetna_investicija + skupaj_mesecno
+    plus_minus = round(skupno - skupaj_vlozeno, 2)
+    row3 = [
+        f"{datum_zacetka}-{datum_konca}",
+        zacetna_investicija,
+        round(skupaj_mesecno, 2),
+        round(skupaj_vlozeno, 2),
+        plus_minus,
+        round(skupno, 2)
+    ]
+
     if not file_exists:
-        # poskrbi, da mapa obstaja (opcijsko)
         os.makedirs(os.path.dirname(output_csv_path) or ".", exist_ok=True)
         with open(output_csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(row1)
-            writer.writerow(row0)
             writer.writerow(row2)
             writer.writerow(row3)
-    # če csv ze obstajaobstaja -> dodaj le row3
     else:
         with open(output_csv_path, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(row3)
-
+            
     return skupno
 
-
+# -------------------------------------------------------------------------------------
 
 
 def funkcija_naredi_rezultate(zacetna_investicija, mesecne_investicije, interval):
-    # izracuna intervale
+    # izberi unikaten CSV za ta zagon
+    output_csv_path = next_results_path(directory=".", base="rezultati", ext=".csv")
+
     intervali = generiraj_intervale_leto(sp_500, interval)
-    # ta progress je basically v konzoli da je bolj fancy 
+
     with Progress() as progress:
         task = progress.add_task("[magenta]Računam...", total=len(intervali))
-        # for loop za vse datume pac
         for i in range(len(intervali)):
-            investicija(sp_500, sp_500_2x, sp_500_3x, intervali[i][0], intervali[i][1], 
-                        zacetna_investicija, mesecne_investicije, koliko_pade_da_2x, koliko_pade_da_3x)
+            investicija(
+                sp_500, sp_500_2x, sp_500_3x,
+                intervali[i][0], intervali[i][1],
+                zacetna_investicija, mesecne_investicije,
+                koliko_pade_da_2x, koliko_pade_da_3x,
+                output_csv_path=output_csv_path
+            )
             progress.advance(task)
-    
-    print("Ustvarjen fiel rezultatiii.csv !")
+
+    print(f"Ustvarjen file: {output_csv_path}")
     return 0
 
+
+# -------------------------------------------------------------------------------------
+
+# helper funkcija da ustvari vedno nov csv za zgornji funkciji
+def next_results_path(directory=".", base="rezultati", ext=".csv"):
+    n = 1
+    while True:
+        path = os.path.join(directory, f"{base}{n}{ext}")
+        if not os.path.exists(path):
+            return path
+        n += 1
+
+
+# -------------------------------------------------------------------------------------
 
 zacetna_investicija = int(input("Koliko naj bo zacetna investicija? "))
 mesecna_investicija = int(input("Koliko naj bo mesecna investicija? "))
 koliko_pade_da_2x = int(input("Koliko % naj pade osnoven da kupimo 2x? "))
 koliko_pade_da_3x = int(input("Koliko % naj pade osnoven da kupimo 3x? "))
-
-
-
-
-
 
 
 interval = int(input("Koliko let naj bo interval? "))
