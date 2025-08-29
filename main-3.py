@@ -14,6 +14,8 @@ import csv
 from datetime import datetime
 import os
 from csv import reader as csv_reader
+import re
+import glob
 
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
@@ -30,7 +32,7 @@ def to_float(x):
     return float(s)
 
 # -------------------------------------------------------------------------------------
-
+# prvo damo v 3x na zacetku!
 def investicija(podatki1, podatki2, podatki3, datum_zacetka, datum_konca, 
                 zacetna_investicija, mesecna_investicija, koliko_da_kupis_2x, 
                 koliko_da_kupis_3x, output_csv_path):
@@ -46,9 +48,9 @@ def investicija(podatki1, podatki2, podatki3, datum_zacetka, datum_konca,
     vrstica_zacetka = next(i for i, row in enumerate(podatki1) if row[0] == datum_zacetka)
     vrstica_konca   = next(i for i, row in enumerate(podatki1) if row[0] == datum_konca)
 
-    investicija1 = float(zacetna_investicija)
+    investicija1 = 0
     investicija2 = 0.0
-    investicija3 = 0.0
+    investicija3 = float(zacetna_investicija)
 
     investirano_v_1x = 0.0
     investirano_v_2x = 0.0
@@ -132,30 +134,6 @@ def investicija(podatki1, podatki2, podatki3, datum_zacetka, datum_konca,
             writer.writerow(row3)
 
     return skupno
-
-# -------------------------------------------------------------------------------------
-
-
-def funkcija_naredi_rezultate(zacetna_investicija, mesecne_investicije, interval, koliko_pade_da_2x, koliko_pade_da_3x):
-    # izberi unikaten CSV za ta zagon
-    output_csv_path = next_results_path(directory=".", base="rezultati", ext=".csv")
-
-    intervali = generiraj_intervale_leto(sp_500, interval)
-
-    with Progress() as progress:
-        task = progress.add_task("[magenta]Računam...", total=len(intervali))
-        for i in range(len(intervali)):
-            investicija(
-                sp_500, sp_500_2x, sp_500_3x,
-                intervali[i][0], intervali[i][1],
-                zacetna_investicija, mesecne_investicije,
-                koliko_pade_da_2x, koliko_pade_da_3x,
-                output_csv_path=output_csv_path
-            )
-            progress.advance(task)
-
-    print(f"Ustvarjen file: {output_csv_path}")
-    return 0
 
 
 # -------------------------------------------------------------------------------------
@@ -341,9 +319,7 @@ def primerjaj_vec_indeksov(*files, stolpec=5):
         pct_eu = fmt_eu(pct, 2)
         print(file_colors[fp] + f"✔ {fp} je bil najboljši v {w_eu} primerih ({pct_eu}%)" + RESET)
 
-    if ties:
-        ties_eu = fmt_eu(ties, 0)
-        print(DATE_COLOR + f"⚖ Neodločeno (vsi enaki): {ties_eu}" + RESET)
+
 
     print()
     print(rgb(166,130,255) + "══════════════════════════════════════════════════════" + RESET)
@@ -354,20 +330,110 @@ def primerjaj_vec_indeksov(*files, stolpec=5):
 
 # ----------------------------------------------------------------------------------------
 
-def naredi():
+
+def primerjaj_une_tri_in_vse_rezultate(osnoven, vzvod2x, vzvod3x,
+                                       results_dir="rezultati", stolpec=5):
+    """
+    osnoven, vzvod2x, vzvod3x: poti do osnovnih CSV-jev (npr. 'testing/osnoven.csv', ...)
+    results_dir: mapa z datotekami 'rezultati_2x-<X>_3x-<Y>.csv'
+    stolpec: indeks stolpca za primerjavo (privzeto 5 = 'koliko imamo vse skupaj')
+    """
+
+    # 1) Osnovni trije
+    base_files = [osnoven, vzvod2x, vzvod3x]
+
+    # 2) Vsi rezultati_2x-*_3x-*.csv iz mape
+    result_files = glob.glob(os.path.join(results_dir, "rezultati_2x-*_3x-*.csv"))
+
+    # Uredi rezultate po pragih (2x, 3x) iz imena
+    def sort_key(path):
+        m = re.search(r"2x-(\d+)_3x-(\d+)", os.path.basename(path))
+        return (int(m.group(1)), int(m.group(2))) if m else (999999, 999999)
+
+    result_files = sorted(result_files, key=sort_key)
+
+    # Odstrani morebitne duplikate (če bi bili med base_files)
+    base_abs = set(os.path.abspath(p) for p in base_files)
+    result_files = [p for p in result_files if os.path.abspath(p) not in base_abs]
+
+    # 3) Združi in preveri
+    all_files = base_files + result_files
+    if len(all_files) < 2:
+        raise ValueError("Za primerjavo potrebujem vsaj 2 CSV datoteki.")
+
+    # 4) Pokliči primerjavo
+    return primerjaj_vec_indeksov(*all_files, stolpec=stolpec)
+
+
+# -----------------------------------------------------------------------------
+
+import os
+
+# 1) POSODOBITEV: dodamo thresholda + output_csv_path
+def funkcija_naredi_rezultate(zacetna_investicija, mesecne_investicije, interval,
+                              koliko_pade_da_2x, koliko_pade_da_3x, output_csv_path):
+    # izracuna intervale
+    intervali = generiraj_intervale_leto(sp_500, interval)
+    # progress bar
+    with Progress() as progress:
+        task = progress.add_task("[magenta]Računam...", total=len(intervali))
+        for i in range(len(intervali)):
+            investicija(
+                sp_500, sp_500_2x, sp_500_3x,
+                intervali[i][0], intervali[i][1],
+                zacetna_investicija, mesecne_investicije,
+                koliko_pade_da_2x, koliko_pade_da_3x,
+                output_csv_path=output_csv_path
+            )
+            progress.advance(task)
+
+    print(f"Ustvarjen file: {output_csv_path}")
+    return 0
+
+
+# 2) NOVA FUNKCIJA: kombinacije podamo kot parameter
+def naredi(combinations):
+    """
+    combinations: seznam tuple-ov (threshold_2x, threshold_3x), npr. [(5,8), (6,10), ...]
+    Preostale parametre (začetna, mesečna, interval) povprašamo enkrat in jih uporabimo za vse kombinacije.
+    Za vsako kombinacijo se ustvari ločen CSV: rezultati_2x-<X>_3x-<Y>.csv
+    """
     zacetna_investicija = int(input("Koliko naj bo zacetna investicija? "))
     mesecna_investicija = int(input("Koliko naj bo mesecna investicija? "))
     interval = int(input("Koliko let naj bo interval? "))
-    koliko_pade_da_2x = int(input("Koliko % naj pade osnoven da kupimo 2x? "))
-    koliko_pade_da_3x = int(input("Koliko % naj pade osnoven da kupimo 3x? "))
-    
 
-    funkcija_naredi_rezultate(zacetna_investicija, mesecna_investicija, interval, koliko_pade_da_2x, koliko_pade_da_3x)
+    # po želji lahko kreiramo podmapo za rezultate
+    results_dir = "rezultati"
+    os.makedirs(results_dir, exist_ok=True)
+
+    for t2x, t3x in combinations:
+        # ime datoteke na kombinacijo
+        output_csv_path = os.path.join(results_dir, f"rezultati_2x-{t2x}_3x-{t3x}.csv")
+        print(f"\n▶ Začenjam kombinacijo: 2x={t2x}% , 3x={t3x}%  -> {output_csv_path}")
+        funkcija_naredi_rezultate(
+            zacetna_investicija,
+            mesecna_investicija,
+            interval,
+            t2x, t3x,
+            output_csv_path
+        )
+    print("\n✅ Vse kombinacije obdelane.")
     return 0
-# 30000 in  in 400 in 15
-# 2,3, pa 3,4 pa 4,5 pa 5,6 pa 6,7 pa 7,8 
-# naredi()
 
-primerjaj_vec_indeksov("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv", 
-               "rezultati1.csv", "rezultati2.csv", "rezultati3.csv", 
-               "rezultati4.csv", "rezultati5.csv", "rezultati6.csv")
+
+# ------------------------------------------------------------------------------------
+
+
+kombinacije = [
+    (3,5), (3,7), (4,6), (4,8), (5,7), (5,9),
+    (6,8), (6,10)]
+
+# prvo moramo naredit csv file in tudi v main.py
+# naredi(kombinacije)
+
+
+#in pol klicemo to funkcijo da primerja, ta funkcija pa klice drugo kjer so prvi trije teli 
+# in ostali iz mae rezultati
+primerjaj_une_tri_in_vse_rezultate('testing/osnoven.csv','testing/vzvod-2x.csv','testing/vzvod-3x.csv',results_dir='rezultati',stolpec=5)
+
+# KAJ SMO TOREJ UGOTOVILI; DA SKORAJ NIČ NE UPLIVA TO KOLIKO JE PRVEGA V MESECU EN DOL IN DA INVESTIRAMO TAKRAT V TISTEGA ALI ONEGA
