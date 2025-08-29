@@ -1,3 +1,33 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+
+# Lokalno
+.env
+data/
+notebooks/
+logs/
+
+
+
+
+.rezultati-vsak-interval-vsi-indeksi/
+.mapa-grafi/

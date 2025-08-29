@@ -5,7 +5,7 @@ from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
 from rich.progress import Progress
 from colorama import init, Fore, Style
-from grafi import narisi_navadne_grafe, narisi_logaritmicne_grafe
+from grafi import  narisi_logaritmicne_grafe
 import os
 import glob
 from pathlib import Path
@@ -84,15 +84,10 @@ def pridobi_zneske():
 # to smo dali ven iz funkcije ker pac potrebujemo to v dveh funkcijah (prvi in drugi) in drugace ne gre
 
 
-
-
-
-
-
 # 1. GLAVNA FUNKCIJA - ustvari csvje 
 def funkcija_naredi_rezultat_za_csvje():
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
-    # ce se ni ustvarjena jo ustvarimo
+    # ce se ni ustvarjena mapa jo ustvarimo
     folder = "rezultati-vsak-interval-vsi-indeksi"
     os.makedirs(folder, exist_ok=True)  # Ustvari mapo (če še ne obstaja)
 
@@ -123,68 +118,38 @@ def funkcija_naredi_rezultat_za_csvje():
             progress.advance(task)
     return 0
 
-# -----------------
+# ------
 
 # 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
 def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj):
     print()
 
-    # preštej csv-je v mapi
+    
+    # usvarimo mapo ce se ne obstaja
+    folder = Path('mapa-grafi')
+    folder.mkdir(parents=True, exist_ok=True)
+    # če obstaja, izbriši vse .csv datoteke v njej da pripravimo za nove grafe.html
+    for csv_file in folder.glob("*.csv"):
+        csv_file.unlink()
+
+    # preštej csv-je v mapi, da vemo koliko dolg for loop
     mapa = Path("rezultati-vsak-interval-vsi-indeksi")
     stevilo_csvjev = len(list(mapa.glob("*.csv")))
 
-    print(Fore.CYAN + "📈 Izberi vrsto grafa:" + Style.RESET_ALL)
-    print()
-    print(Fore.GREEN + "1. Logaritemski (priporočeno)" + Style.RESET_ALL)
-    print(Fore.LIGHTCYAN_EX + "2. Navaden" + Style.RESET_ALL)
-    print()
-
-    ker_graf = input(Fore.CYAN + "Vnesi številko (1/2): " + Style.RESET_ALL).strip()
-
-    if ker_graf == "1":
-        # LOG: prikazuje tudi začetno, mesečno in skupaj (v anotaciji)
-        for i in range(1, stevilo_csvjev + 1):
-            pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
-            narisi_logaritmicne_grafe(
-                zacetna_investicija,
-                mesecna_investicija,
-                cela_investicija_skupaj,
-                pot
-            )
-    elif ker_graf == "2":
-        # Navaden graf (če želiš, lahko podobno dodaš anotacijo tudi sem)
-        for i in range(1, stevilo_csvjev + 1):
-            pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
-            narisi_navadne_grafe(pot)
-    else:
-        print(Fore.YELLOW + "Neveljavna izbira, privzeto rišem logaritemske grafe." + Style.RESET_ALL)
-        for i in range(1, stevilo_csvjev + 1):
-            pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
-            narisi_logaritmicne_grafe(
-                zacetna_investicija,
-                mesecna_investicija,
-                cela_investicija_skupaj,
-                pot
-            )
-
-
-
+    # tukaj dodaj da ustvari mapo ce se ne obstaja... 
+    # ce pa ze obstaja pa iz nje vse odstrani
+    for i in range(1, stevilo_csvjev + 1):
+        pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
+        narisi_logaritmicne_grafe(
+            zacetna_investicija,
+            mesecna_investicija,
+            cela_investicija_skupaj,
+            pot,
+            f'mapa-grafi/graf{i}.html'
+        )
+    
+    
 # ---------------------------------------------------------------------------------------------
-
-# POMOZNA FUNKCIJA (KI JE NITI NE RABIMO) KI ZBRISE VSE KAR JE V MAPI 'rezultati-vsak-interval-vsi-indeksi'
-# ce se nam neda rocno zbrisat in predvsem da ko nocemo meti vec fajlov - recimo preden pushamo na github
-def funkcija_zbrisi_kar_je_v_mapi():
-    test_files = glob.glob('rezultati-vsak-interval-vsi-indeksi/*.csv')
-    if test_files:
-        for file in test_files:
-            os.remove(file)
-
-#funkcija_zbrisi_kar_je_v_mapi()
-
-
-# ---------------------------------------------------------------------------------------------
-
-
 
 # POKLICEMO TO KAR JE TUKAJ IN JE TO TO
 
@@ -204,13 +169,6 @@ cela_investicija_skupaj = zacetna_investicija + 12 * interval * mesecna_investic
 
 funkcija_naredi_rezultat_za_csvje()
 funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj)
-
-
-
-
-
-
-
 
 
 
