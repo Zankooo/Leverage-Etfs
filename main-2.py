@@ -123,8 +123,6 @@ def funkcija_naredi_rezultat_za_csvje():
 # 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
 def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj):
     print()
-
-    
     # usvarimo mapo ce se ne obstaja
     folder = Path('mapa-grafi')
     folder.mkdir(parents=True, exist_ok=True)
