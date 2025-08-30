@@ -49,16 +49,7 @@ Procenti so izračunani na podlagi 'koliko imamo vse skupaj'
 
  
 ```
-Pomembna opomba 1: vzet je osnoven (S&P indeks Nasdaq-100, Nasdaq Composite), in vzvod je narejen na podlagi ročnega vsakodnevnega balansiranja. 
 
-Pomembna opomba 2: vzeti so osnovni indeksi, torej tukaj ni upoštevanih dividend, ki so nekje 1,2% za S&P 500.
-
-Čisto vse je težko upoštevati, ampak neglede na to, so izračuni precej natančnen pokazatelj realnosti. (čeprav v bodoče morda naredim posodobitev in upoštevam tudi to)
-
-V mislih sem imel; 
-- na eni strani ne upoštevanja dividend pri S&P 500, ki so cca 1,2% in
-- na drugi strani stroški pri posredniku in izdajatelju etfjev (navaden; cca 0,07% na leto, vzvod; 0,7% na leto)
-Torej da stroške pri posredniku in izdajalcu na drugi strani izenačijo dividende na drugi strani.
 
 ## Aplikacija kaj dela - funkcionalnost 2 (file: main-2.py) - CLI verzija + html 
 
@@ -73,6 +64,15 @@ Recimo vrstica iz 1. Funkcionalnosti:
 ```
 je tukaj prikazana v obliki grafa, kjer se nazorno vidi potek vseh treh krivulj (različic - osnoven, 2x, 3x):
 ![](./images/en-graf-za-readme.png)
+
+## Pomembna opomba
+Kako so narejeni 2x in 3x vzvodi.. 2x: če je nek dan navaden indeks zrastel 0,5% sem 2x naredil tako da sem to pomnozil, torej je zrastel 1%. In tako tudi za 3x. Torej to je narejeno za vsak dan.. Drugače rečeno: 'umetno' sem naredil 2x in 3x vzvode. -> volatility decay
+
+Zakaj pa nisem vzel podatke dejanskih vzvodnih etfjev? Zato ker vzvodni etfji obstajajo le zadnjih nekaj 10 let max. 
+
+Da bi bil pa izračun čim bolj natančen, pa bi moral upoštevati vse stroške. Stroške pri navadnih etfjih in predvsem vse stroške vzvodnih etfjev.
+Teh stroškov ni upoštevanih notri v kalkulaciji. Predvsem zato ker je računanje stroškov vzvodnih etfjev kompleksno, je pa to cilj narediti v prihodnje in zagotoviti čim bolj natančne izračune oziroma grafe! 
+
 
 
 
