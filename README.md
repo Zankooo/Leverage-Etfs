@@ -71,7 +71,7 @@ Kako so narejeni 2x in 3x vzvodi.. 2x: če je nek dan navaden indeks zrastel 0,5
 Zakaj pa nisem vzel podatke dejanskih vzvodnih etfjev? Zato ker vzvodni etfji obstajajo le zadnjih nekaj 10 let max. 
 
 Da bi bil pa izračun čim bolj natančen, pa bi moral upoštevati vse stroške. Stroške pri navadnih etfjih in predvsem vse stroške vzvodnih etfjev.
-Teh stroškov ni upoštevanih notri v kalkulaciji. Predvsem zato ker je računanje stroškov vzvodnih etfjev kompleksno, je pa to cilj narediti v prihodnje in zagotoviti čim bolj natančne izračune oziroma grafe! 
+Teh stroškov ni upoštevanih notri v kalkulaciji. Predvsem zato ker je računanje stroškov vzvodnih etfjev kompleksno, je pa to cilj narediti v prihodnje saj so stroški zelo veliki in ful dobička ti odstranijo skozi leta
 
 
 
