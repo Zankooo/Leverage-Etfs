@@ -1,5 +1,7 @@
 # ETF-ji z vzvodom - Primerjalnik donosov
 
+Finančna analiza podatkov (backtesting)
+
 ## Aplikacija kaj dela - 1. Funkcionalnost (file: main.py) - CLI verzija
 
 Na podlagi: 
