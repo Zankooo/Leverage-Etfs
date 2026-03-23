@@ -54,7 +54,7 @@ Procenti so izračunani na podlagi 'koliko imamo vse skupaj'
 
 
 ## Aplikacija kaj dela - funkcionalnost 2 (file: main-2.py) - CLI verzija + html 
-
+python3.10 -m uvicorn main:app --reload <- tkole zaganjaš 
 Moramo dati iste vhodne podatke, kot pri 1. Funkcionalnosti!
 
 Funkcionalnost 2 naredi zelo podobno kot 1. Funkcionalnost, le da za vsako obdobje nariše graf, ki prikazuje kako se je gibala donosnost vseh treh različic (navaden, 2x, 3x) skozi čas. Tukaj ni toliko v ospredju statistika, kot to, da je grafično prikazano kako se je vrednost vsake različice gibala v vsakem obdobju.

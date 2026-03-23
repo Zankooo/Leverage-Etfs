@@ -11,8 +11,12 @@ import glob
 from pathlib import Path
 from rich.progress import Progress  # če še ni uvoženo
 init(autoreset=True)
+app = FastAPI()
 
 
+@app.get("/")
+def root():
+    return {"message": "API deluje"}
 
 print('----------')
 

@@ -1,10 +1,12 @@
-import sys
+
 def fancy_zakljucek_1():
     # print("✔️ Program uspešno končan!")
     print("""
     📈 "The stock market rewards patience" 🥱 
                – Warren Buffett 🌱""")
-    sys.exit(0)
+
+    print()
+    
 
 
 def fancy_zakljucek_2():
@@ -15,4 +17,4 @@ def fancy_zakljucek_2():
        * 🌟 Success Achieved! *
        ************************
     """)
-    sys.exit(0)
+    print()

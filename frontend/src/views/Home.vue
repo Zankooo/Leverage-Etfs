@@ -1,57 +1,74 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import axios from 'axios'
 import { ChevronRight, FileText, Loader2 } from 'lucide-vue-next'
 
 const initialInvestment = ref('')
 const monthlyContribution = ref('')
 const selectedIndex = ref('S&P 500')
-const selectedInterval = ref('15 let')
+const selectedInterval = ref(15)
+
+const isFormValid = computed(function() {
+  return initialInvestment.value !== '' &&
+         monthlyContribution.value !== '' &&
+         selectedInterval.value != null &&
+         selectedInterval.value >= 1 &&
+         selectedInterval.value <= 50
+})
 
 const isLoading = ref(false)
 const results = ref<{ id: number; title: string; content: string }[]>([])
 
 
-const calculate = async () => {
+async function izracunaj() {
   isLoading.value = true
-  // Simulate backend delay
-  await new Promise(resolve => setTimeout(resolve, 1500))
   
-  // Mock backend response with "tens of HTMLs"
-  const mockHtmls = Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    title: `Simulacija Scenarij #${i + 1} - ${selectedIndex.value}`,
-    content: `
-      <div class="p-8 font-sans">
-        <h2 class="text-2xl font-bold mb-4 text-[#1A1A1A]">Poročilo o simulaciji #${i + 1}</h2>
-        <p class="mb-4 text-gray-600">To je podrobna analiza za vašo investicijo z indeksom <strong>${selectedIndex.value}</strong> čez obdobje <strong>${selectedInterval.value}</strong>.</p>
-        <div class="grid grid-cols-2 gap-4 mb-6">
-          <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-            <span class="text-xs text-gray-400 uppercase font-bold">Začetni vložek</span>
-            <p class="text-xl font-semibold">${initialInvestment.value} €</p>
-          </div>
-          <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-            <span class="text-xs text-gray-400 uppercase font-bold">Mesečni vložek</span>
-            <p class="text-xl font-semibold">${monthlyContribution.value} €</p>
-          </div>
-        </div>
-        <div class="prose prose-sm max-w-none text-gray-700">
-          <p>Pričakovana donosnost v tem scenariju temelji na zgodovinskih podatkih med leti ${2000 + i} in ${2015 + i}.</p>
-          <ul class="list-disc pl-5 space-y-2">
-            <li>Povprečna letna rast: ${(7 + Math.random() * 5).toFixed(2)}%</li>
-            <li>Največji upad (Drawdown): -${(10 + Math.random() * 20).toFixed(2)}%</li>
-            <li>Končna vrednost portfelja: <strong>${(parseInt(initialInvestment.value || '0') * 2.5 + Math.random() * 100000).toFixed(0)} €</strong></li>
-          </ul>
-        </div>
-        <div class="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-400 italic">
-          Opozorilo: Pretekli donosi niso zagotovilo za prihodnje rezultate.
-        </div>
-      </div>
-    `
-  }))
-  
-  results.value = mockHtmls
-  isLoading.value = false
+  try {
+    const podatki_za_poslat = {
+      zacetna_investicija: Number(initialInvestment.value),
+      mesecni_vlozek: Number(monthlyContribution.value),
+      indeks: selectedIndex.value,
+      interval: Number(selectedInterval.value)
+    }
+
+    const response = await axios.post('http://127.0.0.1:8000/parametri', podatki_za_poslat)
+    const data = response.data
+    
+    console.log("Odgovor strežnika:", data)
+
+    // Simulate backend delay (zamuda za videz računanja)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    // Mock HTML-ji
+    const mockHtmls = Array.from({ length: 12 }, (_, i) => ({
+      id: i + 2,
+      title: `Simulacija Scenarij #${i + 1} - ${selectedIndex.value}`,
+      content: `
+        tukaj bodo htmli
+      `
+    }))
+
+    // Začasen prikaz plus simulirani ("mock") html-ji
+    results.value = [
+      {
+        id: 1,
+        title: "Odgovor zaledja (Backend)",
+        content: `<div style="padding: 20px; font-family: sans-serif;">
+          <h2 style="color: #10B981; font-weight: bold;">Povezava uspela! </h2>
+          <p>Prejeli smo odgovor: <strong>${JSON.stringify(data)}</strong></p>
+          <p>Poglej v konzolo tvojega brskalnika ali v terminal zadaj!</p>
+        </div>`
+      },
+      ...mockHtmls
+    ]
+  } catch (error) {
+    console.error("Poskus povezave spodletel:", error)
+    alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")
+  } finally {
+    isLoading.value = false
+  }
 }
+
 
 const openHtml = (content: string) => {
   // TODO: ko bo backend integriran, bo content prišel od API-ja
@@ -97,35 +114,42 @@ const openHtml = (content: string) => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Indeks</label>
-            <select 
-              v-model="selectedIndex"
-              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] appearance-none cursor-pointer"
-            >
-              <option>S&P 500</option>
-              <option>Nasdaq 100</option>
-              <option>MSCI World</option>
-              <option>Euro Stoxx 50</option>
-            </select>
+            
+            <div class="relative">
+              <select 
+                v-model="selectedIndex"
+                class="w-full px-4 py-3 pr-10 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] appearance-none cursor-pointer"
+              >
+                <option>S&P 500</option>
+                <option>Nasdaq 100</option>
+                <option>Nasdaq Composite</option>
+              </select>
+
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
           </div>
+
           <div>
-            <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Interval</label>
-            <select 
+            <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Interval (leta)</label>
+            <input 
               v-model="selectedInterval"
-              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] appearance-none cursor-pointer"
-            >
-              <option>5 let</option>
-              <option>10 let</option>
-              <option>15 let</option>
-              <option>20 let</option>
-              <option>30 let</option>
-            </select>
+              type="number"
+              min="1"
+              max="50"
+              placeholder="npr. 10"
+              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300"
+            />
           </div>
         </div>
 
         <!-- Calculate Button -->
         <button 
-          @click="calculate"
-          :disabled="isLoading"
+          @click="izracunaj"
+          :disabled="isLoading || !isFormValid"
           class="w-full py-3.5 bg-[#10B981] hover:bg-[#059669] text-white text-base font-semibold rounded-xl transition-all shadow-lg shadow-[#10B981]/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <Loader2 v-if="isLoading" class="w-5 h-5 animate-spin" />
@@ -138,7 +162,7 @@ const openHtml = (content: string) => {
       </div>
     </div>
 
-    <!-- Results Section -->
+    <!-- Results Section se prikaze le ko damo na true oz k dobim iz backenda response-->
     <div v-if="results.length > 0" class="mt-16 space-y-6">
       <h2 class="text-2xl font-bold text-[#1A1A1A] px-4">Rezultati simulacije</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
