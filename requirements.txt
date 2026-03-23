@@ -1,5 +1,0 @@
-pandas
-plotly
-rich
-colorama
-python-dateutil

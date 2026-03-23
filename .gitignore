@@ -22,9 +22,18 @@ htmlcov/
 
 # Lokalno
 .env
+*.env.local
+*.env.*.local
 data/
 notebooks/
 logs/
+
+# Frontend (Node / Vite)
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
 
 
 
