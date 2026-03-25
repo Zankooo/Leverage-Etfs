@@ -7,7 +7,7 @@
       </p>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-24">
       <div v-for="feature in features" :key="feature.title" class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
         <div class="w-12 h-12 bg-emerald-50 text-[#10B981] rounded-2xl flex items-center justify-center mb-6">
           <component :is="feature.icon" class="w-6 h-6" />

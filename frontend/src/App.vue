@@ -18,7 +18,7 @@ const navItems = [
   <div class="min-h-screen flex flex-col bg-[#F8F9FA] text-[#1A1A1A] font-sans">
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12">
         <div class="flex justify-between h-16 items-center">
           <div class="flex items-center gap-2">
             <TrendingUp class="text-[#10B981] w-6 h-6" />
@@ -63,7 +63,7 @@ const navItems = [
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <main class="w-full max-w-2xl mx-auto py-12 px-6 lg:px-10 xl:px-12">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -72,8 +72,8 @@ const navItems = [
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-100 py-12 mt-auto">
-      <div class="max-w-7xl mx-auto px-4 text-center">
+    <footer class="bg-white border-t border-gray-100 py-7 mt-auto">
+      <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12 text-center">
         <p class="text-gray-400 text-sm">© 2026 Vzvodno Investiranje. Vse pravice pridržane.</p>
       </div>
     </footer>

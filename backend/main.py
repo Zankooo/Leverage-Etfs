@@ -66,15 +66,12 @@ def root(data: UserInput):
     print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
     # funkcija 'funkcija_naredi_vse' naredi csv fajle, da jih ta funkcija lahko prejme in naredi primerjavo
-    primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
+    odgovor = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
 
     fancy_zakljucek_1()
 
-    json_odgovor = {
-        "odgovor" : "šlo je čez kul je! -> izračuni bi mogli bit v konzoli!"
-    }
 
-    return JSONResponse(content=json_odgovor, media_type="application/json; charset=utf-8")
+    return odgovor
     
 # ------------------------------------------------------------------------------------------
 
@@ -102,6 +99,7 @@ def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, inter
     intervali = generiraj_intervale_leto(indeks, interval)
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
+        print()
         task = progress.add_task("[cyan]Računam 1x...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):

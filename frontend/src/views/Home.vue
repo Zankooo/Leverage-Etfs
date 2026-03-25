@@ -8,6 +8,9 @@ const monthlyContribution = ref('')
 const selectedIndex = ref('S&P 500')
 const selectedInterval = ref(15)
 
+const backendResponse = ref(null)
+const results = ref([])
+
 const isFormValid = computed(function() {
   return initialInvestment.value !== '' &&
          monthlyContribution.value !== '' &&
@@ -17,12 +20,10 @@ const isFormValid = computed(function() {
 })
 
 const isLoading = ref(false)
-const results = ref<{ id: number; title: string; content: string }[]>([])
-
 
 async function izracunaj() {
   isLoading.value = true
-  
+
   try {
     const podatki_za_poslat = {
       zacetna_investicija: Number(initialInvestment.value),
@@ -33,34 +34,28 @@ async function izracunaj() {
 
     const response = await axios.post('http://127.0.0.1:8000/parametri', podatki_za_poslat)
     const data = response.data
-    
+
     console.log("Odgovor strežnika:", data)
 
-    // Simulate backend delay (zamuda za videz računanja)
     await new Promise(resolve => setTimeout(resolve, 1500))
 
-    // Mock HTML-ji
+    backendResponse.value = `
+      <div style="padding: 20px; font-family: sans-serif;">
+        <h2 style="color: #10B981; font-weight: bold;">Povezava uspela!</h2>
+        <p>Prejeli smo odgovor: <strong>${JSON.stringify(data)}</strong></p>
+        <p>Poglej v konzolo tvojega brskalnika ali v terminal zadaj!</p>
+      </div>
+    `
+
     const mockHtmls = Array.from({ length: 12 }, (_, i) => ({
-      id: i + 2,
+      id: i + 1,
       title: `Simulacija Scenarij #${i + 1} - ${selectedIndex.value}`,
       content: `
         tukaj bodo htmli
       `
     }))
 
-    // Začasen prikaz plus simulirani ("mock") html-ji
-    results.value = [
-      {
-        id: 1,
-        title: "Odgovor zaledja (Backend)",
-        content: `<div style="padding: 20px; font-family: sans-serif;">
-          <h2 style="color: #10B981; font-weight: bold;">Povezava uspela! </h2>
-          <p>Prejeli smo odgovor: <strong>${JSON.stringify(data)}</strong></p>
-          <p>Poglej v konzolo tvojega brskalnika ali v terminal zadaj!</p>
-        </div>`
-      },
-      ...mockHtmls
-    ]
+    results.value = mockHtmls
   } catch (error) {
     console.error("Poskus povezave spodletel:", error)
     alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")
@@ -79,7 +74,7 @@ const openHtml = (content: string) => {
 </script>
 
 <template>
-  <div class="max-w-xl mx-auto">
+  <div class="max-w-6xl mx-auto">
     <!-- Calculation Form Card -->
     <div class="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-7 md:p-10 border border-gray-50">
       <div class="text-center mb-7">
@@ -163,6 +158,12 @@ const openHtml = (content: string) => {
     </div>
 
     <!-- Results Section se prikaze le ko damo na true oz k dobim iz backenda response-->
+    <div v-if="backendResponse" class="mt-10">
+      <div class="max-w-* mx-auto bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div v-html="backendResponse"></div>
+      </div>
+    </div>
+    
     <div v-if="results.length > 0" class="mt-16 space-y-6">
       <h2 class="text-2xl font-bold text-[#1A1A1A] px-4">Rezultati simulacije</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
