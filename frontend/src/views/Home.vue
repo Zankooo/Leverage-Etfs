@@ -8,18 +8,17 @@ const monthlyContribution = ref('')
 const selectedIndex = ref('S&P 500')
 const selectedInterval = ref(15)
 
-const backendResponse = ref(null)
-const results = ref([])
+const backendResponse = ref<string | null>(null)
+const results = ref<any[]>([])
+const isLoading = ref(false)
 
-const isFormValid = computed(function() {
+const isFormValid = computed(function () {
   return initialInvestment.value !== '' &&
          monthlyContribution.value !== '' &&
          selectedInterval.value != null &&
-         selectedInterval.value >= 1 &&
-         selectedInterval.value <= 50
+         Number(selectedInterval.value) >= 1 &&
+         Number(selectedInterval.value) <= 50
 })
-
-const isLoading = ref(false)
 
 async function izracunaj() {
   isLoading.value = true
@@ -32,33 +31,25 @@ async function izracunaj() {
       interval: Number(selectedInterval.value)
     }
 
-    const response = await axios.post('http://127.0.0.1:8000/primerjava_vrstic', podatki_za_poslat)
+    const response = await axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat)
     const data = response.data
 
     console.log("Odgovor strežnika:", data)
 
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
     backendResponse.value = `
       <div style="padding: 20px; font-family: sans-serif;">
         <h2 style="color: #10B981; font-weight: bold;">Povezava uspela!</h2>
-        <p>Prejeli smo odgovor: <strong>${JSON.stringify(data)}</strong></p>
-        <p>Poglej v konzolo tvojega brskalnika ali v terminal zadaj!</p>
+        <p>Prejeli smo odgovor iz endpointa /primerjava_vrstic.</p>
+        <pre style="white-space: pre-wrap; word-break: break-word;">${JSON.stringify(data, null, 2)}</pre>
       </div>
     `
 
     const res = await axios.post("http://localhost:8000/html-files", podatki_za_poslat)
-    results.value = res.data.results
+    results.value = res.data.results || []
 
-    const mockHtmls = Array.from({ length: 12 }, (_, i) => ({
-      id: i + 1,
-      title: `Simulacija Scenarij #${i + 1} - ${selectedIndex.value}`,
-      content: `
-        tukaj bodo htmli
-      `
-    }))
-    results.value = mockHtmls
-    
+    console.log("Tole je iz backenda prišlo:", results.value)
+    console.log(JSON.stringify(results.value, null, 2))
+
   } catch (error) {
     console.error("Poskus povezave spodletel:", error)
     alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")
@@ -67,11 +58,7 @@ async function izracunaj() {
   }
 }
 
-
-const openHtml = (content: string) => {
-  // TODO: ko bo backend integriran, bo content prišel od API-ja
-  const blob = new Blob([content], { type: 'text/html' })
-  const url = URL.createObjectURL(blob)
+const openHtml = (url: string) => {
   window.open(url, '_blank')
 }
 </script>
@@ -173,14 +160,14 @@ const openHtml = (content: string) => {
         <div 
           v-for="res in results" 
           :key="res.id"
-          @click="openHtml(res.content)"
+          @click="openHtml(res.url)""
           class="bg-white p-6 rounded-2xl border border-gray-100 hover:border-[#10B981] hover:shadow-md transition-all cursor-pointer flex items-center justify-between group"
         >
           <div class="flex items-center gap-4">
             <div class="bg-emerald-50 p-3 rounded-xl text-[#10B981]">
               <FileText class="w-6 h-6" />
             </div>
-            <span class="font-medium text-gray-700">{{ res.title }}</span>
+            <span class="font-medium text-gray-700">{{"Simulacija Scenarij " + res.title }}</span>
           </div>
           <ChevronRight class="text-gray-300 group-hover:text-[#10B981] transition-colors" />
         </div>
