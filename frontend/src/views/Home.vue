@@ -32,7 +32,7 @@ async function izracunaj() {
       interval: Number(selectedInterval.value)
     }
 
-    const response = await axios.post('http://127.0.0.1:8000/parametri', podatki_za_poslat)
+    const response = await axios.post('http://127.0.0.1:8000/primerjava_vrstic', podatki_za_poslat)
     const data = response.data
 
     console.log("Odgovor strežnika:", data)
@@ -47,6 +47,9 @@ async function izracunaj() {
       </div>
     `
 
+    const res = await axios.post("http://localhost:8000/html-files", podatki_za_poslat)
+    results.value = res.data.results
+
     const mockHtmls = Array.from({ length: 12 }, (_, i) => ({
       id: i + 1,
       title: `Simulacija Scenarij #${i + 1} - ${selectedIndex.value}`,
@@ -54,8 +57,8 @@ async function izracunaj() {
         tukaj bodo htmli
       `
     }))
-
     results.value = mockHtmls
+    
   } catch (error) {
     console.error("Poskus povezave spodletel:", error)
     alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")

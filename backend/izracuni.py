@@ -287,29 +287,6 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # TA METODA JE FIXERICA KER SE JO KLICE V FOR LOOPU - POTREBNA ZA KONZOLA PRIMERJAVO!
 def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca, ime_novega_filea):
     """

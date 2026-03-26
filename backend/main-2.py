@@ -74,6 +74,7 @@ def pridobi_zneske():
 
     zacetna = int(input(Fore.CYAN + "Začetna investicija? " + Style.RESET_ALL))
     mesecne = int(input(Fore.CYAN + "Mesečne investicije? " + Style.RESET_ALL))
+    # koliko let
     dolzina = int(input(Fore.CYAN + "Dolžina intervalov? " + Style.RESET_ALL))
 
     print(Fore.MAGENTA + LINE + Style.RESET_ALL)
@@ -89,7 +90,7 @@ def pridobi_zneske():
 
 
 # 1. GLAVNA FUNKCIJA - ustvari csvje 
-def funkcija_naredi_rezultat_za_csvje():
+def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval):
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
     # ce se ni ustvarjena mapa jo ustvarimo
     folder = "rezultati-vsak-interval-vsi-indeksi"
@@ -101,6 +102,9 @@ def funkcija_naredi_rezultat_za_csvje():
 
     # izračuna intervale -> na podlagi osnovnega indeksa.. pac itak bodo imeli vsi iste intervale 
     # in iste datume imajo.. teoreticno bi lahko tudi dali ker kol indeksi[1] ali indeksi[2]
+    # tukaj se vzame prvi indeks torej sp500 obicen - teoreticno bi lahko katerega koli
+    # bomo kot parameter podali indeks
+    # ta drugi je pa interval 
     intervali = generiraj_intervale_leto(indeksi[0], zneski[2])
 
     with Progress() as progress:
@@ -166,7 +170,7 @@ mesecna_investicija = int(zneski[1])
 # interval, recimo 10
 interval = int(zneski[2])
 
-cela_investicija_skupaj = zacetna_investicija + 12 * interval * mesecna_investicija
+cela_investicija_skupaj = zacetna_investicija + interval * 12 * mesecna_investicija
 
 
 funkcija_naredi_rezultat_za_csvje()

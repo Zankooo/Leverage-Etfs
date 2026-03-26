@@ -1,10 +1,9 @@
-
 from izracuni import *
 from testing_file import *
 from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
 from rich.progress import Progress
-from colorama import init, Fore, Style
+from colorama import init
 import os
 import glob
 init(autoreset=True)
@@ -12,6 +11,8 @@ from fastapi.responses import JSONResponse
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pathlib import Path
+from grafi import  narisi_logaritmicne_grafe
 
 app = FastAPI()
 
@@ -47,13 +48,14 @@ def root():
 #------------------------------------------------------
 
 # -----------------------------------------------------
-class UserInput(BaseModel):
+class podatki_iz_frontenda(BaseModel):
     zacetna_investicija: int
     mesecni_vlozek: int
     indeks : str
     interval : int
-@app.post("/parametri")
-def root(data: UserInput):
+
+@app.post("/primerjava_vrstic")
+def root(data: podatki_iz_frontenda):
     keri_indeksi = pridobi_indekse(data.indeks)
     funkcija_naredi_vse(
         data.zacetna_investicija,
@@ -67,11 +69,42 @@ def root(data: UserInput):
 
     # funkcija 'funkcija_naredi_vse' naredi csv fajle, da jih ta funkcija lahko prejme in naredi primerjavo
     odgovor = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
+    return odgovor
+    # ------------------------------
+    # to zgoraj je ex main.py
+    # to spodaj je pa zdej ex main-2.py
+@app.post("/html-files")
+def root(data: podatki_iz_frontenda):
+    keri_indeksi = pridobi_indekse(data.indeks)
+    cela_investicija_skupaj = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
+
+
+    funkcija_naredi_rezultat_za_csvje(keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek)
+    funkcija_ki_narise_grafe(data.zacetna_investicija, data.mesecni_vlozek, cela_investicija_skupaj)
+
+    def dobi_grafe():
+        mapa = "mapa-grafi"
+
+        files = sorted(
+            [f for f in os.listdir(mapa) if f.endswith(".html")]
+        )
+
+        results = []
+        for i, file_name in enumerate(files, start=1):
+            results.append({
+                "id": i,
+                "title": file_name,
+                "content": f"http://localhost:8000/mapa-grafi/{file_name}"
+            })
+
+        return {
+            "results": results
+        }
 
     fancy_zakljucek_1()
 
-
-    return odgovor
+    # vse htmlje
+    return 0
     
 # ------------------------------------------------------------------------------------------
 
@@ -147,6 +180,91 @@ def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, inde
     funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1])
     funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2])
     return 0
+
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki):
+    # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
+    # ce se ni ustvarjena mapa jo ustvarimo
+    folder = "rezultati-vsak-interval-vsi-indeksi"
+    os.makedirs(folder, exist_ok=True)  # Ustvari mapo (če še ne obstaja)
+
+    # da pripravimo prostor da nove fajle damo notri moremo prej use zbrisat. to naredi pa ta koda
+    for csv_file in glob.glob(os.path.join(folder, "*.csv")):  # 🔍 Najdi vse CSV datoteke
+        os.remove(csv_file)
+
+    # izračuna intervale -> na podlagi osnovnega indeksa.. pac itak bodo imeli vsi iste intervale 
+    # in iste datume imajo.. teoreticno bi lahko tudi dali ker kol indeksi[1] ali indeksi[2]
+    intervali = generiraj_intervale_leto(keri_indeksi[0], interval)
+
+    with Progress() as progress:
+        task = progress.add_task("[cyan]Računam...", total=len(intervali))
+        # števec začnemo pri 1, da bo ...1.csv, ...2.csv, ...
+        stevec = 1
+        for i in range(len(intervali)):
+            output_file = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{stevec}.csv"
+            # ker v for loopu klicemo je to zato ker za razlicne intervale
+            izracun_dca_metoda_prilagojena_da_naredi_csv(
+                keri_indeksi[0], keri_indeksi[1], keri_indeksi[2],
+                initial_investment = zacetna_investicija,
+                monthly_investment = mesecni_vlozki,
+                datum_zacetka = intervali[i][0],
+                datum_konca = intervali[i][1],
+                output_file = output_file
+            )
+            stevec = stevec + 1
+            progress.advance(task)
+    return 0
+
+# ------
+
+# 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
+def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj):
+    print()
+    # usvarimo mapo ce se ne obstaja
+    folder = Path('mapa-grafi')
+    folder.mkdir(parents=True, exist_ok=True)
+    # če obstaja, izbriši vse .csv datoteke v njej da pripravimo za nove grafe.html
+    for csv_file in folder.glob("*.csv"):
+        csv_file.unlink()
+
+    # preštej csv-je v mapi, da vemo koliko dolg for loop
+    mapa = Path("rezultati-vsak-interval-vsi-indeksi")
+    stevilo_csvjev = len(list(mapa.glob("*.csv")))
+
+    # tukaj dodaj da ustvari mapo ce se ne obstaja... 
+    # ce pa ze obstaja pa iz nje vse odstrani
+    for i in range(1, stevilo_csvjev + 1):
+        pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
+        narisi_logaritmicne_grafe(
+            zacetna_investicija,
+            mesecna_investicija,
+            cela_investicija_skupaj,
+            pot,
+            f'mapa-grafi/graf{i}.html'
+        )
+    
+    
+# ---------------------------------------------------------------------------------------------
+
+# POKLICEMO TO KAR JE TUKAJ IN JE TO TO
+
+# to rabimo ker te podatke uporabljata obe glavni funkciji
+
+
+
+
+
 
 
 
