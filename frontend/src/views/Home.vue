@@ -12,6 +12,12 @@ const backendResponse = ref<string | null>(null)
 const results = ref<any[]>([])
 const isLoading = ref(false)
 
+// New refs for table rendering and modal
+const tableRows = ref<any[]>([])
+const tableSummary = ref<any | null>(null)
+const showGraphModal = ref(false)
+const selectedGraphUrl = ref('')
+
 const isFormValid = computed(function () {
   return initialInvestment.value !== '' &&
          monthlyContribution.value !== '' &&
@@ -19,6 +25,31 @@ const isFormValid = computed(function () {
          Number(selectedInterval.value) >= 1 &&
          Number(selectedInterval.value) <= 50
 })
+
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('sl-SI', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num)
+}
+
+const formatPercent = (num: number) => {
+  return `+${formatNumber(num)}%`
+}
+
+const getEtfColor = (file: string) => {
+  if (file === 'osnoven.csv') return '#A78BFA'
+  if (file === 'vzvod-2x.csv') return '#56B4F3'
+  if (file === 'vzvod-3x.csv') return '#F4B000'
+  return '#111827'
+}
+
+const getEtfLabel = (file: string) => {
+  if (file === 'osnoven.csv') return 'Osnoven'
+  if (file === 'vzvod-2x.csv') return '2x vzvod'
+  if (file === 'vzvod-3x.csv') return '3x vzvod'
+  return file
+}
 
 async function izracunaj() {
   isLoading.value = true
@@ -36,115 +67,10 @@ async function izracunaj() {
 
     console.log("Odgovor strežnika:", data)
 
-    const getEtfColor = (file: string) => {
-      if (file === 'osnoven.csv') return '#A78BFA'
-      if (file === 'vzvod-2x.csv') return '#56B4F3'
-      if (file === 'vzvod-3x.csv') return '#F4B000'
-      return '#111827'
-    }
-
-    const getEtfLabel = (file: string) => {
-      if (file === 'osnoven.csv') return 'Osnoven'
-      if (file === 'vzvod-2x.csv') return '2x vzvod'
-      if (file === 'vzvod-3x.csv') return '3x vzvod'
-      return file
-    }
-
-    const formatNumber = (num: number) => {
-      return new Intl.NumberFormat('sl-SI', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(num)
-    }
-
-    const formatPercent = (num: number) => {
-      return `+${formatNumber(num)}%`
-    }
-    
-    const naslovHtml = `
-      <div style="padding: 12px 0; border-bottom: 2px solid #d1d5db; margin-bottom: 8px; font-weight: 700; line-height: 1.8;">
-        Datum | NAJBOLJŠI (narejen plus/minus, vse skupaj) &nbsp; &gt;&gt; &nbsp; +% &nbsp; &gt;&gt; &nbsp; DRUGI (narejen plus/minus, vse skupaj) &nbsp; &gt;&gt; &nbsp; +% &nbsp; &gt;&gt; &nbsp; TRETJI (narejen plus/minus, vse skupaj)
-      </div>
-    `
-
-    const summaryHtml = `
-      <div style="margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 12px; line-height: 1.8;">
-        <div><strong>Skupno primerjav:</strong> ${data.summary.total_compared}</div>
-        <div>
-          <strong style="color: ${getEtfColor('osnoven.csv')}">Osnoven:</strong>
-          ${data.summary.wins["osnoven.csv"].count} (${data.summary.wins["osnoven.csv"].procent}%)
-        </div>
-        <div>
-          <strong style="color: ${getEtfColor('vzvod-2x.csv')}">2x vzvod:</strong>
-          ${data.summary.wins["vzvod-2x.csv"].count} (${data.summary.wins["vzvod-2x.csv"].procent}%)
-        </div>
-        <div>
-          <strong style="color: ${getEtfColor('vzvod-3x.csv')}">3x vzvod:</strong>
-          ${data.summary.wins["vzvod-3x.csv"].count} (${data.summary.wins["vzvod-3x.csv"].procent}%)
-        </div>
-      </div>
-    `
-
-    const vrsticeHtml = data.rows.map((row: any) => {
-      const bestColor = getEtfColor(row.best.file)
-      const secondColor = getEtfColor(row.second.file)
-      const thirdColor = getEtfColor(row.third.file)
-
-      return `
-        <div style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; line-height: 1.9;">
-          <strong>${row.datum}</strong>
-          &nbsp; | &nbsp;
-
-          <span style="color: ${bestColor}; font-weight: 700;">
-            ${getEtfLabel(row.best.file)}
-          </span>
-          :
-          <span style="color: ${bestColor}; font-weight: 600;">
-            ${formatNumber(row.best.gain)}, ${formatNumber(row.best.total)}
-          </span>
-
-          &nbsp; &gt;&gt; &nbsp;
-          <span style="color: #10B981; font-weight: 600;">
-            ${formatPercent(row.diff_best_second_pct)}
-          </span>
-          &nbsp; &gt;&gt; &nbsp;
-
-          <span style="color: ${secondColor}; font-weight: 700;">
-            ${getEtfLabel(row.second.file)}
-          </span>
-          :
-          <span style="color: ${secondColor}; font-weight: 600;">
-            ${formatNumber(row.second.gain)}, ${formatNumber(row.second.total)}
-          </span>
-
-          &nbsp; &gt;&gt; &nbsp;
-          <span style="color: #10B981; font-weight: 600;">
-            ${formatPercent(row.diff_second_third_pct)}
-          </span>
-          &nbsp; &gt;&gt; &nbsp;
-
-          <span style="color: ${thirdColor}; font-weight: 700;">
-            ${getEtfLabel(row.third.file)}
-          </span>
-          :
-          <span style="color: ${thirdColor}; font-weight: 600;">
-            ${formatNumber(row.third.gain)}, ${formatNumber(row.third.total)}
-          </span>
-        </div>
-      `
-    }).join('')
-
-    backendResponse.value = `
-      <div style="padding: 20px; font-family: sans-serif;">
-        <h2 style="color: #10B981; font-weight: bold; margin-bottom: 16px;">Povezava uspela!</h2>
-        <p style="margin-bottom: 20px;">Prejeli smo odgovor iz endpointa /primerjava_vrstic.</p>
-        ${summaryHtml}
-        ${naslovHtml}
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          ${vrsticeHtml}
-        </div>
-      </div>
-    `
+    // Store data in refs for reactive rendering
+    tableSummary.value = data.summary
+    tableRows.value = data.rows
+    backendResponse.value = "true" 
 
     const res = await axios.post("http://localhost:8000/html-files", podatki_za_poslat)
     results.value = res.data.results || []
@@ -160,9 +86,17 @@ async function izracunaj() {
   }
 }
 
-  const openHtml = (url: string) => {
-    window.open(url, '_blank')
+const openHtml = (url: string) => {
+  window.open(url, '_blank')
+}
+
+const showGraph = (index: number) => {
+  if (results.value[index]) {
+    selectedGraphUrl.value = results.value[index].url
+    showGraphModal.value = true
   }
+}
+
 </script>
 
 <template>
@@ -252,9 +186,112 @@ async function izracunaj() {
     <!-- Results Section se prikaze le ko damo na true oz k dobim iz backenda response-->
     
 
-      <div v-if="backendResponse" class="mt-10 flex justify-center px-6">
+      <div v-if="backendResponse && tableRows.length > 0" class="mt-10 flex justify-center px-6">
         <div class="w-full max-w-[1600px] bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <div v-html="backendResponse"></div>
+          <div style="padding: 20px; font-family: sans-serif;">
+            <h2 class="text-2xl font-bold text-[#1A1A1A] px-4">Rezultati simulacije</h2>
+            
+            <!-- Summary Section -->
+            <div v-if="tableSummary" style="margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 12px; line-height: 1.8;">
+              <div><strong>Skupno primerjav:</strong> {{ tableSummary.total_compared }}</div>
+              <div v-for="(winData, file) in tableSummary.wins" :key="file">
+                <strong :style="{ color: getEtfColor(file as string) }">{{ getEtfLabel(file as string) }}:</strong>
+                {{ winData.count }} ({{ winData.procent }}%)
+              </div>
+            </div>
+
+            <!-- Header Section -->
+            <div style="padding: 12px 0; border-bottom: 2px solid #d1d5db; margin-bottom: 8px; font-weight: 700; line-height: 1.8;">
+              Datum | NAJBOLJŠI (narejen plus/minus, vse skupaj) &nbsp; &gt;&gt; &nbsp; +% &nbsp; &gt;&gt; &nbsp; DRUGI (narejen plus/minus, vse skupaj) &nbsp; &gt;&gt; &nbsp; +% &nbsp; &gt;&gt; &nbsp; TRETJI (narejen plus/minus, vse skupaj)
+            </div>
+
+            <!-- Rows Section -->
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div v-for="(row, index) in tableRows" :key="index" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; line-height: 1.9; display: flex; align-items: center; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <strong>{{ row.datum }}</strong>
+                  &nbsp; | &nbsp;
+
+                  <span :style="{ color: getEtfColor(row.best.file), fontWeight: 700 }">
+                    {{ getEtfLabel(row.best.file) }}
+                  </span>
+                  :
+                  <span :style="{ color: getEtfColor(row.best.file), fontWeight: 600 }">
+                    {{ formatNumber(row.best.gain) }}, {{ formatNumber(row.best.total) }}
+                  </span>
+
+                  &nbsp; &gt;&gt; &nbsp;
+                  <span style="color: #10B981; font-weight: 600;">
+                    {{ formatPercent(row.diff_best_second_pct) }}
+                  </span>
+                  &nbsp; &gt;&gt; &nbsp;
+
+                  <span :style="{ color: getEtfColor(row.second.file), fontWeight: 700 }">
+                    {{ getEtfLabel(row.second.file) }}
+                  </span>
+                  :
+                  <span :style="{ color: getEtfColor(row.second.file), fontWeight: 600 }">
+                    {{ formatNumber(row.second.gain) }}, {{ formatNumber(row.second.total) }}
+                  </span>
+
+                  &nbsp; &gt;&gt; &nbsp;
+                  <span style="color: #10B981; font-weight: 600;">
+                    {{ formatPercent(row.diff_second_third_pct) }}
+                  </span>
+                  &nbsp; &gt;&gt; &nbsp;
+
+                  <span :style="{ color: getEtfColor(row.third.file), fontWeight: 700 }">
+                    {{ getEtfLabel(row.third.file) }}
+                  </span>
+                  :
+                  <span :style="{ color: getEtfColor(row.third.file), fontWeight: 600 }">
+                    {{ formatNumber(row.third.gain) }}, {{ formatNumber(row.third.total) }}
+                  </span>
+                </div>
+
+                <button
+                  @click="showGraph(index)"
+                  class="ml-4"
+                  style="
+                    background: white;
+                    color: #374151;
+                    font-weight: 600;
+                    padding: 8px 16px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    white-space: nowrap;
+                  "
+                  onmouseover="this.style.borderColor='#10B981'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.12)'"
+                  onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+                >
+                  Graf
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graph Modal -->
+      <div v-if="showGraphModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showGraphModal = false"></div>
+        <div class="relative w-full max-w-6xl h-[80vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
+            <h3 class="text-xl font-bold text-gray-800">Pregled grafa</h3>
+            <button 
+              @click="showGraphModal = false"
+              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex-1 w-full h-full bg-gray-50">
+            <iframe :src="selectedGraphUrl" class="w-full h-full border-none"></iframe>
+          </div>
         </div>
       </div>
     
@@ -264,7 +301,7 @@ async function izracunaj() {
         <div 
           v-for="res in results" 
           :key="res.id"
-          @click="openHtml(res.url)""
+          @click="openHtml(res.url)"
           class="bg-white p-6 rounded-2xl border border-gray-100 hover:border-[#10B981] hover:shadow-md transition-all cursor-pointer flex items-center justify-between group"
         >
           <div class="flex items-center gap-4">
