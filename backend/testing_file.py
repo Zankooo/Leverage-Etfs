@@ -119,8 +119,6 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
             },
         ]
 
-        
-
         ordered = sorted(candidates, key=lambda x: x["compare_value"], reverse=True)
 
         best = ordered[0]

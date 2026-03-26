@@ -13,13 +13,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pathlib import Path
 from grafi import  narisi_logaritmicne_grafe
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+# te tri vrstice so da se grafi prikazejo na frontnedu
+BASE_DIR = Path(__file__).resolve().parent
+MAPA_GRAFI = BASE_DIR / "mapa-grafi"
+app.mount("/grafi", StaticFiles(directory=str(MAPA_GRAFI)), name="grafi")
+
 
 # Obvezno za frontend dostop
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,29 +91,13 @@ def root(data: podatki_iz_frontenda):
     funkcija_naredi_rezultat_za_csvje(keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek)
     funkcija_ki_narise_grafe(data.zacetna_investicija, data.mesecni_vlozek, cela_investicija_skupaj)
 
-    def dobi_grafe():
-        mapa = "mapa-grafi"
-
-        files = sorted(
-            [f for f in os.listdir(mapa) if f.endswith(".html")]
-        )
-
-        results = []
-        for i, file_name in enumerate(files, start=1):
-            results.append({
-                "id": i,
-                "title": file_name,
-                "content": f"http://localhost:8000/mapa-grafi/{file_name}"
-            })
-
-        return {
-            "results": results
-        }
+    
 
     fancy_zakljucek_1()
-
+    
     # vse htmlje
-    return 0
+    json_grafi = dobi_grafe_v_json()
+    return json_grafi
     
 # ------------------------------------------------------------------------------------------
 
@@ -232,11 +225,13 @@ def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicij
 def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj):
     print()
     # usvarimo mapo ce se ne obstaja
-    folder = Path('mapa-grafi')
-    folder.mkdir(parents=True, exist_ok=True)
-    # če obstaja, izbriši vse .csv datoteke v njej da pripravimo za nove grafe.html
-    for csv_file in folder.glob("*.csv"):
-        csv_file.unlink()
+    folder = Path("mapa-grafi")
+    if folder.exists():
+        for file in folder.iterdir():
+            if file.is_file():
+                file.unlink()
+    else:
+        folder.mkdir(parents=True, exist_ok=True)
 
     # preštej csv-je v mapi, da vemo koliko dolg for loop
     mapa = Path("rezultati-vsak-interval-vsi-indeksi")
@@ -255,6 +250,31 @@ def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_inve
         )
     
     
+
+def dobi_grafe_v_json():
+    mapa = Path("mapa-grafi")
+
+    def dobi_stevilko(file_path):
+        match = re.search(r"(\d+)", file_path.stem)
+        return int(match.group(1)) if match else 0
+
+    files = sorted(
+        [f for f in mapa.iterdir() if f.suffix == ".html"],
+        key=dobi_stevilko
+    )
+
+    results = []
+    for i, file_path in enumerate(files, start=1):
+        results.append({
+            "id": i,
+            "title": file_path.stem,
+            "filename": file_path.name,
+            "url": f"http://localhost:8000/grafi/{file_path.name}"
+        })
+
+    return {
+        "results": results
+    }
 # ---------------------------------------------------------------------------------------------
 
 # POKLICEMO TO KAR JE TUKAJ IN JE TO TO

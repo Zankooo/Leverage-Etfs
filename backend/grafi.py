@@ -190,5 +190,5 @@ def narisi_logaritmicne_grafe(
     html = fig.to_html(full_html=True, include_plotlyjs="cdn")
     html = inject_favicon(html, emoji="🌳", bg=None)  # emoji lahko zamenjaš (npr. "📊", "🚀"); bg="#fff" doda belo ozadje
     pathlib.Path(output_html).write_text(html, encoding="utf-8")
-    webbrowser.open(pathlib.Path(output_html).resolve().as_uri())
+    # webbrowser.open(pathlib.Path(output_html).resolve().as_uri())
 
