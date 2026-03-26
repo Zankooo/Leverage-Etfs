@@ -36,11 +36,113 @@ async function izracunaj() {
 
     console.log("Odgovor strežnika:", data)
 
+    const getEtfColor = (file: string) => {
+      if (file === 'osnoven.csv') return '#A78BFA'
+      if (file === 'vzvod-2x.csv') return '#56B4F3'
+      if (file === 'vzvod-3x.csv') return '#F4B000'
+      return '#111827'
+    }
+
+    const getEtfLabel = (file: string) => {
+      if (file === 'osnoven.csv') return 'Osnoven'
+      if (file === 'vzvod-2x.csv') return '2x vzvod'
+      if (file === 'vzvod-3x.csv') return '3x vzvod'
+      return file
+    }
+
+    const formatNumber = (num: number) => {
+      return new Intl.NumberFormat('sl-SI', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(num)
+    }
+
+    const formatPercent = (num: number) => {
+      return `+${formatNumber(num)}%`
+    }
+    
+    const naslovHtml = `
+      <div style="padding: 12px 0; border-bottom: 2px solid #d1d5db; margin-bottom: 8px; font-weight: 700; line-height: 1.8;">
+        Datum | NAJBOLJŠI (narejen plus/minus, vse skupaj) &nbsp; &gt;&gt; &nbsp; +% &nbsp; &gt;&gt; &nbsp; DRUGI (narejen plus/minus, vse skupaj) &nbsp; &gt;&gt; &nbsp; +% &nbsp; &gt;&gt; &nbsp; TRETJI (narejen plus/minus, vse skupaj)
+      </div>
+    `
+
+    const summaryHtml = `
+      <div style="margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 12px; line-height: 1.8;">
+        <div><strong>Skupno primerjav:</strong> ${data.summary.total_compared}</div>
+        <div>
+          <strong style="color: ${getEtfColor('osnoven.csv')}">Osnoven:</strong>
+          ${data.summary.wins["osnoven.csv"].count} (${data.summary.wins["osnoven.csv"].procent}%)
+        </div>
+        <div>
+          <strong style="color: ${getEtfColor('vzvod-2x.csv')}">2x vzvod:</strong>
+          ${data.summary.wins["vzvod-2x.csv"].count} (${data.summary.wins["vzvod-2x.csv"].procent}%)
+        </div>
+        <div>
+          <strong style="color: ${getEtfColor('vzvod-3x.csv')}">3x vzvod:</strong>
+          ${data.summary.wins["vzvod-3x.csv"].count} (${data.summary.wins["vzvod-3x.csv"].procent}%)
+        </div>
+      </div>
+    `
+
+    const vrsticeHtml = data.rows.map((row: any) => {
+      const bestColor = getEtfColor(row.best.file)
+      const secondColor = getEtfColor(row.second.file)
+      const thirdColor = getEtfColor(row.third.file)
+
+      return `
+        <div style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; line-height: 1.9;">
+          <strong>${row.datum}</strong>
+          &nbsp; | &nbsp;
+
+          <span style="color: ${bestColor}; font-weight: 700;">
+            ${getEtfLabel(row.best.file)}
+          </span>
+          :
+          <span style="color: ${bestColor}; font-weight: 600;">
+            ${formatNumber(row.best.gain)}, ${formatNumber(row.best.total)}
+          </span>
+
+          &nbsp; &gt;&gt; &nbsp;
+          <span style="color: #10B981; font-weight: 600;">
+            ${formatPercent(row.diff_best_second_pct)}
+          </span>
+          &nbsp; &gt;&gt; &nbsp;
+
+          <span style="color: ${secondColor}; font-weight: 700;">
+            ${getEtfLabel(row.second.file)}
+          </span>
+          :
+          <span style="color: ${secondColor}; font-weight: 600;">
+            ${formatNumber(row.second.gain)}, ${formatNumber(row.second.total)}
+          </span>
+
+          &nbsp; &gt;&gt; &nbsp;
+          <span style="color: #10B981; font-weight: 600;">
+            ${formatPercent(row.diff_second_third_pct)}
+          </span>
+          &nbsp; &gt;&gt; &nbsp;
+
+          <span style="color: ${thirdColor}; font-weight: 700;">
+            ${getEtfLabel(row.third.file)}
+          </span>
+          :
+          <span style="color: ${thirdColor}; font-weight: 600;">
+            ${formatNumber(row.third.gain)}, ${formatNumber(row.third.total)}
+          </span>
+        </div>
+      `
+    }).join('')
+
     backendResponse.value = `
       <div style="padding: 20px; font-family: sans-serif;">
-        <h2 style="color: #10B981; font-weight: bold;">Povezava uspela!</h2>
-        <p>Prejeli smo odgovor iz endpointa /primerjava_vrstic.</p>
-        <pre style="white-space: pre-wrap; word-break: break-word;">${JSON.stringify(data, null, 2)}</pre>
+        <h2 style="color: #10B981; font-weight: bold; margin-bottom: 16px;">Povezava uspela!</h2>
+        <p style="margin-bottom: 20px;">Prejeli smo odgovor iz endpointa /primerjava_vrstic.</p>
+        ${summaryHtml}
+        ${naslovHtml}
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          ${vrsticeHtml}
+        </div>
       </div>
     `
 
@@ -58,13 +160,13 @@ async function izracunaj() {
   }
 }
 
-const openHtml = (url: string) => {
-  window.open(url, '_blank')
-}
+  const openHtml = (url: string) => {
+    window.open(url, '_blank')
+  }
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-2xl mx-auto">
     <!-- Calculation Form Card -->
     <div class="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-7 md:p-10 border border-gray-50">
       <div class="text-center mb-7">
@@ -146,13 +248,15 @@ const openHtml = (url: string) => {
         </p>
       </div>
     </div>
-
+  </div>
     <!-- Results Section se prikaze le ko damo na true oz k dobim iz backenda response-->
-    <div v-if="backendResponse" class="mt-10">
-      <div class="max-w-* mx-auto bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-        <div v-html="backendResponse"></div>
+    
+
+      <div v-if="backendResponse" class="mt-10 flex justify-center px-6">
+        <div class="w-full max-w-[1600px] bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div v-html="backendResponse"></div>
+        </div>
       </div>
-    </div>
     
     <div v-if="results.length > 0" class="mt-16 space-y-6">
       <h2 class="text-2xl font-bold text-[#1A1A1A] px-4">Rezultati simulacije</h2>
@@ -175,7 +279,7 @@ const openHtml = (url: string) => {
     </div>
 
 
-  </div>
+  
 </template>
 
 <style scoped>

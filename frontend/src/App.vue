@@ -63,7 +63,7 @@ const navItems = [
     </nav>
 
     <!-- Main Content -->
-    <main class="w-full max-w-2xl mx-auto py-12 px-6 lg:px-10 xl:px-12">
+    <main class="w-full max-w-screen-2xl mx-auto py-12 px-6 lg:px-10 xl:px-12">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
