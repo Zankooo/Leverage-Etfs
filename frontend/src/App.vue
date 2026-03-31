@@ -19,6 +19,7 @@ const navItems = [
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12">
+        
         <div class="flex justify-between h-16 items-center">
           <div class="flex items-center gap-2">
             <TrendingUp class="text-[#10B981] w-6 h-6" />
@@ -46,6 +47,7 @@ const navItems = [
             </button>
           </div>
         </div>
+
       </div>
 
       <!-- Mobile Nav -->
