@@ -1,24 +1,38 @@
+import os
+import glob
+import re
+from pathlib import Path
+
+# Third-party libraries
+from colorama import init, Fore, Style
+from rich.progress import Progress
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+# Local imports
 from izracuni import *
 from testing_file import *
 from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
-from rich.progress import Progress
-from colorama import init
-import os
-import glob
+from grafi import narisi_logaritmicne_grafe
+
 init(autoreset=True)
-from fastapi.responses import JSONResponse
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from pathlib import Path
-from grafi import  narisi_logaritmicne_grafe
-from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 # te tri vrstice so da se grafi prikazejo na frontnedu
 BASE_DIR = Path(__file__).resolve().parent
 MAPA_GRAFI = BASE_DIR / "mapa-grafi"
+MAPA_REZULTATI = BASE_DIR / "rezultati-vsak-interval-vsi-indeksi"
+MAPA_TESTING = BASE_DIR / "testing"
+
+# Ustvari mape, če še ne obstajajo
+MAPA_GRAFI.mkdir(parents=True, exist_ok=True)
+MAPA_REZULTATI.mkdir(parents=True, exist_ok=True)
+MAPA_TESTING.mkdir(parents=True, exist_ok=True)
+
 app.mount("/grafi", StaticFiles(directory=str(MAPA_GRAFI)), name="grafi")
 
 
@@ -34,25 +48,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# UPLOAD PODATKOV
+print()
+print(Fore.GREEN + "Začetek programa " + Style.RESET_ALL + "----------------------------------------------------------------")
 # UPLOAD PODATKOV DA JIH PREBEREMO
 sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
 sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
 sp_500_3x = load_csv('3x-leverage/sp-500-3x.csv')
-
+print()
 nasdaq_100 = load_csv('podatki_ustvarjeni/nasdaq-100.csv')
 nasdaq_100_2x = load_csv('2x-leverage/nasdaq-100-2x.csv')
 nasdaq_100_3x = load_csv('3x-leverage/nasdaq-100-3x.csv')
-
+print()
 nasdaq_comp = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
 nasdaq_comp_2x = load_csv('2x-leverage/nasdaq-comp-2x.csv')
 nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
-
+print("----------------------------------------------------------------------------------")
 
 # probna funkcija če dela vse skup
 @app.get("/")
 def root():
     # dobit moramo json pravih podatkov in nazaj posljemo tudi nek json
-    return {"message": "API deluje"}
+    return {"message": "Backend deluje"}
 
 #------------------------------------------------------
 
@@ -77,11 +94,11 @@ def root(data: podatki_iz_frontenda):
     print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
 
     # funkcija 'funkcija_naredi_vse' naredi csv fajle, da jih ta funkcija lahko prejme in naredi primerjavo
-    odgovor = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
-    return odgovor
-    # ------------------------------
-    # to zgoraj je ex main.py
-    # to spodaj je pa zdej ex main-2.py
+    return primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
+    
+    
+
+
 @app.post("/html-files")
 def root(data: podatki_iz_frontenda):
     keri_indeksi = pridobi_indekse(data.indeks)

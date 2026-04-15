@@ -10,7 +10,9 @@ fonttools==4.62.1
 h11==0.16.0
 idna==3.11
 kiwisolver==1.5.0
+markdown-it-py==4.0.0
 matplotlib==3.10.8
+mdurl==0.1.2
 narwhals==2.19.0
 numpy==2.4.4
 packaging==26.0
@@ -19,12 +21,12 @@ pillow==12.2.0
 plotly==6.7.0
 pydantic==2.12.5
 pydantic_core==2.41.5
+Pygments==2.20.0
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
+rich==14.3.3
 six==1.17.0
 starlette==1.0.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.44.0
-rich==14.3.3
-
