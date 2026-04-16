@@ -95,8 +95,11 @@ def narisi_logaritmicne_grafe(
         df = df.rename(columns=rename_map)
         y_cols = [rename_map.get(c, c) for c in y_cols]
 
-    if (df[y_cols] <= 0).to_numpy().any():
-        raise ValueError("Logaritmična os Y zahteva pozitivne vrednosti (> 0) v vseh izbranih stolpcih.")
+    # Logaritmična os Y zahteva pozitivne vrednosti (> 0). 
+    # Namesto napake bomo vrednosti omejili na 0.01 za izris, v oznakah pa obdržali originalne.
+    df_original = df.copy()
+    for col in y_cols:
+        df[col] = df[col].clip(lower=0.01)
 
     color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"]
     color_seq = color_seq[:len(y_cols)]
@@ -138,7 +141,7 @@ def narisi_logaritmicne_grafe(
 
     dolar = "<span style='font-weight:400; color:#111'> $</span>"
     for i, col in enumerate(y_cols):
-        values_html = [fmt_eu_intbold_html(v, 2) + dolar for v in df[col].tolist()]
+        values_html = [fmt_eu_intbold_html(v, 2) + dolar for v in df_original[col].tolist()]
         fig.data[i].customdata = values_html
         fig.data[i].hovertemplate = "<b>%{fullData.name}</b>: %{customdata}<extra></extra>"
 
@@ -152,7 +155,7 @@ def narisi_logaritmicne_grafe(
     color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"][:len(y_cols)]
     label_colors = dict(zip(y_cols, color_seq))
 
-    last_row = df.iloc[-1]
+    last_row = df_original.iloc[-1]
     finals_parts = []
     for col in y_cols:
         colored_label = f"<span style='color:{label_colors[col]}; font-weight:700'>{col}</span>"
