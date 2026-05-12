@@ -76,7 +76,7 @@ const navItems = [
     <!-- Footer -->
     <footer class="bg-white border-t border-gray-100 py-7 mt-auto">
       <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12 text-center">
-        <p class="text-gray-400 text-sm">© 2026 Vzvodno Investiranje. Vse pravice pridržane.</p>
+        <p class="text-gray-400 text-sm">© 2026 Vzvodno Investiranje.</p>
       </div>
     </footer>
   </div>

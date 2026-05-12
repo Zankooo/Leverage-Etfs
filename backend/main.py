@@ -22,8 +22,13 @@ from grafi import narisi_logaritmicne_grafe
 init(autoreset=True)
 
 app = FastAPI()
+
 # te tri vrstice so da se grafi prikazejo na frontnedu
+# kje se nahaja main.py -> to rabimo ker bo koda laufala nekje drgje in tam 
+# ne ve kje pac je main.oy
 BASE_DIR = Path(__file__).resolve().parent
+
+# definiramo imena map kamor bomo shranjevali
 MAPA_GRAFI = BASE_DIR / "mapa-grafi"
 MAPA_REZULTATI = BASE_DIR / "rezultati-vsak-interval-vsi-indeksi"
 MAPA_TESTING = BASE_DIR / "testing"
@@ -40,8 +45,8 @@ app.mount("/grafi", StaticFiles(directory=str(MAPA_GRAFI)), name="grafi")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],

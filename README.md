@@ -2,70 +2,25 @@
 
 Finančna analiza podatkov (backtesting)
 
-## Aplikacija kaj dela - 1. Funkcionalnost (file: main.py) - CLI verzija
+## Aplikacija kaj dela
 
 Na podlagi: 
 - začetne investicije,
-- mesečnih vplačil,
-- dolžina let (intervalov)
+- mesečnih investicij,
+- dolžine let (intervalov),
 
-Primerja donosov osnovnega indeksa, 2x vzvoda in 3x vzvoda na vseh intervalih za izbrano število let (podprti indeksi: S&P 500, Nasdaq 100 in Nasdaq Composite)
+primerja donose osnovnega indeksa, 2x vzvoda in 3x vzvoda na vseh intervalih za izbrano število let (podprti indeksi: S&P 500, Nasdaq 100 in Nasdaq Composite)
 
 Program nam nato izpiše tudi statistiko, katera različica je bila najboljša in v koliko primerih. 
 
 Pravtako izpiše statistiko, za vse skupaj in naredi izračun kolikorat je bil kater najboljši v procentih!
 
 
-## Prikaz rezultatov danih za 1. Funkcionalnost:
-Na podlagi vhodnih podatkov:
-- Indeks: S&P 500
-- Začetna investicija: 1000
-- Mesecna investicija: 100
-- Dolžina intervalov: 15
+## Realen primer uporabe aplikacije
 
-Rezultati:
-```
-Datum | NAJBOLJSI (narejen plus/minus, vse skupaj) >> +% >> DRUGI (narejen plus/minus, vse skupaj) >> +% >> TRETJI (narejen plus/minus, vse skupaj)
-
-1927-12-30-1942-12-30 | -7,206.13, 20,793.87 >> +101.04% >> -17,657.02, 10,342.98 >> +76.72% >> -22,147.38, 5,852.62  
-1928-01-03-1943-01-04 | -6,819.44, 21,180.56 >> +96.52% >> -17,222.36, 10,777.64 >> +72.56% >> -21,754.20, 6,245.80  
-                                                    .
-                                                    .
-                                                    . 
-2009-01-02-2024-01-02 | 431,121.24, 459,121.24 >> +77.99% >> 229,943.81, 257,943.81 >> +168.07% >> 68,221.12, 96,221.12  
-2010-01-04-2025-01-06 | 571,790.10, 599,790.10 >> +101.72% >> 269,337.82, 297,337.82 >> +190.8% >> 74,249.64, 102,249.64  
-
-Direktna primerjava med testing/osnoven.csv, testing/vzvod-2x.csv in testing/vzvod-3x.csv  
-
-💰 Začetna investicija: 10000  
-📈 Vse mesečne investicije: 18000  
-💵 Vse skupaj investirano: 28000  
-
-Procenti so izračunani na podlagi 'koliko imamo vse skupaj'  
-
-'Najboljši' je tisti z največjo vrednostjo v stolpcu 'koliko imamo vse skupaj' 
-
-✔ testing/osnoven.csv je bil najboljši v 14 primerih (16.67%)  
-✔ testing/vzvod-2x.csv je bil najboljši v 12 primerih (14.29%)  
-✔ testing/vzvod-3x.csv je bil najboljši v 58 primerih (69.05%)  
-
- 
-```
-
-
-## Aplikacija kaj dela - funkcionalnost 2 (file: main-2.py) - CLI verzija + html 
-python3.10 -m uvicorn main:app --reload <- tkole zaganjaš 
-Moramo dati iste vhodne podatke, kot pri 1. Funkcionalnosti!
-
-Funkcionalnost 2 naredi zelo podobno kot 1. Funkcionalnost, le da za vsako obdobje nariše graf, ki prikazuje kako se je gibala donosnost vseh treh različic (navaden, 2x, 3x) skozi čas. Tukaj ni toliko v ospredju statistika, kot to, da je grafično prikazano kako se je vrednost vsake različice gibala v vsakem obdobju.
-Ena vrstica v main.py je en graf!
-
-Recimo vrstica iz 1. Funkcionalnosti:
-```
-2010-01-04-2025-01-06 | 571,790.10, 599,790.10 >> +101.72% >> 269,337.82, 297,337.82 >> +190.8% >> 74,249.64, 102,249.64 
-```
-je tukaj prikazana v obliki grafa, kjer se nazorno vidi potek vseh treh krivulj (različic - osnoven, 2x, 3x):
-![](./images/en-graf-za-readme.png)
+![forma](slikeReadMe/forma.png)
+![forma](slikeReadMe/prikazVsebine.png)
+![forma](slikeReadMe/graff.png)
 
 ## Pomembna opomba
 Kako so narejeni 2x in 3x vzvodi.. 2x: če je nek dan navaden indeks zrastel 0,5% sem 2x naredil tako da sem to pomnozil, torej je zrastel 1%. In tako tudi za 3x. Torej to je narejeno za vsak dan.. Drugače rečeno: 'umetno' sem naredil 2x in 3x vzvode. -> volatility decay
@@ -74,29 +29,6 @@ Zakaj pa nisem vzel podatke dejanskih vzvodnih etfjev? Zato ker vzvodni etfji ob
 
 **Da bi bil pa izračun čim bolj natančen, pa bi moral upoštevati vse stroške. Stroške pri navadnih etfjih in predvsem vse stroške vzvodnih etfjev.
 Teh stroškov ni upoštevanih notri v kalkulaciji. Predvsem zato ker je računanje stroškov vzvodnih etfjev kompleksno, je pa to cilj narediti v prihodnje saj so stroški visoki in precej vplivajo na donose pri skozi leta**
-
-
-
-
-## Namestitev programa
-1. Kloniraj repozitorij:
-   - ` git clone https://github.com/Zankooo/Leverage-Etfs.git `
-2. Namesti potrebne knjižnice:
-   - ` python3 -m pip install -r requirements.txt ` (za MacOs)
-   - ` python3 -m pip install -r requirements.txt ` (Windows)
-3. Ustvari in aktiviraj virtualno okolje:
-   - `python -m venv .venv`
-   - `.venv\Scripts\activate` (Windows)
-   - `source .venv/bin/activate` (macOS/Linux)
-
-## Zagon programa
-Zagon 1. Funkcionalnosti:
-- `python3 main.py` (macOS/Linux)
-- `python main.py` (Windows)
-
-Zagon 2. Funkcionalnosti:
-- `python3 main-2.py` (macOS/Linux)
-- `python main-2.py` (Windows)
 
 <hr>
 

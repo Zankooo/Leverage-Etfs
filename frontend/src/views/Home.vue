@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import { ChevronRight, FileText, Loader2 } from 'lucide-vue-next'
+import { Loader2 } from 'lucide-vue-next'
 
 const initialInvestment = ref('')
 const monthlyContribution = ref('')
@@ -62,6 +62,7 @@ async function izracunaj() {
   isLoading.value = true
 
   try {
+    // podatki ki se posljejo
     const podatki_za_poslat = {
       zacetna_investicija: Number(initialInvestment.value),
       mesecni_vlozek: Number(monthlyContribution.value),
@@ -69,21 +70,25 @@ async function izracunaj() {
       interval: Number(selectedInterval.value)
     }
 
-    const response = await axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat)
-    const data = response.data
+    // Sprožimo oba klica hkrati in počakamo na oba
+    const [responseVrstice, responseGrafi] = await Promise.all([
+      axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat),
+      axios.post('http://localhost:8000/html-files', podatki_za_poslat)
+    ])
 
-    console.log("Odgovor strežnika:", data)
+    const dataVrstice = responseVrstice.data
+    const dataGrafi = responseGrafi.data
 
-    // Store data in refs for reactive rendering
-    tableSummary.value = data.summary
-    tableRows.value = data.rows
+    console.log("Podatki za tabelo:", dataVrstice)
+    console.log("Podatki za grafe:", dataGrafi)
+
+    // Vse spremenljivke posodobimo hkrati
+    tableSummary.value = dataVrstice.summary
+    tableRows.value = dataVrstice.rows
+    results.value = dataGrafi.results || []
+    
+    // Šele zdaj pokažemo rezultate
     backendResponse.value = "true" 
-
-    const res = await axios.post("http://localhost:8000/html-files", podatki_za_poslat)
-    results.value = res.data.results || []
-
-    console.log("Tole je iz backenda prišlo:", results.value)
-    console.log(JSON.stringify(results.value, null, 2))
 
   } catch (error) {
     console.error("Poskus povezave spodletel:", error)
@@ -93,9 +98,6 @@ async function izracunaj() {
   }
 }
 
-const openHtml = (url: string) => {
-  window.open(url, '_blank')
-}
 
 const showGraph = (index: number) => {
   if (results.value[index]) {
