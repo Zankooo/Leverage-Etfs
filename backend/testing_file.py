@@ -59,6 +59,30 @@ def generiraj_intervale_leto(podatki, dolzina_intervala_let):
 
 
 def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
+    """
+    Glavni sodnik za primerjavo treh različnih strategij (1x, 2x, 3x vzvod).
+    
+    Funkcija prebere tri predhodno ustvarjene CSV datoteke z rezultati posameznih 
+    intervalov. Osnoven, 2x, 3x. Za VSAK interval primerja končne vrednosti portfelja in ugotovi, 
+    katera strategija je zmagala (prinesla največ denarja). 
+    
+    Hkrati beleži skupno statistiko: kolikokrat je določena strategija zmagala 
+    in kakšen je njen odstotek zmag.
+    
+    @param file1: Pot do prve CSV datoteke (npr. 'testing/osnoven.csv')
+    Tako:
+    osnoven.csv
+    Datum od kdaj do kdaj,Zacetna investicija,vse mesecne investicije,skupaj vse investicije,koliko smo v plusu oz minusu,koliko imamo vse skupaj
+    1927-12-30-1942-12-30,1000,18000,19000,-3181.3,15818.698844384242
+    1928-01-03-1943-01-04,1000,18000,19000,-2876.28,16123.72197818916
+    
+    @param file2: Pot do druge CSV datoteke (npr. 'testing/vzvod-2x.csv')
+    @param file3: Pot do tretje CSV datoteke (npr. 'testing/vzvod-3x.csv')
+    @param stolpec: Indeks stolpca v CSV-ju, ki se uporabi za primerjavo 
+                    (po defaultu 5, kar predstavlja 'končno vrednost')
+    @return: JSON (dictionary) s 'summary' (zbirna statistika zmag in vložkov) 
+             ter 'rows' (podrobni rezultati in razlike v % za vsak posamezen interval).
+    """
     def pct_diff(a, b):
         try:
             return round((a - b) / b * 100, 2)

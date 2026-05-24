@@ -279,28 +279,32 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
 
     # izpis povzetka (na serijo)
     
-    print(f"Začetna investicija (na serijo): {initial_investment:.2f} $")
-    print(f"Vsota mesečnih vložkov (na serijo): {vsota_mesecnih_vlozkov:.2f} $  (št. vplačil: {st_vplacil})")
-
+    # print(f"Začetna investicija (na serijo): {initial_investment:.2f} $")
+    # print(f"Vsota mesečnih vložkov (na serijo): {vsota_mesecnih_vlozkov:.2f} $  (št. vplačil: {st_vplacil})")
+    # print("Za obdobje " + datum_zacetka + " in " + datum_konca + " narejeno.")
     return round(inv1, 2), round(inv2, 2), round(inv3, 2)
 
 
 
 
-# TA METODA JE FIXERICA KER SE JO KLICE V FOR LOOPU - POTREBNA ZA KONZOLA PRIMERJAVO!
+# TA METODA JE FIXERICA KER SE JO KLICE V FOR LOOPU - POTREBNA ZA PRIMERJAVO PO LETIH 
 def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca, ime_novega_filea):
     """
-    Funkcija ista kot una zgoraj le da prejmemo kot parametri in ne izpisujemo vsega
-    prilagojena je da delamo testing na njen
-    testing pa delamo tako da ji damo razlicne datum zacetka in datum konca...
-    te datum zacetka pa konca pa dobim iz funkcije "generiraj_intervale_15let_leto"
-    @param podakti v dogovorjeni obliki
-    @param zacetna investicija
-    @param mesecne investicije
-    @param datum zacetka
-    @param datum konca
-    @param ime novega fajla
-    @return nic -> v bistvu v nov csv file izpise rezultate
+    Simulira DCA (Dollar Cost Averaging) investiranje za TOČNO DOLOČEN interval.
+    
+    Funkcija je namenjena večkratnemu klicanju v zanki (for loop). 
+    Izračuna dnevno rast/padec portfelja za podano obdobje in na koncu 
+    zapiše ZBIRNO VRSTICO rezultatov (začetni vložek, donos, končna vrednost) 
+    na konec izbrane CSV datoteke v mapo 'testing/'. To nam omogoči 
+    kasnejšo primerjavo vseh intervalov med seboj.
+    
+    @param podatki: 2D array (list of lists) zgodovinskih podatkov izbranega indeksa
+    @param initial_investment: Začetni enkratni vložek
+    @param monthly_investment: Mesečni vložek ob začetku vsakega meseca
+    @param datum_zacetka: Datum začetka simulacije (format 'YYYY-MM-DD')
+    @param datum_konca: Datum konca simulacije (format 'YYYY-MM-DD')
+    @param ime_novega_filea: Ime ciljne datoteke (npr. 'osnoven', 'vzvod-2x'), v katero se prilepi nov rezultat
+    @return: 0 (Rezultat se ne vrača, temveč zapiše neposredno v CSV)
     """
     # ta funkcija je misljena da se jo klice v mainu v for loopu toliko koliko je intervalov in da se ji podaja razlicne datume pridobljena iz intervali letni
     #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo

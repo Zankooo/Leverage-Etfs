@@ -70,11 +70,10 @@ async function izracunaj() {
       interval: Number(selectedInterval.value)
     }
 
-    // Sprožimo oba klica hkrati in počakamo na oba
-    const [responseVrstice, responseGrafi] = await Promise.all([
-      axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat),
-      axios.post('http://localhost:8000/html-files', podatki_za_poslat)
-    ])
+    // Najprej izvedemo prvi klic, da se printi v konzoli ne mešajo
+    const responseVrstice = await axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat)
+    // Šele ko se prvi klic (in njegovi printi) zaključi, sprožimo drugega
+    const responseGrafi = await axios.post('http://localhost:8000/html-files', podatki_za_poslat)
 
     const dataVrstice = responseVrstice.data
     const dataGrafi = responseGrafi.data

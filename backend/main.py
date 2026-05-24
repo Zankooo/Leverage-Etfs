@@ -85,9 +85,15 @@ class podatki_iz_frontenda(BaseModel):
     indeks : str
     interval : int
 
+# primerjava_vrstic ti zračuna številke in statistiko, 
+# kdo je zmagovalec (1x, 2x ali 3x).
 @app.post("/primerjava_vrstic")
 def root(data: podatki_iz_frontenda):
+    print()
+    print("PRVI REST API CALL ")
+    print(" PRIMERJAVA PO VRSTICAH:")
     keri_indeksi = pridobi_indekse(data.indeks)
+    print(" Funkcija kater indeksi ✅ ")
     funkcija_naredi_vse(
         data.zacetna_investicija,
         data.mesecni_vlozek,
@@ -97,28 +103,44 @@ def root(data: podatki_iz_frontenda):
     print('----------')
 
     print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
-
-    # funkcija 'funkcija_naredi_vse' naredi csv fajle, da jih ta funkcija lahko prejme in naredi primerjavo
-    return primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
+    print()
+    # funkcija 'funkcija_naredi_vse' naredi csv fajle od vseh treh za vsak interval, da jih ta funkcija lahko prejme in naredi primerjavo
+    primerjave = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
+    print(" Funkcija primerjaj tri indekse ✅")
+    return primerjave
     
     
 
-
+# html-files ti zgenerira podrobne podatke za vsako obdobje 
+# posebej in ti iz njih nariše grafe, 
+# da lahko gibanje investicije dejansko vidiš!
 @app.post("/html-files")
 def root(data: podatki_iz_frontenda):
+    print()
+    print("DRUGI REST API CALL ")
+    
+    print("GRAFKI")
     keri_indeksi = pridobi_indekse(data.indeks)
+    print(" Funkcija kater indeksi ✅ ")
+    
     cela_investicija_skupaj = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
 
 
     funkcija_naredi_rezultat_za_csvje(keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek)
+    print(" funkcija_naredi_rezultat_za_csvje ✅ ")
+    print()
+    
     funkcija_ki_narise_grafe(data.zacetna_investicija, data.mesecni_vlozek, cela_investicija_skupaj)
-
+    print(" funkcija_ki_narise_grafe ✅ ")
     
 
-    fancy_zakljucek_1()
+    
     
     # vse htmlje
     json_grafi = dobi_grafe_v_json()
+    print(" vrnemo json grafov ✅ ")
+    
+    fancy_zakljucek_1()
     return json_grafi
     
 # ------------------------------------------------------------------------------------------
@@ -148,7 +170,7 @@ def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, inter
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
         print()
-        task = progress.add_task("[cyan]Računam 1x...", total=len(intervali))
+        task = progress.add_task("[cyan]Izdelava osnoven.csv...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):
             metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "osnoven")
@@ -160,7 +182,7 @@ def funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, inter
     intervali = generiraj_intervale_leto(indeks, interval)
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
-        task = progress.add_task("[magenta]Računam 2x...", total=len(intervali))
+        task = progress.add_task("[magenta]Izdelava vzvod-2x.csv...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):
             metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "vzvod-2x")
@@ -172,7 +194,7 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
     intervali = generiraj_intervale_leto(indeks, interval)
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
-        task = progress.add_task("[orange1]Računam 3x...", total=len(intervali))
+        task = progress.add_task("[orange1]Izdelava vzvod-3x.csv...", total=len(intervali))
         # for loop za vse datume pac
         for i in range(len(intervali)):
             metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "vzvod-3x")
@@ -222,23 +244,24 @@ def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicij
     # in iste datume imajo.. teoreticno bi lahko tudi dali ker kol indeksi[1] ali indeksi[2]
     intervali = generiraj_intervale_leto(keri_indeksi[0], interval)
 
+    
     with Progress() as progress:
-        task = progress.add_task("[cyan]Računam...", total=len(intervali))
-        # števec začnemo pri 1, da bo ...1.csv, ...2.csv, ...
-        stevec = 1
+        task = progress.add_task("[green]Ustvarjam CSV-je...", total=len(intervali))
         for i in range(len(intervali)):
-            output_file = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{stevec}.csv"
+            datum_zacetka = intervali[i][0]
+            datum_konca = intervali[i][1]
+            output_file = f"rezultati-vsak-interval-vsi-indeksi/{datum_zacetka}--{datum_konca}.csv"
             # ker v for loopu klicemo je to zato ker za razlicne intervale
             izracun_dca_metoda_prilagojena_da_naredi_csv(
                 keri_indeksi[0], keri_indeksi[1], keri_indeksi[2],
                 initial_investment = zacetna_investicija,
                 monthly_investment = mesecni_vlozki,
-                datum_zacetka = intervali[i][0],
-                datum_konca = intervali[i][1],
+                datum_zacetka = datum_zacetka,
+                datum_konca = datum_konca,
                 output_file = output_file
             )
-            stevec = stevec + 1
             progress.advance(task)
+            
     return 0
 
 # ------
@@ -255,35 +278,47 @@ def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_inve
     else:
         folder.mkdir(parents=True, exist_ok=True)
 
-    # preštej csv-je v mapi, da vemo koliko dolg for loop
+    # preštej csv-je v mapi in jih ustrezno vzemi
     mapa = Path("rezultati-vsak-interval-vsi-indeksi")
-    stevilo_csvjev = len(list(mapa.glob("*.csv")))
+    csv_files = sorted(list(mapa.glob("*.csv")))
 
     # tukaj dodaj da ustvari mapo ce se ne obstaja... 
     # ce pa ze obstaja pa iz nje vse odstrani
-    for i in range(1, stevilo_csvjev + 1):
-        pot = f"rezultati-vsak-interval-vsi-indeksi/rezultati_investicije{i}.csv"
-        narisi_logaritmicne_grafe(
-            zacetna_investicija,
-            mesecna_investicija,
-            cela_investicija_skupaj,
-            pot,
-            f'mapa-grafi/graf{i}.html'
-        )
+    with Progress() as progress:
+        task = progress.add_task("[yellow]Izdelava HTML grafov...", total=len(csv_files))
+        for csv_path in csv_files:
+            ime_fajla = csv_path.stem
+            pot = str(csv_path)
+            narisi_logaritmicne_grafe(
+                zacetna_investicija,
+                mesecna_investicija,
+                cela_investicija_skupaj,
+                pot,
+                f'mapa-grafi/{ime_fajla}.html'
+            )
+            progress.advance(task)
     
     
 
 def dobi_grafe_v_json():
+    """
+    Skenira mapo z ustvarjenimi HTML grafi in vrne JSON seznam za frontend.
+    
+    Ker so datoteke poimenovane z datumi (npr. '1990-01-01--2000-01-01.html'), 
+    jih funkcija najprej prebere in abecedno (kronološko) sortira.
+    
+    @return: Vrne JSON objekt (slovar) s ključem 'results', ki vsebuje seznam grafov. 
+             Vsak element seznama vsebuje:
+             - 'id': zaporedna številka
+             - 'title': ime brez končnice (torej samo interval, npr. '1990-01-01--2000-01-01')
+             - 'filename': celotno ime datoteke z .html
+             - 'url': točen lokalni link do grafa (npr. 'http://localhost:8000/grafi/1990-01...html')
+    """
     mapa = Path("mapa-grafi")
 
-    def dobi_stevilko(file_path):
-        match = re.search(r"(\d+)", file_path.stem)
-        return int(match.group(1)) if match else 0
-
-    files = sorted(
-        [f for f in mapa.iterdir() if f.suffix == ".html"],
-        key=dobi_stevilko
-    )
+    # Datoteke so sedaj poimenovane po datumih (YYYY-MM-DD--YYYY-MM-DD.html)
+    # Zato jih navadno abecedno sortiranje avtomatsko uredi kronološko!
+    files = sorted([f for f in mapa.iterdir() if f.suffix == ".html"])
 
     results = []
     for i, file_path in enumerate(files, start=1):
