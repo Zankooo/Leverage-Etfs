@@ -28,7 +28,7 @@ app = FastAPI()
 # ne ve kje pac je main.oy
 BASE_DIR = Path(__file__).resolve().parent
 
-# definiramo imena map kamor bomo shranjevali
+# definiramo oz imena map kamor bomo shranjevali
 MAPA_GRAFI = BASE_DIR / "mapa-grafi"
 MAPA_REZULTATI = BASE_DIR / "rezultati-vsak-interval-vsi-indeksi"
 MAPA_TESTING = BASE_DIR / "testing"
@@ -207,6 +207,9 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 #FUNKCIJA KI KLICE UNE TRI ZGORAJ
 def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, indeksi):
+    # Najprej se prepričamo, da mapa 'testing' sploh obstaja
+    os.makedirs('testing', exist_ok=True)
+    
     # preverimo ce so od prejsnega zagona programa ze kaksne datoteke v testing mapi, 
     # in ce so jih izbrisemo, da ustvarimo prostor da se ustvarijo nove -> brez tega filtra moramo sami zbrisat rocno
     test_files = glob.glob('testing/*.csv')

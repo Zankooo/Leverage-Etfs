@@ -36,7 +36,7 @@ dist-ssr/
 .vite/
 
 
-
-
-/rezultati-vsak-interval-vsi-indeksi/
-/mapa-grafi/
+# Mape za rezultate (backend)
+backend/mapa-grafi/
+backend/rezultati-vsak-interval-vsi-indeksi/
+backend/testing/
