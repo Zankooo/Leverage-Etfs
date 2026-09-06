@@ -104,7 +104,8 @@ def root(data: podatki_iz_frontenda):
 
     print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
     print()
-    # funkcija 'funkcija_naredi_vse' naredi csv fajle od vseh treh za vsak interval, da jih ta funkcija lahko prejme in naredi primerjavo
+    # funkcija 'funkcija_naredi_vse' naredi csv fajle od vseh treh za vsak interval, 
+    # da jih ta funkcija lahko prejme in naredi primerjavo
     primerjave = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
     print(" Funkcija primerjaj tri indekse ✅")
     return primerjave
@@ -224,14 +225,6 @@ def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, inde
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
 
 def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki):
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'

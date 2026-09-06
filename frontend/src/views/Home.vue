@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { Loader2 } from 'lucide-vue-next'
 
+// ref () pomeni : Shrani vrednost in ob njeni spremembi samodejno posodobi dele uporabniškega vmesnika, ki jo uporabljajo.
 const initialInvestment = ref('')
 const monthlyContribution = ref('')
 const selectedIndex = ref('S&P 500')
 const selectedInterval = ref(15)
 
+
+// spremenljivka ali je backend ze odgovoril, vrednost je lahko strinj ali null -> ob uspesnem gre na "true"
+// pred zacetkom je null in rezultati so skriti, po uspesnem se da na true in rezulati se prikazejo
 const backendResponse = ref<string | null>(null)
-const results = ref<any[]>([])
+// Hrani seznam grafov, ki jih vrne backend, ko uporabnik klikne gumb za graf se url iz tega rezultata vzame
+const grafi = ref<any[]>([])
+// Hrani informacijo, ali backend trenutno računa.
 const isLoading = ref(false)
 
 // New refs for table rendering and modal
@@ -17,7 +23,36 @@ const tableRows = ref<any[]>([])
 const tableSummary = ref<any | null>(null)
 const showGraphModal = ref(false)
 const selectedGraphUrl = ref('')
+let revizijaVnosa = 0
 
+
+// RAZLIKA MED WATCH IN COMPUTED
+// computed uporabiš, ko želiš izračunano vrednost iz drugih ref vrednosti.
+// Primer: totalInvested, isFormValid.
+// watch uporabiš, ko želiš ob spremembi izvesti neko dejanje.
+// Primer: pobrisati stare grafe, poslati zahtevo ali nekaj zapisati v konzolo.
+
+
+// ta funkcija se vedno 'izvaja' - čaka da se spremeni kaj in ukrepa,
+// razlika med computed in watch funkcijo je: 
+//  torej če se naredi sprememba od eni od teh, se izvede koda
+watch(
+  [initialInvestment, monthlyContribution, selectedIndex, selectedInterval],
+  () => {
+    revizijaVnosa += 1
+    // pocistimo od prej 
+    backendResponse.value = null
+    tableRows.value = []
+    tableSummary.value = null
+    grafi.value = []
+    showGraphModal.value = false
+    selectedGraphUrl.value = ''
+  }
+)
+
+// ko das gumb izracunaj se ta funkcija zalaufa, pogleda ce je vse prav vpisano
+// vsak computed spremlja tiste reaktivne vrednosti ki jih v sebi uporablja
+// kakroli se spremeni, se funkcija ponovno izvede
 const isFormValid = computed(function () {
   return initialInvestment.value !== '' &&
          monthlyContribution.value !== '' &&
@@ -59,6 +94,15 @@ const getEtfLabel = (file: string) => {
 }
 
 async function izracunaj() {
+  const revizijaObZacetku = revizijaVnosa
+  // pocistimo od prej 
+  backendResponse.value = null
+  tableRows.value = []
+  tableSummary.value = null
+  grafi.value = []
+  showGraphModal.value = false
+  selectedGraphUrl.value = ''
+
   isLoading.value = true
 
   try {
@@ -70,21 +114,29 @@ async function izracunaj() {
       interval: Number(selectedInterval.value)
     }
 
-    // Najprej izvedemo prvi klic, da se printi v konzoli ne mešajo
+    // KLICI NA BACKEND IN ODGOVORI
+    // Najprej izvedemo prvi klic na backend, da se printi v konzoli ne mešajo
     const responseVrstice = await axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat)
     // Šele ko se prvi klic (in njegovi printi) zaključi, sprožimo drugega
     const responseGrafi = await axios.post('http://localhost:8000/html-files', podatki_za_poslat)
 
+    // shranimo v variable saj je v lastnosti data to, saj data potrebujemo, je pa še več parametrov
     const dataVrstice = responseVrstice.data
     const dataGrafi = responseGrafi.data
 
+    // da jih lahko kadarkoli pogledamo v dev toolsih v browserju
     console.log("Podatki za tabelo:", dataVrstice)
     console.log("Podatki za grafe:", dataGrafi)
+
+    // zavržemo odgovor stare simulacije, ce je uporabnik zacel pisati nove parametre v formo
+    if (revizijaObZacetku !== revizijaVnosa) {
+      return
+    }
 
     // Vse spremenljivke posodobimo hkrati
     tableSummary.value = dataVrstice.summary
     tableRows.value = dataVrstice.rows
-    results.value = dataGrafi.results || []
+    grafi.value = dataGrafi.results || []
     
     // Šele zdaj pokažemo rezultate
     backendResponse.value = "true" 
@@ -97,10 +149,12 @@ async function izracunaj() {
   }
 }
 
-
+// ta funkcija se izvede kot clovek kliknen na gumb graf
 const showGraph = (index: number) => {
-  if (results.value[index]) {
-    selectedGraphUrl.value = results.value[index].url
+  if (grafi.value[index]) {
+    // Funkcija izbere URL ustreznega grafa, 
+    // ta url se nahaja v odgovoru ki ga da backend
+    selectedGraphUrl.value = grafi.value[index].url
     showGraphModal.value = true
   }
 }
@@ -123,9 +177,10 @@ const showGraph = (index: number) => {
             <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Začetna investicija (€)</label>
             <input 
               v-model="initialInvestment"
+              :disabled="isLoading"
               type="number" 
               placeholder="npr. 1.000 €"
-              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300"
+              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -134,9 +189,10 @@ const showGraph = (index: number) => {
             <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Mesečni vložek (€)</label>
             <input 
               v-model="monthlyContribution"
+              :disabled="isLoading"
               type="number" 
               placeholder="npr. 100 €"
-              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300"
+              class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -148,7 +204,8 @@ const showGraph = (index: number) => {
               <div class="relative">
                 <select 
                   v-model="selectedIndex"
-                  class="w-full px-4 py-3 pr-10 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] appearance-none cursor-pointer"
+                  :disabled="isLoading"
+                  class="w-full px-4 py-3 pr-10 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <option>S&P 500</option>
                   <option>Nasdaq 100</option>
@@ -167,11 +224,12 @@ const showGraph = (index: number) => {
               <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Interval (leta)</label>
               <input 
                 v-model="selectedInterval"
+                :disabled="isLoading"
                 type="number"
                 min="1"
                 max="50"
                 placeholder="npr. 10"
-                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300"
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -332,7 +390,7 @@ const showGraph = (index: number) => {
                   </div>
                   <!-- Third konec-->  
 
-                  <!-- Button column -->
+                  <!-- Button column klik na gumb GRAF -->
                   <div class="shrink-0">
                     <button
                       @click="showGraph(index)"
@@ -351,7 +409,7 @@ const showGraph = (index: number) => {
                         letter-spacing: 0.05em;
                       "
                       onmouseover="this.style.background='#10B98130'; this.style.borderColor='#10B98150'; this.style.transform='translateX(4px)'"
-                      onmouseout="this.style.background='#10B98120'; this.style.borderColor='#10B98130'; this.style.transform='translateX(0)'"
+                      onmojuseout="this.style.background='#10B98120'; this.style.borderColor='#10B98130'; this.style.transform='translateX(0)'"
                     >
                       Graf
                     </button>
@@ -378,7 +436,10 @@ const showGraph = (index: number) => {
               </button>
             </div>
             <div class="flex-1 w-full h-full bg-gray-50">
-              <iframe :src="selectedGraphUrl" class="w-full h-full border-none"></iframe>
+              <!-- dvopicje pomeni da je src poveza z reaktivno spremeljivko selectedGraphUrl -->
+              <!-- selectedGraphUrl  = http://localhost:8000/grafi/1930-01-02--1945-01-02.html -->
+              <!-- tuki je v bistvu klic na backend, na ta link -->
+               <iframe :src="selectedGraphUrl" class="w-full h-full border-none"></iframe>
             </div>
             </div>
           </div>

@@ -7,7 +7,7 @@ def load_csv(filepath):
     """
     Prebere CSV datoteko in vrne podatke kot dvojni array (list of lists).
     """
-    
+    print()
     with open(filepath, 'r', encoding='utf-8') as file:
         csv_reader = csv.reader(file)
         array = [row for row in csv_reader]
@@ -79,7 +79,7 @@ def izbaci_ven_holidayse(podatki):
     :return list of lists brez vrstic holidaysov
     """
     print("--------------------------------")
-    print("Funkcija ki izbaci ven holidayse laufa")
+    print("Funkcija izbaci_ven_holidayse() laufa")
     i = 0
     while i < len(podatki):  # Iteriramo po seznamu
         if len(podatki[i]) > 1 and podatki[i][1] == "":  # Če drugi stolpec vsebuje "", izbrišemo vrstico

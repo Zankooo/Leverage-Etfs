@@ -35,6 +35,9 @@ dist-ssr/
 *.local
 .vite/
 
+# MkDocs build
+site/
+
 
 # Mape za rezultate (backend)
 backend/mapa-grafi/

@@ -6,6 +6,8 @@ from obcasno_pogosti_fajli.csv_operacije import *
 # karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
 # dogovorjen format podatkov oz csv.ja
 
+# to funkcijo verjetno najbolje rabis v obcasno_pogosti_fajli
+# ko ustvarjas primerno strukturo 
 def izracun_dnevnih_sprememb(podatki):
     """
     Funkcija, ki izracuna dnevne spremembe indeksa
@@ -28,51 +30,7 @@ def izracun_dnevnih_sprememb(podatki):
     return result
 
 
-def izracun_letnih_donosov(podatki):
-    """
-    Ne vem kako ta funkcija dela ampak dela!
-    Funkcija ki sprejme podatke, list of lists
-    In izracuna donos za Vsako leto. -> to funkcijo nikjer ne uporabim ampak je za vsak slucaj kle ce me kdaj zanima
-    :param list of lists podatki indeksa
-    :return: list of lists donosov za vsako leto
-    """
-    # Začnemo obdelavo podatkov od tretje vrstice
-    podatki = podatki[2:]
 
-    # Če je vhodni podatki list of lists, ga pretvorimo v DataFrame
-    if isinstance(podatki, list):
-        podatki = pd.DataFrame(podatki, columns=["Date", "Close"])
-
-    # Preverimo, ali je podatki DataFrame
-    if not isinstance(podatki, pd.DataFrame):
-        raise TypeError(f"Vhodni podatki morajo biti pandas DataFrame, prejet: {type(podatki)}")
-
-    # Pretvorimo stolpec 'Date' v datetime format
-    podatki["Date"] = pd.to_datetime(podatki["Date"], errors='coerce')
-
-    # Odstranimo morebitne neveljavne vrstice
-    podatki = podatki.dropna()
-
-    # Pretvorimo 'Close' v numerični format
-    podatki["Close"] = pd.to_numeric(podatki["Close"], errors='coerce')
-
-    # Izluščimo leto
-    podatki["Year"] = podatki["Date"].dt.year
-
-    # Priprava praznega seznama za rezultate
-    annual_returns = [["Leto", "Prvi-dan", "Zadnji-dan", "Donos(%)"]]
-    unique_years = sorted(podatki["Year"].unique())
-
-    for year in unique_years:
-        yearly_data = podatki[podatki["Year"] == year]
-        first_price = float(yearly_data.iloc[0]["Close"])
-        last_price = float(yearly_data.iloc[-1]["Close"])
-        return_pct = float(((last_price / first_price) - 1) * 100)
-        return_str = f"{round(return_pct, 2):+.2f}%"
-        annual_returns.append([int(year), round(first_price, 2), round(last_price, 2), return_str])
-
-
-    return annual_returns
 
 #----------- POMOZNE FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
 
@@ -85,93 +43,6 @@ def is_float(value):
         return False
 
 
-# ----------------------------------------------------------------
-def izracun_dca_metoda(podatki, output_file="rezultati_investicije.csv"):
-    """
-    Funkcija izracuna koliko imamo kesa po izbranem obdobju. Damo notri nek csv z nekimi podatki. 
-    1x 2x 3x kere kol podatke, le da imajo pravilno obliko
-    Torej: izberemo začetno investicijo + mesečne vložke(prvega v mesecu oz na zacetku meseca, se obracunajo).
-    Izračuna končno vrednost investicije glede na vsakodnevno spremembo indeksa.
-    :param podatki: List of lists dogovorjen format
-    :return: int končna vrednost investicije
-    :return; ustvari še csv file z rezultati za vsak dan
-    """
-    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
-    # ampak tega verjetno ne bi smel upostevat, idk
-   # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
-    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
-
-    initial_investment = int(input("Vpisi začetno investicijo: "))
-    monthly_investment = int(input("Vpisi mesečni vložek: "))  # Nov vnos za mesečno investicijo
-    investment = initial_investment
-    mesecni_vlozki_vsota = 0
-
-# PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
-# zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
-    #datum_zacetka = input("Začetek investiranja datum: ")
-    #datum_konca = input("Konec investiranja datum: ")
-    # za namen testiranja da ne rabim skos pisat notr
-    datum_zacetka = "2015-10-22"
-    datum_konca = "2016-03-31"
-
-    # Nastavimo začetni mesec za mesečne vložke
-    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
-
-    # to rabimo da lahko pozenemo loop cez vse dneve
-    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
-    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
-
-    results = []
-    # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
-    for i in range(vrstica_zacetka, vrstica_konca + 1):
-        # odstranimo %, da pac lahko delamo z podatkom ane
-        daily_change = podatki_daily_changes[i][2].replace("%", "")
-        # Pretvori v decimalno vrednost
-        daily_change_cifra = round(float(daily_change), 2) / 100
-
-        # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
-        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
-
-        # Če je nov mesec, dodamo mesečni vložek
-        if date.month != current_month:
-            investment = investment + monthly_investment
-            print(f"Mesecna investicija investirana: {monthly_investment}eur")
-            mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
-            current_month = date.month
-
-        # Izračun vrednosti portfelja
-        investment = investment * (1 + daily_change_cifra)
-        print(f"Vrednost pri vrstici {i}. oz. datumu {podatki[i][0]}: {investment:.2f} EUR ({daily_change}%)")
-        
-        results.append([podatki[i][0], round(investment, 2), daily_change + "%"])
-
-
-    print("-----------")
-    print(f"Od {datum_zacetka} do {datum_konca}:")
-    print(f"Začetna investicija je bila: {initial_investment}EUR 💵,")
-    print(f"Vseh mesečnih investicij je bilo skupaj: {mesecni_vlozki_vsota}EUR 💸,")
-    print("-----------")
-    print(f"Total contribution(zacentna + mesecne): {initial_investment + mesecni_vlozki_vsota}EUR 🔢,")
-    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
-    print(f"Torej zaslužili / izgubili smo: {zasluzili}EUR")
-    print(f"Imamo vse skupaj: {investment:.2f} EUR 💰✈️🌍")
-
-    # to prikazemo samo ce imamo brez mescecnih. Edini namen je dokaz/prikazati, da pac ce potegnemo na google grafu da pac res dela funkcija
-    if mesecni_vlozki_vsota == 0:
-        procentualno_zasluzek = (zasluzili / initial_investment) * 100
-        procentualno_zasluzek = round(procentualno_zasluzek, 2)
-        print(f"Procentualno: {procentualno_zasluzek}%. Lahko preveris na google stock grafu da je zelo zelo podobno")
-    # procentualno je izracunano ->  (donos/cela investicija)*100
-    # tukaj ce so mesecne investicije je malo drugace in treba nekako fiksat
-    
-
-    with open(output_file, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(["date", "A"])
-        writer.writerows(results)
-
-    print(f"Rezultati so zapisani v {output_file}")
-    return round(investment, 2)
 
 # -------------------------- spremenjena funkcija dca za testing
 # --------------------------------------------
