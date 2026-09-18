@@ -94,6 +94,7 @@ const getEtfLabel = (file: string) => {
 }
 
 async function izracunaj() {
+  console.log("Poslal podatke na backend!")
   const revizijaObZacetku = revizijaVnosa
   // pocistimo od prej 
   backendResponse.value = null
@@ -124,6 +125,7 @@ async function izracunaj() {
     const dataVrstice = responseVrstice.data
     const dataGrafi = responseGrafi.data
 
+    console.log("Prejeli podatke iz backenda")
     // da jih lahko kadarkoli pogledamo v dev toolsih v browserju
     console.log("Podatki za tabelo:", dataVrstice)
     console.log("Podatki za grafe:", dataGrafi)
@@ -153,6 +155,7 @@ async function izracunaj() {
 const showGraph = (index: number) => {
   if (grafi.value[index]) {
     // Funkcija izbere URL ustreznega grafa, 
+    
     // ta url se nahaja v odgovoru ki ga da backend
     selectedGraphUrl.value = grafi.value[index].url
     showGraphModal.value = true

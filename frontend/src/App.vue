@@ -18,9 +18,11 @@ const navItems = [
   <div class="min-h-screen flex flex-col bg-[#F8F9FA] text-[#1A1A1A] font-sans">
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
+
       <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12">
         
         <div class="flex justify-between h-16 items-center">
+
           <div class="flex items-center gap-2">
             <TrendingUp class="text-[#10B981] w-6 h-6" />
             <span class="text-xl font-semibold tracking-tight">Vzvodno</span>
@@ -41,27 +43,46 @@ const navItems = [
 
           <!-- Mobile Menu Button -->
           <div class="md:hidden">
-            <button @click="isMenuOpen = !isMenuOpen" class="text-gray-500 hover:text-gray-700">
-              <Menu v-if="!isMenuOpen" class="w-6 h-6" />
-              <X v-else class="w-6 h-6" />
+            <button
+              @click="isMenuOpen = !isMenuOpen"
+              :aria-expanded="isMenuOpen"
+              aria-label="Odpri ali zapri navigacijski meni"
+              class="relative flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:text-gray-700"
+            >
+              <Menu
+                class="absolute h-6 w-6 transition-all duration-300 ease-out"
+                :class="isMenuOpen ? 'rotate-90 scale-75 opacity-0' : 'rotate-0 scale-100 opacity-100'"
+              />
+              <X
+                class="absolute h-6 w-6 transition-all duration-300 ease-out cursor-pointer"
+                :class="isMenuOpen ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-75 opacity-0'"
+              />
             </button>
           </div>
+
         </div>
 
       </div>
 
       <!-- Mobile Nav -->
-      <div v-if="isMenuOpen" class="md:hidden bg-white border-t border-gray-100 py-4 px-4 space-y-2">
-        <RouterLink 
-          v-for="item in navItems" 
-          :key="item.path"
-          :to="item.path"
-          class="block py-2 text-base font-medium text-gray-600 hover:text-[#10B981]"
-          @click="isMenuOpen = false"
-        >
-          {{ item.name }}
-        </RouterLink>
-      </div>
+      <Transition name="mobile-menu">
+        <div v-if="isMenuOpen" class="mobile-menu-wrapper bg-white border-t border-gray-100 md:hidden">
+          <div class="mobile-menu-inner">
+            <div class="space-y-2 px-4 py-4">
+              <RouterLink 
+                v-for="item in navItems" 
+                :key="item.path"
+                :to="item.path"
+                class="block py-2 text-base font-medium text-gray-600 hover:text-[#10B981]"
+                @click="isMenuOpen = false"
+              >
+                {{ item.name }}
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
     </nav>
 
     <!-- Main Content -->
@@ -90,6 +111,27 @@ const navItems = [
 
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+.mobile-menu-wrapper {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.mobile-menu-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: grid-template-rows 0.6s ease, opacity 0.3s ease;
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  grid-template-rows: 0fr;
   opacity: 0;
 }
 
