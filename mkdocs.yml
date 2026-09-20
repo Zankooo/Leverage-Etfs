@@ -1,0 +1,57 @@
+site_name: Leverage ETFs
+site_description: Dokumentacija aplikacije za primerjavo donosov osnovnih in vzvodnih indeksov
+
+theme:
+  name: material
+  language: sl
+
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+  icon:
+    logo: material/chart-line
+
+  palette:
+    - scheme: default
+      primary: white
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Vklopi temni način
+
+    - scheme: slate
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Vklopi svetli način
+
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.path
+    - navigation.footer
+    - toc.follow
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Domov: index.md
+  - Projekt:
+      - O aplikaciji: overview.md
+      - Arhitektura: architecture.md
+      - Namestitev: installation.md
+  - Koncepti:
+      - Osnove ETF-jev: etf-basics.md
+      - Metodologija in omejitve: methodology.md
+      - Viri podatkov: data-sources.md
+  - Aplikacija:
+      - Frontend: frontend.md
+      - Backend: backend.md
+      - API: api.md

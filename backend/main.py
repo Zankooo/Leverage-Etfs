@@ -57,17 +57,17 @@ app.add_middleware(
 print()
 print(Fore.GREEN + "Začetek programa " + Style.RESET_ALL + "----------------------------------------------------------------")
 # UPLOAD PODATKOV DA JIH PREBEREMO
-sp_500 = load_csv('podatki_ustvarjeni/sp-500.csv')
-sp_500_2x = load_csv('2x-leverage/sp-500-2x.csv')
-sp_500_3x = load_csv('3x-leverage/sp-500-3x.csv')
+sp_500 = load_csv(BASE_DIR / '1x-leverage' / 'sp-500-1x.csv')
+sp_500_2x = load_csv(BASE_DIR / '2x-leverage' / 'sp-500-2x.csv')
+sp_500_3x = load_csv(BASE_DIR / '3x-leverage' / 'sp-500-3x.csv')
 print()
-nasdaq_100 = load_csv('podatki_ustvarjeni/nasdaq-100.csv')
-nasdaq_100_2x = load_csv('2x-leverage/nasdaq-100-2x.csv')
-nasdaq_100_3x = load_csv('3x-leverage/nasdaq-100-3x.csv')
+nasdaq_100 = load_csv(BASE_DIR / '1x-leverage' / 'nasdaq-100-1x.csv')
+nasdaq_100_2x = load_csv(BASE_DIR / '2x-leverage' / 'nasdaq-100-2x.csv')
+nasdaq_100_3x = load_csv(BASE_DIR / '3x-leverage' / 'nasdaq-100-3x.csv')
 print()
-nasdaq_comp = load_csv('podatki_ustvarjeni/nasdaq-comp.csv')
-nasdaq_comp_2x = load_csv('2x-leverage/nasdaq-comp-2x.csv')
-nasdaq_comp_3x = load_csv('3x-leverage/nasdaq-comp-3x.csv')
+nasdaq_comp = load_csv(BASE_DIR / '1x-leverage' / 'nasdaq-comp-1x.csv')
+nasdaq_comp_2x = load_csv(BASE_DIR / '2x-leverage' / 'nasdaq-comp-2x.csv')
+nasdaq_comp_3x = load_csv(BASE_DIR / '3x-leverage' / 'nasdaq-comp-3x.csv')
 print("----------------------------------------------------------------------------------")
 
 # probna funkcija če dela vse skup
@@ -104,7 +104,8 @@ def root(data: podatki_iz_frontenda):
 
     print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
     print()
-    # funkcija 'funkcija_naredi_vse' naredi csv fajle od vseh treh za vsak interval, da jih ta funkcija lahko prejme in naredi primerjavo
+    # funkcija 'funkcija_naredi_vse' naredi csv fajle od vseh treh za vsak interval, 
+    # da jih ta funkcija lahko prejme in naredi primerjavo
     primerjave = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
     print(" Funkcija primerjaj tri indekse ✅")
     return primerjave
@@ -225,14 +226,6 @@ def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, inde
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
 def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki):
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
     # ce se ni ustvarjena mapa jo ustvarimo
@@ -340,7 +333,6 @@ def dobi_grafe_v_json():
 # POKLICEMO TO KAR JE TUKAJ IN JE TO TO
 
 # to rabimo ker te podatke uporabljata obe glavni funkciji
-
 
 
 
