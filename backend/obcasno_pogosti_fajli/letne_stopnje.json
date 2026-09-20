@@ -1,0 +1,804 @@
+{
+  "leta": {
+    "1927": {
+      "funding": 0.0,
+      "dividende": {
+        "sp_500": 0.0,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1928": {
+      "funding": 0.0308,
+      "dividende": {
+        "sp_500": 0.0367,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1929": {
+      "funding": 0.0316,
+      "dividende": {
+        "sp_500": 0.0453,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1930": {
+      "funding": 0.0455,
+      "dividende": {
+        "sp_500": 0.0632,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1931": {
+      "funding": 0.0231,
+      "dividende": {
+        "sp_500": 0.0972,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1932": {
+      "funding": 0.0107,
+      "dividende": {
+        "sp_500": 0.0733,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1933": {
+      "funding": 0.0096,
+      "dividende": {
+        "sp_500": 0.0441,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1934": {
+      "funding": 0.0028,
+      "dividende": {
+        "sp_500": 0.0486,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1935": {
+      "funding": 0.0017,
+      "dividende": {
+        "sp_500": 0.036,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1936": {
+      "funding": 0.0017,
+      "dividende": {
+        "sp_500": 0.0422,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1937": {
+      "funding": 0.0028,
+      "dividende": {
+        "sp_500": 0.0726,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1938": {
+      "funding": 0.0007,
+      "dividende": {
+        "sp_500": 0.0402,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1939": {
+      "funding": 0.0005,
+      "dividende": {
+        "sp_500": 0.0501,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1940": {
+      "funding": 0.0004,
+      "dividende": {
+        "sp_500": 0.0636,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1941": {
+      "funding": 0.0013,
+      "dividende": {
+        "sp_500": 0.0811,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1942": {
+      "funding": 0.0034,
+      "dividende": {
+        "sp_500": 0.062,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1943": {
+      "funding": 0.0038,
+      "dividende": {
+        "sp_500": 0.0531,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1944": {
+      "funding": 0.0038,
+      "dividende": {
+        "sp_500": 0.0489,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1945": {
+      "funding": 0.0038,
+      "dividende": {
+        "sp_500": 0.0381,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1946": {
+      "funding": 0.0038,
+      "dividende": {
+        "sp_500": 0.0469,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1947": {
+      "funding": 0.006,
+      "dividende": {
+        "sp_500": 0.0559,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1948": {
+      "funding": 0.0105,
+      "dividende": {
+        "sp_500": 0.0612,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1949": {
+      "funding": 0.0112,
+      "dividende": {
+        "sp_500": 0.0689,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1950": {
+      "funding": 0.012,
+      "dividende": {
+        "sp_500": 0.0744,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1951": {
+      "funding": 0.0152,
+      "dividende": {
+        "sp_500": 0.0602,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1952": {
+      "funding": 0.0172,
+      "dividende": {
+        "sp_500": 0.0541,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1953": {
+      "funding": 0.0189,
+      "dividende": {
+        "sp_500": 0.0584,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1954": {
+      "funding": 0.0094,
+      "dividende": {
+        "sp_500": 0.044,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1955": {
+      "funding": 0.0179,
+      "dividende": {
+        "sp_500": 0.0361,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1956": {
+      "funding": 0.0273,
+      "dividende": {
+        "sp_500": 0.0375,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1957": {
+      "funding": 0.0311,
+      "dividende": {
+        "sp_500": 0.0444,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1958": {
+      "funding": 0.0157,
+      "dividende": {
+        "sp_500": 0.0327,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1959": {
+      "funding": 0.0331,
+      "dividende": {
+        "sp_500": 0.031,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1960": {
+      "funding": 0.0321,
+      "dividende": {
+        "sp_500": 0.0343,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1961": {
+      "funding": 0.0195,
+      "dividende": {
+        "sp_500": 0.0282,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1962": {
+      "funding": 0.0271,
+      "dividende": {
+        "sp_500": 0.034,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1963": {
+      "funding": 0.0318,
+      "dividende": {
+        "sp_500": 0.0307,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1964": {
+      "funding": 0.035,
+      "dividende": {
+        "sp_500": 0.0298,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1965": {
+      "funding": 0.0408,
+      "dividende": {
+        "sp_500": 0.0297,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1966": {
+      "funding": 0.0511,
+      "dividende": {
+        "sp_500": 0.0353,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1967": {
+      "funding": 0.0422,
+      "dividende": {
+        "sp_500": 0.0306,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1968": {
+      "funding": 0.0566,
+      "dividende": {
+        "sp_500": 0.0288,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1969": {
+      "funding": 0.0821,
+      "dividende": {
+        "sp_500": 0.0347,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1970": {
+      "funding": 0.0717,
+      "dividende": {
+        "sp_500": 0.0349,
+        "nasdaq_100": null,
+        "nasdaq_comp": null
+      }
+    },
+    "1971": {
+      "funding": 0.0467,
+      "dividende": {
+        "sp_500": 0.031,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0
+      }
+    },
+    "1972": {
+      "funding": 0.0444,
+      "dividende": {
+        "sp_500": 0.0268,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0
+      }
+    },
+    "1973": {
+      "funding": 0.0874,
+      "dividende": {
+        "sp_500": 0.0357,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0167
+      }
+    },
+    "1974": {
+      "funding": 0.1051,
+      "dividende": {
+        "sp_500": 0.0537,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0272
+      }
+    },
+    "1975": {
+      "funding": 0.0582,
+      "dividende": {
+        "sp_500": 0.0415,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.038
+      }
+    },
+    "1976": {
+      "funding": 0.0505,
+      "dividende": {
+        "sp_500": 0.0387,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0347
+      }
+    },
+    "1977": {
+      "funding": 0.0554,
+      "dividende": {
+        "sp_500": 0.0498,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0299
+      }
+    },
+    "1978": {
+      "funding": 0.0794,
+      "dividende": {
+        "sp_500": 0.0528,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0257
+      }
+    },
+    "1979": {
+      "funding": 0.112,
+      "dividende": {
+        "sp_500": 0.0524,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0305
+      }
+    },
+    "1980": {
+      "funding": 0.1335,
+      "dividende": {
+        "sp_500": 0.0461,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0271
+      }
+    },
+    "1981": {
+      "funding": 0.1639,
+      "dividende": {
+        "sp_500": 0.0536,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0288
+      }
+    },
+    "1982": {
+      "funding": 0.1224,
+      "dividende": {
+        "sp_500": 0.0493,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0272
+      }
+    },
+    "1983": {
+      "funding": 0.0909,
+      "dividende": {
+        "sp_500": 0.0431,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0165
+      }
+    },
+    "1984": {
+      "funding": 0.1023,
+      "dividende": {
+        "sp_500": 0.0458,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0158
+      }
+    },
+    "1985": {
+      "funding": 0.081,
+      "dividende": {
+        "sp_500": 0.0381,
+        "nasdaq_100": null,
+        "nasdaq_comp": 0.0138
+      }
+    },
+    "1986": {
+      "funding": 0.068,
+      "dividende": {
+        "sp_500": 0.0333,
+        "nasdaq_100": 0.0033,
+        "nasdaq_comp": 0.0103
+      }
+    },
+    "1987": {
+      "funding": 0.0666,
+      "dividende": {
+        "sp_500": 0.0366,
+        "nasdaq_100": 0.0041,
+        "nasdaq_comp": 0.0091
+      }
+    },
+    "1988": {
+      "funding": 0.0757,
+      "dividende": {
+        "sp_500": 0.0353,
+        "nasdaq_100": 0.0047,
+        "nasdaq_comp": 0.0103
+      }
+    },
+    "1989": {
+      "funding": 0.0921,
+      "dividende": {
+        "sp_500": 0.0317,
+        "nasdaq_100": 0.0091,
+        "nasdaq_comp": 0.0102
+      }
+    },
+    "1990": {
+      "funding": 0.081,
+      "dividende": {
+        "sp_500": 0.0368,
+        "nasdaq_100": 0.0107,
+        "nasdaq_comp": 0.0126
+      }
+    },
+    "1991": {
+      "funding": 0.0569,
+      "dividende": {
+        "sp_500": 0.0314,
+        "nasdaq_100": 0.0053,
+        "nasdaq_comp": 0.0125
+      }
+    },
+    "1992": {
+      "funding": 0.0352,
+      "dividende": {
+        "sp_500": 0.0284,
+        "nasdaq_100": 0.0055,
+        "nasdaq_comp": 0.0116
+      }
+    },
+    "1993": {
+      "funding": 0.0302,
+      "dividende": {
+        "sp_500": 0.027,
+        "nasdaq_100": 0.0052,
+        "nasdaq_comp": 0.0102
+      }
+    },
+    "1994": {
+      "funding": 0.0421,
+      "dividende": {
+        "sp_500": 0.0289,
+        "nasdaq_100": 0.0046,
+        "nasdaq_comp": 0.0085
+      }
+    },
+    "1995": {
+      "funding": 0.0583,
+      "dividende": {
+        "sp_500": 0.0224,
+        "nasdaq_100": 0.0026,
+        "nasdaq_comp": 0.006
+      }
+    },
+    "1996": {
+      "funding": 0.053,
+      "dividende": {
+        "sp_500": 0.02,
+        "nasdaq_100": 0.0011,
+        "nasdaq_comp": 0.002
+      }
+    },
+    "1997": {
+      "funding": 0.0546,
+      "dividende": {
+        "sp_500": 0.0161,
+        "nasdaq_100": 0.0013,
+        "nasdaq_comp": 0.005
+      }
+    },
+    "1998": {
+      "funding": 0.0535,
+      "dividende": {
+        "sp_500": 0.0136,
+        "nasdaq_100": 0.0007,
+        "nasdaq_comp": 0.003
+      }
+    },
+    "1999": {
+      "funding": 0.0497,
+      "dividende": {
+        "sp_500": 0.0117,
+        "nasdaq_100": 0.0003,
+        "nasdaq_comp": 0.002
+      }
+    },
+    "2000": {
+      "funding": 0.0624,
+      "dividende": {
+        "sp_500": 0.0122,
+        "nasdaq_100": 0.0006,
+        "nasdaq_comp": 0.003
+      }
+    },
+    "2001": {
+      "funding": 0.0388,
+      "dividende": {
+        "sp_500": 0.0137,
+        "nasdaq_100": 0.0006,
+        "nasdaq_comp": 0.003
+      }
+    },
+    "2002": {
+      "funding": 0.0167,
+      "dividende": {
+        "sp_500": 0.0179,
+        "nasdaq_100": 0.0012,
+        "nasdaq_comp": 0.005
+      }
+    },
+    "2003": {
+      "funding": 0.0113,
+      "dividende": {
+        "sp_500": 0.0161,
+        "nasdaq_100": 0.001,
+        "nasdaq_comp": 0.006
+      }
+    },
+    "2004": {
+      "funding": 0.0135,
+      "dividende": {
+        "sp_500": 0.0162,
+        "nasdaq_100": 0.0018,
+        "nasdaq_comp": 0.006
+      }
+    },
+    "2005": {
+      "funding": 0.0322,
+      "dividende": {
+        "sp_500": 0.0176,
+        "nasdaq_100": 0.0043,
+        "nasdaq_comp": 0.009
+      }
+    },
+    "2006": {
+      "funding": 0.0497,
+      "dividende": {
+        "sp_500": 0.0176,
+        "nasdaq_100": 0.0055,
+        "nasdaq_comp": 0.008
+      }
+    },
+    "2007": {
+      "funding": 0.0502,
+      "dividende": {
+        "sp_500": 0.0187,
+        "nasdaq_100": 0.0048,
+        "nasdaq_comp": 0.008
+      }
+    },
+    "2008": {
+      "funding": 0.0192,
+      "dividende": {
+        "sp_500": 0.0323,
+        "nasdaq_100": 0.0089,
+        "nasdaq_comp": 0.013
+      }
+    },
+    "2009": {
+      "funding": 0.0016,
+      "dividende": {
+        "sp_500": 0.0202,
+        "nasdaq_100": 0.0074,
+        "nasdaq_comp": 0.01
+      }
+    },
+    "2010": {
+      "funding": 0.0018,
+      "dividende": {
+        "sp_500": 0.0183,
+        "nasdaq_100": 0.0074,
+        "nasdaq_comp": 0.0095
+      }
+    },
+    "2011": {
+      "funding": 0.001,
+      "dividende": {
+        "sp_500": 0.0213,
+        "nasdaq_100": 0.0093,
+        "nasdaq_comp": 0.0077
+      }
+    },
+    "2012": {
+      "funding": 0.0014,
+      "dividende": {
+        "sp_500": 0.022,
+        "nasdaq_100": 0.012,
+        "nasdaq_comp": 0.0119
+      }
+    },
+    "2013": {
+      "funding": 0.0011,
+      "dividende": {
+        "sp_500": 0.0194,
+        "nasdaq_100": 0.0119,
+        "nasdaq_comp": 0.0072
+      }
+    },
+    "2014": {
+      "funding": 0.0009,
+      "dividende": {
+        "sp_500": 0.0192,
+        "nasdaq_100": 0.0111,
+        "nasdaq_comp": 0.0077
+      }
+    },
+    "2015": {
+      "funding": 0.0013,
+      "dividende": {
+        "sp_500": 0.0211,
+        "nasdaq_100": 0.0122,
+        "nasdaq_comp": 0.0088
+      }
+    },
+    "2016": {
+      "funding": 0.0039,
+      "dividende": {
+        "sp_500": 0.0203,
+        "nasdaq_100": 0.0119,
+        "nasdaq_comp": 0.0092
+      }
+    },
+    "2017": {
+      "funding": 0.01,
+      "dividende": {
+        "sp_500": 0.0184,
+        "nasdaq_100": 0.0099,
+        "nasdaq_comp": 0.0112
+      }
+    },
+    "2018": {
+      "funding": 0.0183,
+      "dividende": {
+        "sp_500": 0.0209,
+        "nasdaq_100": 0.0123,
+        "nasdaq_comp": 0.0094
+      }
+    },
+    "2019": {
+      "funding": 0.022,
+      "dividende": {
+        "sp_500": 0.0183,
+        "nasdaq_100": 0.0095,
+        "nasdaq_comp": 0.0097
+      }
+    },
+    "2020": {
+      "funding": 0.0036,
+      "dividende": {
+        "sp_500": 0.0158,
+        "nasdaq_100": 0.0069,
+        "nasdaq_comp": 0.0066
+      }
+    },
+    "2021": {
+      "funding": 0.0004,
+      "dividende": {
+        "sp_500": 0.0129,
+        "nasdaq_100": 0.0062,
+        "nasdaq_comp": 0.0047
+      }
+    },
+    "2022": {
+      "funding": 0.0164,
+      "dividende": {
+        "sp_500": 0.0171,
+        "nasdaq_100": 0.0098,
+        "nasdaq_comp": 0.0089
+      }
+    },
+    "2023": {
+      "funding": 0.0501,
+      "dividende": {
+        "sp_500": 0.015,
+        "nasdaq_100": 0.0072,
+        "nasdaq_comp": 0.0066
+      }
+    },
+    "2024": {
+      "funding": 0.0515,
+      "dividende": {
+        "sp_500": 0.0124,
+        "nasdaq_100": 0.008,
+        "nasdaq_comp": 0.006
+      }
+    },
+    "2025": {
+      "funding": 0.0424,
+      "dividende": {
+        "sp_500": 0.0115,
+        "nasdaq_100": 0.009,
+        "nasdaq_comp": 0.005
+      }
+    },
+    "2026": {
+      "funding": 0.0364,
+      "dividende": {
+        "sp_500": 0.0106,
+        "nasdaq_100": 0.0,
+        "nasdaq_comp": 0.0
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import re
 import os
+from math import isfinite
 import pandas as pd
 
 from obcasno_pogosti_fajli.csv_operacije import *
@@ -61,15 +62,18 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     output_file: str  = "rezultati_investicije.csv",
 ):
     """
-    Funkcija prejme tri vrste podatkov (osnovne, 2x, 3x) v taki obliki;
-    Nasdaq-100, 1986-2025
-    Date, close-price
-    1986-01-02,131.250
-    1986-01-03,130.550
-    1986-01-06,130.350
-    1986-01-07,132.790
-    Vsak indeks je v taki obliki seveda, vsi podatki.
-    In funkcija ustvari en csv v katerem so vsi donosi za vsakega. Na podlagi zacetnega datuma in koncnega
+    Prejme pripravljene serije istega indeksa za 1x, 2x in 3x:
+    Nasdaq-100 2x, 2025
+    Date,Close,Daily Return
+    2025-01-02,100,0
+    2025-01-03,102,0.02
+    2025-01-06,101.49,-0.005
+
+    Tretji stolpec že vsebuje končni dnevni donos v decimalkah:
+    0.02 pomeni 2 %. Vključuje vzvod, dividende in funding.
+    Donos preberemo neposredno, brez ponovnega računanja iz cen,
+    brez deljenja s 100 in brez zaokroževanja pred izračunom naložbe.
+    Funkcija ustvari CSV dnevnih vrednosti naložbe za izbrano obdobje.
 
     To funkcija ustvari
     date, A,B,C
@@ -80,11 +84,6 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     1928-01-09,990.91,981.67,972.25
 
     """
-
-    # dnevne spremembe (nizi s percenti)
-    spremembe1 = izracun_dnevnih_sprememb(podatki1)
-    spremembe2 = izracun_dnevnih_sprememb(podatki2)
-    spremembe3 = izracun_dnevnih_sprememb(podatki3)
 
     # poiščemo indekse intervala v vseh treh
     s1 = next(i for i, row in enumerate(podatki1) if row[0] == datum_zacetka)
@@ -131,14 +130,22 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
             st_vplacil += 1
             current_month = date_obj.month
 
-        # % → decimal
-        ch1 = round(float(spremembe1[i1][2].replace("%", "")), 2) / 100.0
-        ch2 = round(float(spremembe2[i2][2].replace("%", "")), 2) / 100.0
-        ch3 = round(float(spremembe3[i3][2].replace("%", "")), 2) / 100.0
+        # Končni dnevni donosi so že shranjeni v tretjem stolpcu: 0.02 = 2 %.
+        try:
+            change1 = float(podatki1[i1][2])
+            change2 = float(podatki2[i2][2])
+            change3 = float(podatki3[i3][2])
+        except (IndexError, TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Na datum {date_str} vse tri serije potrebujejo tretji stolpec "
+                "z dnevnim donosom v decimalkah (npr. 0.02, brez %)."
+            ) from exc
+        if not all(isfinite(change) for change in (change1, change2, change3)):
+            raise ValueError(f"Dnevni donosi na datum {date_str} morajo biti končna števila.")
 
-        inv1 *= (1.0 + ch1)
-        inv2 *= (1.0 + ch2)
-        inv3 *= (1.0 + ch3)
+        inv1 *= (1.0 + change1)
+        inv2 *= (1.0 + change2)
+        inv3 *= (1.0 + change3)
 
         results.append([date_str, round(inv1, 2), round(inv2, 2), round(inv3, 2)])
 
@@ -169,7 +176,10 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     na konec izbrane CSV datoteke v mapo 'testing/'. To nam omogoči 
     kasnejšo primerjavo vseh intervalov med seboj.
     
-    @param podatki: 2D array (list of lists) zgodovinskih podatkov izbranega indeksa
+    @param podatki: seznam vrstic pripravljene serije: opis, glava in nato
+        [datum, vrednost, dnevni_donos]. Tretji stolpec je decimalni donos
+        (0.02 = 2 %), ki že vključuje vzvod, dividende in funding.
+        Donos preberemo neposredno; ne računamo ga ponovno iz cen.
     @param initial_investment: Začetni enkratni vložek
     @param monthly_investment: Mesečni vložek ob začetku vsakega meseca
     @param datum_zacetka: Datum začetka simulacije (format 'YYYY-MM-DD')
@@ -181,8 +191,6 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
     # ampak tega verjetno ne bi smel upostevat, idk
     # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
-
-    podatki_daily_changes = izracun_dnevnih_sprememb(podatki)
 
      # Nov vnos za mesečno investicijo
     investment = initial_investment
@@ -201,10 +209,17 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
 
     # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
     for i in range(vrstica_zacetka, vrstica_konca + 1):
-        # odstranimo %, da pac lahko delamo z podatkom ane
-        daily_change = podatki_daily_changes[i][2].replace("%", "")
-        # Pretvori v decimalno vrednost
-        daily_change_cifra = round(float(daily_change), 2) / 100
+        # Donos je že pripravljen v tretjem stolpcu: 0.02 pomeni 2 %.
+        # Ne delimo s 100 in ne zaokrožujemo pred izračunom naložbe.
+        try:
+            daily_change_cifra = float(podatki[i][2])
+        except (IndexError, TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Na datum {podatki[i][0]} serija potrebuje tretji stolpec "
+                "z dnevnim donosom v decimalkah (npr. 0.02, brez %)."
+            ) from exc
+        if not isfinite(daily_change_cifra):
+            raise ValueError(f"Dnevni donos na datum {podatki[i][0]} mora biti končno število.")
 
         # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
         date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
@@ -254,4 +269,3 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
 
 
  # ------------------------------------------------------
-
