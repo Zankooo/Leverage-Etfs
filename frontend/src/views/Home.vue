@@ -143,10 +143,12 @@ async function izracunaj() {
     // Šele zdaj pokažemo rezultate
     backendResponse.value = "true" 
 
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Poskus povezave spodletel:", error)
     alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")
-  } finally {
+  } 
+  finally {
     isLoading.value = false
   }
 }
@@ -396,23 +398,8 @@ const showGraph = (index: number) => {
                   <!-- Button column klik na gumb GRAF -->
                   <div class="shrink-0">
                     <button
+                      class="w-full translate-x-0 cursor-pointer rounded-[14px] border-2 border-[#10B98130] bg-[#10B98120] px-7 py-3 text-[0.8125rem] font-black tracking-[0.05em] text-[#059669] uppercase transition-[background-color,border-color,translate] duration-200 ease-[ease] hover:translate-x-1 hover:border-[#10B98150] hover:bg-[#10B98130]"
                       @click="showGraph(index)"
-                      style="
-                        background: #10B98120;
-                        color: #059669;
-                        font-weight: 900;
-                        padding: 12px 28px;
-                        border-radius: 14px;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                        font-size: 0.8125rem;
-                        border: 2px solid #10B98130;
-                        width: 100%;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
-                      "
-                      onmouseover="this.style.background='#10B98130'; this.style.borderColor='#10B98150'; this.style.transform='translateX(4px)'"
-                      onmojuseout="this.style.background='#10B98120'; this.style.borderColor='#10B98130'; this.style.transform='translateX(0)'"
                     >
                       Graf
                     </button>

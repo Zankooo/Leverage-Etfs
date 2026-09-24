@@ -16,6 +16,7 @@ const navItems = [
 
 <template>
   <div class="min-h-screen flex flex-col bg-[#F8F9FA] text-[#1A1A1A] font-sans">
+    
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
 
