@@ -159,69 +159,22 @@ def izbrisi_nezelene_stoplce(podatki):
 
 def naredi_leverage_iz_osnovnih_podatkov(podatki):
     """
-    Iz osnovnih cen ustvari serijo z vzvodom, dividendami in fundingom.
+    Po izbiri indeksa in vzvoda ustvari serijo in upošteva
+    - dividende,
+    - fundingom (financiranje)
+    Ta dva gresta na podlagi jsona -> letne_stopnje
+    - in provizijo -> ta je pa hard codana v tej funkciji
 
-    PREJME SAMO PODATKE
-        Seznam vrstic osnovnega CSV-ja (brez reinvestiranih dividend):
-            [
-                ["SP-500", "2024-2025"],
-                ["Date", "Close"],
-                ["2024-01-05", "100"],
-                ["2024-01-08", "101"],
-            ]
-        Prva vrstica je samo opis; iz nje ne prepoznavamo indeksa.
-        Datumi morajo naraščati, cene morajo biti pozitivne.
-        Funkcija vhodnega seznama ne spreminja.
+    Args:
+        podatki (list[list]): CSV-vrstice: opis, glava, nato [datum, cena].
+            Datumi YYYY-MM-DD morajo naraščati, cene morajo biti pozitivne
+            in brez reinvestiranih dividend. Vhodnih podatkov ne spreminja.
 
-    DRUGI PODATKI
-        Indeks izbereš z input(): 1 = S&P 500, 2 = Nasdaq 100,
-        3 = Nasdaq Composite. Nato izbereš še vzvod (1, 2 ali 3).
-        Letne stopnje sama prebere iz letne_stopnje.json v isti mapi.
-        Funding je skupen, dividend yield pa izbere glede na indeks.
-        Stopnje so že decimalke: 0.05 pomeni 5 %; ne delimo še enkrat s 100.
-        Manjkajoče leto ali null sproži ValueError z navedbo leta in podatka.
-
-    ALGORITEM
-        1. Prvi datum: vrednost = prva osnovna cena, dnevni donos = 0.0.
-        2. Za vsako naslednjo vrstico:
-           a) donos_indeksa = (trenutna_cena - prejsnja_cena) / prejsnja_cena
-           b) Preštej koledarske dni od prejšnjega do trenutnega datuma.
-              Petek → ponedeljek pomeni 3 dni. Interval [prejšnji, trenutni)
-              ob novem letu razdeli: 31. 12. → 2. 1. je en dan starega leta
-              in en dan novega leta. Za vsak del vzemi stopnji njegovega leta.
-           c) Prispevek vsakega dela = letna stopnja * dnevi / (365 ali 366).
-              Seštej prispevke dividend in posebej prispevke fundinga.
-           d) dnevni_donos = vzvod * (donos_indeksa + dividende_obdobja)
-                             - (vzvod - 1) * funding_obdobja
-           e) nova_vrednost = prejsnja_vrednost_serije * (1 + dnevni_donos)
-           f) Shrani datum, novo vrednost in KONČNI dnevni donos.
-        3. Vrni seznam za zapis v CSV; funkcija sama ne piše datoteke.
-
-        Dividende so enakomerno razporejen letni približek in se reinvestirajo.
-        Funding se obračuna na dodatno izpostavljenost: 0 pri 1x, 1 pri 2x,
-        2 pri 3x. Model uporablja koledarsko osnovo 365/366 za obe stopnji.
-        Donosov in vrednosti ne zaokrožujemo. Pri izgubi 100 % ali več se
-        računanje ustavi, ker model ne more nadaljevati s pozitivno serijo.
-
-    VRNE
-        Nov seznam, ki ohrani prvo opisno vrstico in ji doda oznako vzvoda:
-            [
-                ["SP-500 2x", "2024-2025"],
-                ["Date", "Close", "Daily Return"],
-                ["2024-01-05", 100.0, 0.0],
-                ...
-            ]
-        Tretji stolpec že vsebuje vzvod, dividende in funding.
-        0.02 pomeni 2 % donosa. DCA ga lahko prebere s float(vrstica[2]),
-        brez ponovnega izračuna sprememb iz cen in brez deljenja s 100.
+    Returns:
+        list[list]: Opis z oznako vzvoda, glava in vrstice
+            [datum, vrednost, donos]. Donos vključuje vse stroške in je
+            decimalen (0.02 = 2 %); prvi je 0.0. CSV-ja ne zapisuje.
     """
-
-
-    """
-    še management fee ki je nevem 0,8% na leto al kok in morda spread še. 
-    """
-
-
     # Preverimo, da imamo opis, glavo in vsaj eno ceno.
     if len(podatki) < 3 or not podatki[0]:
         raise ValueError("Potrebujemo opis indeksa, glavo in vsaj eno vrstico s ceno.")
@@ -240,7 +193,7 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
             raise ValueError(f"Datumi morajo strogo naraščati; preveri vrstico {st_vrstice}.")
         vrstice.append((datum, cena))
 
-    # Uporabnik izbere indeks; ta izbira določa dividend yield iz JSON-a.
+    # Izbira indeksa določa dividend yield iz JSON-a in letno provizijo.
     indeksi = {"1": "sp_500", "2": "nasdaq_100", "3": "nasdaq_comp"}
     izbira = input("Izberi indeks (1 = S&P 500, 2 = Nasdaq 100, 3 = Nasdaq Composite): ").strip()
     if izbira not in indeksi:
@@ -254,6 +207,14 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
         raise ValueError("Vzvod mora biti 1, 2 ali 3.") from exc
     if vzvod not in (1, 2, 3):
         raise ValueError("Vzvod mora biti 1, 2 ali 3.")
+
+    # Decimalne letne provizije za 1x, 2x in 3x; 0.0007 pomeni 0,07 %.
+    provizije = {
+        "sp_500": {1: 0.0007, 2: 0.006, 3: 0.0075},
+        "nasdaq_100": {1: 0.003, 2: 0.006, 3: 0.0075},
+        "nasdaq_comp": {1: 0.003, 2: 0.006, 3: 0.0075},
+    }
+    letna_provizija = provizije[indeks][vzvod]
 
     # JSON preberemo enkrat, ne za vsak trgovalni dan posebej.
     with POT_LETNE_STOPNJE.open(encoding="utf-8") as f:
@@ -296,6 +257,7 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
         donos_indeksa = (cena - prejsnja_cena) / prejsnja_cena
         funding_obdobja = 0.0
         dividende_obdobja = 0.0
+        provizija_obdobja = 0.0
         zacetek_dela = prejsnji_datum
         # Obdobje čez novo leto razdelimo, da vsak del dobi stopnji svojega leta.
         while zacetek_dela < datum:
@@ -306,10 +268,16 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
             delez_leta = (konec_dela - zacetek_dela).days / (366 if isleap(leto) else 365)
             funding_obdobja += funding * delez_leta
             dividende_obdobja += dividende * delez_leta
+            provizija_obdobja += letna_provizija * delez_leta
             zacetek_dela = konec_dela
 
         # Donos in dividende pomnožimo z vzvodom; funding odštejemo za izposojeni del.
-        dnevni_donos = vzvod * (donos_indeksa + dividende_obdobja) - (vzvod - 1) * funding_obdobja
+        # Provizija izbranega ETF-ja se odšteje enkrat od donosa celotne serije.
+        dnevni_donos = (
+            vzvod * (donos_indeksa + dividende_obdobja)
+            - (vzvod - 1) * funding_obdobja
+            - provizija_obdobja
+        )
         if not isfinite(dnevni_donos) or dnevni_donos <= -1:
             raise ValueError(f"Serije ni mogoče nadaljevati: donos na {datum} je {dnevni_donos}.")
         # Končni donos uporabimo na prejšnji vrednosti pripravljene serije.
@@ -335,11 +303,11 @@ def ustvari_nov_csv_file(podatki):
     print("Funkcija ki ustvari nov csv file laufa!")
     ime_novega = input("Kako naj bo ime novega csv file-a? ")
     # Izhodna mapa je vedno v backendu, ne glede na mapo zagona skripte.
-    output_dir = Path(__file__).resolve().parents[1] / "podatki_ustvarjeni"
+    output_dir = Path(__file__).resolve().parents[1] / "podatki-pripravljeni-za-leverage-ustvarit"
     output_dir.mkdir(parents=True, exist_ok=True)
     file_path = output_dir / f"{ime_novega}.csv"
     with open(file_path, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerows(podatki)
     print(f"Datoteka '{file_path}' je bila uspešno ustvarjena! ✅")
-    print(f"Dodana je bila v directory: 'podatki_ustvarjeni'")
+    print(f"Dodana je bila v directory: 'podatki-pripravljeni-za-leverage-ustvarit'")
