@@ -12,6 +12,8 @@ Rezultati vključujejo primerjavo končnih vrednosti, deleže zmag posameznih st
 
 Model upošteva **dividende, funding, upravljalske provizije in volatility decay**. Predpostavke in omejitve zgodovinske simulacije so opisane v [metodologiji](docs/methodology.md).
 
+![Primer zgodovinske simulacije strategij 1x, 2x in 3x](docs/assets/graf.png)
+
 ## Dokumentacija
 
 **👉 Začni tukaj: [odpri začetno stran dokumentacije](docs/index.md).**
