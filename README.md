@@ -1,31 +1,27 @@
 # Leverage ETFs
 
-Aplikacija za zgodovinsko primerjavo donosov osnovnega indeksa ter simuliranih 2x in 3x vzvodnih različic pri začetni investiciji in rednih mesečnih vložkih.
+**Razišči, kako bi se tvoja naložba skozi zgodovino razvijala brez vzvoda, z 2x ali s 3x vzvodom.** Leverage ETFs primerja te strategije ob enakem začetnem vložku, mesečnih vplačilih in dolžini investiranja. Za zelo zgodovino.
 
-Podprti indeksi:
+Izbereš **S&P 500, Nasdaq 100 ali Nasdaq Composite** in nastaviš svoje vložke. Aplikacija nato preveri več zgodovinskih obdobij z različnimi začetnimi leti, da lahko raziščeš:
 
-- S&P 500
-- Nasdaq 100
-- Nasdaq Composite
+- **Kdaj je vzvod prinesel prednost** pred strategijo brez vzvoda.
+- **Kako sta na rezultat vplivala začetek in dolžina investiranja.**
+- **Kakšne padce in okrevanja je naložba doživela** ob rednih vplačilih.
+
+Rezultati vključujejo primerjavo končnih vrednosti, deleže zmag posameznih strategij in interaktivne grafe razvoja naložbe.
+
+Model upošteva **dividende, funding, upravljalske provizije in volatility decay**. Predpostavke in omejitve zgodovinske simulacije so opisane v [metodologiji](docs/methodology.md).
 
 ## Dokumentacija
 
-Celotna dokumentacija je razdeljena po temah v mapi [`docs/`](docs/index.md):
+**👉 Začni tukaj: [odpri začetno stran dokumentacije](docs/index.md).**
 
-- [pregled aplikacije](docs/overview.md);
-- [arhitektura](docs/architecture.md);
-- [namestitev in zagon](docs/installation.md);
-- [metodologija in omejitve](docs/methodology.md);
-- [osnove ETF-jev in vzvoda](docs/etf-basics.md);
-- [frontend](docs/frontend.md), [backend](docs/backend.md) in [API](docs/api.md);
-- [viri podatkov](docs/data-sources.md).
+Tam najdeš predstavitev aplikacije in kazalo vseh tem, vključno z navodili za namestitev in zagon.
 
-Lokalno dokumentacijo zaženeš z:
+Za spletni prikaz dokumentacije iz korenske mape projekta zaženi:
 
 ```bash
 mkdocs serve -a 127.0.0.1:8001
 ```
 
 Nato odpri [http://127.0.0.1:8001](http://127.0.0.1:8001).
-
-> Projekt je namenjen zgodovinski analizi in izobraževanju. Rezultati niso investicijsko priporočilo in ne napovedujejo prihodnjih donosov.

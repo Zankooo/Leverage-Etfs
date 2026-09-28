@@ -2,6 +2,8 @@
 
 Leverage ETFs na zgodovinskih podatkih pokaže, kako bi se tvoja naložba z začetnim vložkom in mesečnimi vplačili razvijala pri vzvodih 1x, 2x in 3x, ter rezultate predstavi s primerjavami in interaktivnimi grafi.
 
+Podprti indeksi so **S&P 500, Nasdaq 100 in Nasdaq Composite**.
+
 ## Začni tukaj
 
 - [O aplikaciji](overview.md) – kaj aplikacija dela in kako so prikazani rezultati.
@@ -18,6 +20,17 @@ Leverage ETFs na zgodovinskih podatkih pokaže, kako bi se tvoja naložba z zač
 | [Frontend](frontend.md) | Vue 3, routing, stanje in prikaz rezultatov |
 | [Backend](backend.md) | FastAPI, izračuni, CSV-datoteke in grafi |
 | [API](api.md) | Endpointi, zahteve in odgovori |
+
+## Zagon dokumentacije
+
+Iz korenske mape projekta zaženi:
+
+```bash
+mkdocs serve -a 127.0.0.1:8001
+```
+
+Nato odpri [dokumentacijo v brskalniku](http://127.0.0.1:8001).
+Navodila za zagon celotne aplikacije so na strani [Namestitev in zagon](installation.md).
 
 ## Lokalni naslovi
 
