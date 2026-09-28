@@ -1,42 +1,65 @@
-# O aplikaciji
+# Leverage ETFS - analiza zgodovinskih donosov
 
-Leverage ETFs je aplikacija za zgodovinsko analizo investicijskih strategij. Primerja osnovni indeks s simuliranima 2x in 3x vzvodnima različicama.
+## Predstavitev aplikacije
 
-## Namen projekta
-Projekt je namenjen raziskovanju vpliva vzvoda, volatilnosti in dolžine naložbenega obdobja. Ne uporablja se za napovedovanje prihodnosti in ne predstavlja investicijskega priporočila.
+**Leverage ETFs ti pomaga raziskati, kaj bi različne stopnje vzvoda pomenile za tvojo naložbo skozi čas.** Z lastnim začetnim vložkom in mesečnimi vplačili lahko primerjaš strategije 1x, 2x in 3x ter spremljaš njihov razvoj na zgodovinskih podatkih.
 
-
-## Vhodni podatki
-
-Uporabnik izbere:
-
-- začetno investicijo;
-- mesečni vložek;
-- dolžino obdobja v letih;
-- enega izmed podprtih indeksov.
-
-Podprti indeksi so S&P 500, Nasdaq 100 in Nasdaq Composite.
-
-![Obrazec za vnos parametrov](assets/forma.png)
-
-## Kaj aplikacija izračuna
-
-Za vse razpoložljive zgodovinske intervale izbrane dolžine aplikacija:
-
-1. simulira začetni in redne mesečne vložke;
-2. izračuna končno vrednost strategij 1x, 2x in 3x;
-3. strategije razvrsti od najboljše do najslabše;
-4. izračuna razliko med njimi;
-5. prešteje, kolikokrat je bila posamezna strategija najboljša.
-
-Rezultat je povzetek deležev zmag in seznam primerjav po obdobjih.
-
-![Prikaz rezultatov simulacije](assets/prikaz-vsebine.png)
-
-## Grafi
-
-Za vsak zgodovinski interval backend ustvari podroben HTML-graf. Frontend ga prikaže v modalnem oknu, ne da bi uporabnik zapustil aplikacijo.
-
-![Graf gibanja investicije](assets/graf.png)
+Aplikacija poveže končne rezultate z zgodbo za njimi: kdaj je vzvod prinesel prednost, kako globoki so bili vmesni padci in koliko je na izid vplivalo leto začetka investiranja. Pregledne primerjave in interaktivni grafi omogočajo, da razlike med strategijami raziščeš na konkretnih primerih.
 
 
+
+## Kaj lahko raziščeš
+
+- **Vpliv vzvoda:** kako so se rezultati 2x in 3x strategij razlikovali od strategije brez vzvoda.
+- **Pomen časa:** kako so se rezultati razlikovali glede na dolžino investiranja in začetno leto.
+- **Redno vlaganje:** kako se je naložba razvijala ob začetnem vložku in mesečnih vplačilih.
+- **Pot do končnega rezultata:** kakšna rast, nihanja in padci so spremljali posamezno strategijo.
+
+Za razlago osnovnih pojmov preberi [osnove ETF-jev in vzvoda](etf-basics.md).
+
+## Nastavi svojo simulacijo
+
+Za zagon aplikacije na svojem računalniku sledi [navodilom za namestitev in zagon](installation.md).
+
+Izbereš enega izmed treh indeksov — **S&P 500, Nasdaq 100 ali Nasdaq Composite** — ter določiš:
+
+- začetni vložek;
+- mesečno vplačilo;
+- dolžino investiranja v letih.
+
+Za vse tri strategije se uporabijo enaki vložki in enako obdobje, kar omogoča neposredno primerjavo njihovih rezultatov za zgodovino.
+
+![Obrazec za nastavitev indeksa, vložkov in dolžine investiranja](assets/forma.png)
+
+## Primerjaj rezultate skozi zgodovino
+
+Aplikacija izbrano dolžino investiranja preveri v več zgodovinskih obdobjih. Začetek premika po letih in vključi obdobja, za katera je na voljo dovolj podatkov. Tako lahko na primer primerjaš več desetletnih naložb z različnimi začetnimi leti.
+
+Izvor podatkov za posamezne indekse je predstavljen na strani [Viri podatkov](data-sources.md).
+
+Za vsako obdobje prikaže končne vrednosti strategij, njihovo razvrstitev in odstotne razlike med njimi. Skupni povzetek pokaže, kolikokrat je posamezna strategija dosegla najvišjo končno vrednost in kolikšen delež analiziranih obdobij to predstavlja.
+
+![Povzetek uspešnosti strategij in primerjava rezultatov po obdobjih](assets/prikaz-vsebine.png)
+
+## Oglej si razvoj naložbe
+
+S klikom na **Graf** ob posameznem obdobju odpreš interaktivni prikaz gibanja vseh treh strategij za želeno obdobje. Primerjaš lahko njihovo rast, vmesne padce in okrevanja ter preveriš, kako so dosegle prikazano končno vrednost.
+
+![Interaktivni graf razvoja naložbe pri strategijah 1x, 2x in 3x](assets/graf.png)
+
+## Kaj je vključeno v model
+
+Simulirane serije vključujejo reinvestiranje dividend, stroške financiranja vzvoda in upravljalske provizije. Donosi se sestavljajo dnevno, zato se v rezultatih odraža tudi vpliv nihajnosti oziroma volatility decay.
+
+Projekt je namenjen raziskovanju zgodovinskih scenarijev. Rezultati predstavljajo simulacijo, ne dejanske zgodovine posameznega ETF-ja ali napovedi prihodnjih donosov. Način izračuna, uporabljene predpostavke in omejitve so opisani v [metodologiji](methodology.md).
+
+## Tehnična dokumentacija
+
+Za podrobnejši pregled delovanja aplikacije:
+
+- [Arhitektura](architecture.md) — sestavni deli aplikacije in povezave med njimi.
+- [Frontend](frontend.md) — uporabniški vmesnik, obrazec in prikaz rezultatov.
+- [Backend](backend.md) — obdelava podatkov, izračuni in priprava grafov.
+- [API](api.md) — komunikacija med uporabniškim vmesnikom in strežnikom.
+
+Celoten pregled dokumentacije najdeš na [začetni strani](index.md).
