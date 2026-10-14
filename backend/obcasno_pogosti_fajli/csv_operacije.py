@@ -163,7 +163,7 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
     - dividende,
     - fundingom (financiranje)
     Ta dva gresta na podlagi jsona -> letne_stopnje
-    - in provizijo -> ta je pa hard codana v tej funkciji
+    - in provizijo (TER) -> ta je pa hard codana v tej funkciji
 
     Args:
         podatki (list[list]): CSV-vrstice: opis, glava, nato [datum, cena].

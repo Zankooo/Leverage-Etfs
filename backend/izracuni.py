@@ -7,46 +7,6 @@ from obcasno_pogosti_fajli.csv_operacije import *
 # karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
 # dogovorjen format podatkov oz csv.ja
 
-# to funkcijo verjetno najbolje rabis v obcasno_pogosti_fajli
-# ko ustvarjas primerno strukturo 
-def izracun_dnevnih_sprememb(podatki):
-    """
-    Funkcija, ki izracuna dnevne spremembe indeksa
-    :param list of lists (dogovorjen format)
-    :return list of lists tak kot je bil podan in mu doda dnevne spremembe "daily changes"
-    """
-    # Dodamo stolpec 'Daily Change (%)' prvo vrstico
-    result = [podatki[0]]
-    # Inicializacija prve vrstice brez spremembe
-    result.append(podatki[1] + ["Daily Change (%)"])  # Prvi dan ni spremembe
-    # Drugi dan nastavim na '0%', ker pac je prvi dan
-    result.append(podatki[2] + ['0%'])
-    # Izračun spremembe za vsak naslednji dan
-    for i in range(3, len(podatki)):
-        trenutni_tecaj = float(podatki[i][1])
-        dan_prej_tecaj = float(podatki[i - 1][1])
-        daily_change = ((trenutni_tecaj - dan_prej_tecaj) / dan_prej_tecaj) * 100
-        sprememba_procentualno = f"{'+' if daily_change > 0 else ''}{daily_change}%"
-        result.append(podatki[i] + [sprememba_procentualno])
-    return result
-
-
-
-
-#----------- POMOZNE FUNKCIJE KI JIH KLIČEMO ZNOTRAJ DRUGIH FUNKCIJ-----------
-
-def is_float(value):
-    """Notranja funkcija; Preveri, ali je podana vrednost veljaven float."""
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
-
-
-
-# -------------------------- spremenjena funkcija dca za testing
-# --------------------------------------------
 
 # ta funkcija tocno zracuna isto k kot funkcija 'izracun dca metoda' le da vse tri 1x in 2x in 3x naredi
 # in jih da v locen csv!!
