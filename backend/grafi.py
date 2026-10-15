@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.express as px
-import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 from typing import List, Optional, Dict
 
 # to dela perfektno, 
@@ -71,6 +70,10 @@ def narisi_logaritmicne_grafe(
             return f"<b style='font-weight:700; color:{int_color}'>{s_eu}</b>"
 
     df = pd.read_csv(csv_path, parse_dates=["date"])
+    # Enako kot DCA: začetni vložek, nato vplačilo ob prehodu v nov mesec.
+    meseci = df["date"].dt.month
+    stevilo_vplacil = (meseci != meseci.shift()).cumsum() - 1
+    skupna_vplacila = zacetna_investicija + stevilo_vplacil * mesecna_investicija
 
     if columns is None:
         y_cols = [c for c in df.columns if c.lower() != "date"]
@@ -145,6 +148,18 @@ def narisi_logaritmicne_grafe(
         fig.data[i].customdata = values_html
         fig.data[i].hovertemplate = "<b>%{fullData.name}</b>: %{customdata}<extra></extra>"
 
+    # Med vplačili ostane črta vodoravna; dvigne se na dan vplačila.
+    # Pri ničelnem vložku uporabimo isto omejitev logaritmične osi kot zgoraj.
+    fig.add_trace(go.Scatter(
+        x=df["date"],
+        y=skupna_vplacila.clip(lower=0.01).tolist(),
+        name="Skupaj investirano",
+        mode="lines",
+        line=dict(color="rgb(140,140,140)", width=2, shape="hv"),
+        customdata=[fmt_eu_intbold_html(v, 2) + dolar for v in skupna_vplacila],
+        hovertemplate="<b>%{fullData.name}</b>: %{customdata}<extra></extra>",
+    ))
+
     start_date_str = pd.to_datetime(df["date"].min()).strftime("%d.%m.%Y")
     end_date_str   = pd.to_datetime(df["date"].max()).strftime("%d.%m.%Y")
 
@@ -194,4 +209,3 @@ def narisi_logaritmicne_grafe(
     html = inject_favicon(html, emoji="🌳", bg=None)  # emoji lahko zamenjaš (npr. "📊", "🚀"); bg="#fff" doda belo ozadje
     pathlib.Path(output_html).write_text(html, encoding="utf-8")
     # webbrowser.open(pathlib.Path(output_html).resolve().as_uri())
-
