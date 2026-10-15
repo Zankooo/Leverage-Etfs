@@ -68,7 +68,7 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     vsota_mesecnih_vlozkov = 0.0
     st_vplacil = 0
 
-    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+    current_month = datum_zacetka[:7]
     results = []
 
     for k in range(len1):
@@ -79,16 +79,16 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
         if podatki2[i2][0] != date_str or podatki3[i3][0] != date_str:
             raise ValueError(f"Datumi se ne ujemajo pri k={k}: {date_str} vs {podatki2[i2][0]} / {podatki3[i3][0]}")
 
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        mesec = date_str[:7]
 
         # ob prehodu v nov mesec dodamo mesečni vložek vsem trem (vplačilo šteje ENKRAT na serijo)
-        if date_obj.month != current_month:
+        if mesec != current_month:
             inv1 += monthly_investment
             inv2 += monthly_investment
             inv3 += monthly_investment
             vsota_mesecnih_vlozkov += monthly_investment
             st_vplacil += 1
-            current_month = date_obj.month
+            current_month = mesec
 
         # Končni dnevni donosi so že shranjeni v tretjem stolpcu: 0.02 = 2 %.
         try:
@@ -125,7 +125,7 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
 
 
 
-# TA METODA JE FIXERICA KER SE JO KLICE V FOR LOOPU - POTREBNA ZA PRIMERJAVO PO LETIH 
+# TA METODA JE FIXERICA KER SE JO KLICE V FOR LOOPU - POTREBNA ZA PRIMERJAVO MESEČNIH ZAČETKOV
 def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca, ime_novega_filea):
     """
     Simulira DCA (Dollar Cost Averaging) investiranje za TOČNO DOLOČEN interval.
@@ -147,7 +147,7 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     @param ime_novega_filea: Ime ciljne datoteke (npr. 'osnoven', 'vzvod-2x'), v katero se prilepi nov rezultat
     @return: 0 (Rezultat se ne vrača, temveč zapiše neposredno v CSV)
     """
-    # ta funkcija je misljena da se jo klice v mainu v for loopu toliko koliko je intervalov in da se ji podaja razlicne datume pridobljena iz intervali letni
+    # ta funkcija je misljena da se jo klice v mainu v for loopu toliko koliko je intervalov in da se ji podaja razlicne datume pridobljena iz mesečnih intervalov
     #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
     # ampak tega verjetno ne bi smel upostevat, idk
     # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
@@ -160,7 +160,7 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     # zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
     
     # Nastavimo začetni mesec za mesečne vložke
-    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+    current_month = datum_zacetka[:7]
 
     # to rabimo da lahko pozenemo loop cez vse dneve
     vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
@@ -182,13 +182,13 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
             raise ValueError(f"Dnevni donos na datum {podatki[i][0]} mora biti končno število.")
 
         # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
-        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+        mesec = podatki[i][0][:7]
 
         # Če je nov mesec, dodamo mesečni vložek
-        if date.month != current_month:
+        if mesec != current_month:
             investment = investment + monthly_investment
             mesecni_vlozki_vsota = mesecni_vlozki_vsota + monthly_investment
-            current_month = date.month
+            current_month = mesec
 
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)

@@ -41,11 +41,13 @@ Oba simulacijska endpointa sprejmeta enako JSON-telo:
 | `zacetna_investicija` | integer | Začetni vložek v evrih |
 | `mesecni_vlozek` | integer | Redni mesečni vložek v evrih |
 | `indeks` | string | `S&P 500`, `Nasdaq 100` ali `Nasdaq Composite` |
-| `interval` | integer | Dolžina simulacije v letih; frontend dovoljuje 1–50 |
+| `interval` | integer | Dolžina simulacije v letih; 1–50; nov začetek vsak mesec |
 
 ## `POST /primerjava_vrstic`
 
 Izvede simulacije in vrne povzetek ter razvrstitev 1x, 2x in 3x strategije za vsak zgodovinski interval.
+
+Intervali se začnejo na prvem razpoložljivem trgovalnem dnevu vsakega meseca. Konec je prvi trgovalni dan na ali po obletnici začetka. Vključena so le celotna obdobja. Polje `graph_title` poveže rezultat s poljem `title` njegovega grafa.
 
 Poenostavljen primer odgovora:
 
@@ -65,6 +67,7 @@ Poenostavljen primer odgovora:
   "rows": [
     {
       "datum": "1927-12-30-1942-12-30",
+      "graph_title": "1927-12-30--1942-12-30",
       "best": {
         "file": "vzvod-2x.csv",
         "compare_value": 25000.0,
@@ -108,3 +111,5 @@ Pot do statično objavljenega HTML-grafa. Frontend jo uporablja kot `src` za `if
 ## Napake
 
 Če telo zahteve ne ustreza Pydantic modelu, FastAPI običajno vrne status `422 Unprocessable Entity` s podrobnostmi validacije. Napake med samim izračunom trenutno nimajo posebnega aplikacijskega formata in se lahko vrnejo kot splošna strežniška napaka.
+
+Če za izbrano število let ni dovolj zgodovine ali se datumi treh serij ne ujemajo, oba simulacijska endpointa vrneta `422` z razlago v polju `detail`.

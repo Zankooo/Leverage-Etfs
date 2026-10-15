@@ -57,6 +57,7 @@ const isFormValid = computed(function () {
   return initialInvestment.value !== '' &&
          monthlyContribution.value !== '' &&
          selectedInterval.value != null &&
+         Number.isInteger(Number(selectedInterval.value)) &&
          Number(selectedInterval.value) >= 1 &&
          Number(selectedInterval.value) <= 50
 })
@@ -146,7 +147,8 @@ async function izracunaj() {
   } 
   catch (error) {
     console.error("Poskus povezave spodletel:", error)
-    alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")
+    const detail = axios.isAxiosError(error) ? error.response?.data?.detail : null
+    alert(typeof detail === 'string' ? detail : "Prisotna je težava z backendom ali pa ne teče na portu 8000!")
   } 
   finally {
     isLoading.value = false
@@ -154,12 +156,10 @@ async function izracunaj() {
 }
 
 // ta funkcija se izvede kot clovek kliknen na gumb graf
-const showGraph = (index: number) => {
-  if (grafi.value[index]) {
-    // Funkcija izbere URL ustreznega grafa, 
-    
-    // ta url se nahaja v odgovoru ki ga da backend
-    selectedGraphUrl.value = grafi.value[index].url
+const showGraph = (graphTitle: string) => {
+  const graph = grafi.value.find(item => item.title === graphTitle)
+  if (graph) {
+    selectedGraphUrl.value = graph.url
     showGraphModal.value = true
   }
 }
@@ -226,7 +226,7 @@ const showGraph = (index: number) => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Interval (leta)</label>
+              <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Dolžina naložbe (leta)</label>
               <input 
                 v-model="selectedInterval"
                 :disabled="isLoading"
@@ -250,7 +250,7 @@ const showGraph = (index: number) => {
           </button>
 
           <p class="text-center text-gray-400 text-sm px-8 leading-relaxed">
-            Opomba: Stran je zasnovana kot "login-page" kartica — sredinsko, čista in osredotočena na vnos.
+            Simulacijo začnemo vsak mesec na prvem razpoložljivem trgovalnem dnevu. Dolžina naložbe je v letih.
           </p>
         </div>
       </div>
@@ -339,8 +339,8 @@ const showGraph = (index: number) => {
               <!-- Results List (Full-width "Rows") -->
               <div class="flex flex-col gap-4">
                 <div 
-                  v-for="(row, index) in tableRows" 
-                  :key="index" 
+                  v-for="row in tableRows"
+                  :key="row.graph_title"
                   class="bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row lg:items-center gap-6"
                 >
                   <!-- Date column -->
@@ -399,7 +399,7 @@ const showGraph = (index: number) => {
                   <div class="shrink-0">
                     <button
                       class="w-full translate-x-0 cursor-pointer rounded-[14px] border-2 border-[#10B98130] bg-[#10B98120] px-7 py-3 text-[0.8125rem] font-black tracking-[0.05em] text-[#059669] uppercase transition-[background-color,border-color,translate] duration-200 ease-[ease] hover:translate-x-1 hover:border-[#10B98150] hover:bg-[#10B98130]"
-                      @click="showGraph(index)"
+                      @click="showGraph(row.graph_title)"
                     >
                       Graf
                     </button>

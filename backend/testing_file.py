@@ -1,61 +1,37 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from csv import reader
+from bisect import bisect_left
 from csv import reader
 import os
 
-def generiraj_intervale_leto(podatki, dolzina_intervala_let):
-    """
-    Funkcija generira intervale za izbrano število let
-    Da nato lahko naredimo testing na teh datumih 
-    :param podatki: List of lists (dogovorjen format, prve 2 vrstice sta naslova): 
-    Nasdaq-composite, 1971-2025
-    Date, Close-price
-    1971-02-05,100.000
-    1971-02-08,100.840
-    1971-02-09,100.760
-    :param dolzina_intervala_let: int, dolžina intervala v letih
-    :return: list of lists [[zacetni_datum, koncni_datum], ...]: 
-    [
-    ['1962-01-02', '1967-01-03']
-    ['1963-01-02', '1968-01-02']
-    ['1964-01-02', '1969-01-02']
-    ['1965-01-04', '1970-01-05']
-    ['1966-01-03', '1971-01-04']
-    ['1967-01-03', '1972-01-03']
-    ['1968-01-02', '1973-01-02']
-    ['1969-01-02', '1974-01-02']
-    ['1970-01-02', '1975-01-02']
-    ['1971-01-04', '1976-01-05']
-    ['1972-01-03', '1977-01-03']
-    ]
-    """
-    # Preskoči naslovne vrstice
-    podatki = podatki[2:]
+def generiraj_intervale_mesec(podatki, dolzina_intervala_let):
+    """Začne simulacijo na prvi razpoložljivi trgovalni dan vsakega meseca.
 
-    # Pretvori v datetime in poišči prvi datum v vsakem letu
-    datumi = [datetime.strptime(row[0], "%Y-%m-%d") for row in podatki]
-    prvi_v_letu = {}
-    for d in datumi:
-        if d.year not in prvi_v_letu:
-            prvi_v_letu[d.year] = d
+    Dolžina ostane v celih letih. Konec je prvi trgovalni dan na ali po
+    obletnici začetka. Obdobja brez dovolj podatkov za konec izpustimo.
+    Vhod ima dve naslovni vrstici in naraščajoče datume YYYY-MM-DD.
+    Tudi prvi, morebitno nepopolni mesec vključimo z razpoložljivim datumom.
+    """
+    if isinstance(dolzina_intervala_let, bool) or not isinstance(dolzina_intervala_let, int) or dolzina_intervala_let < 1:
+        raise ValueError("Dolžina intervala mora biti pozitivno celo število let.")
 
-    # Naredi intervale
+    datumi = [datetime.strptime(row[0], "%Y-%m-%d") for row in podatki[2:]]
+    if any(prejsnji >= trenutni for prejsnji, trenutni in zip(datumi, datumi[1:])):
+        raise ValueError("Datumi morajo strogo naraščati.")
+
+    prvi_v_mesecu = {}
+    for datum in datumi:
+        prvi_v_mesecu.setdefault((datum.year, datum.month), datum)
+
     intervali = []
-    leta = sorted(prvi_v_letu.keys())
-    for leto in leta:
-        start_date = prvi_v_letu[leto]
-        konec_date = start_date + relativedelta(years=dolzina_intervala_let)
-
-        # Poišči prvi datum >= konec_date
-        konec = next((d for d in datumi if d >= konec_date), None)
-        if konec:
-            intervali.append([start_date.strftime("%Y-%m-%d"), konec.strftime("%Y-%m-%d")])
-
+    for zacetek in prvi_v_mesecu.values():
+        obletnica = zacetek + relativedelta(years=dolzina_intervala_let)
+        # Binarno iskanje prepreči ponoven pregled vseh dni za vsak mesec.
+        konec = bisect_left(datumi, obletnica)
+        if konec == len(datumi):
+            break
+        intervali.append([zacetek.strftime("%Y-%m-%d"), datumi[konec].strftime("%Y-%m-%d")])
     return intervali
-
-
-
 
 
 def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
@@ -93,9 +69,9 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
          open(file2, "r", encoding="utf-8") as f2, \
          open(file3, "r", encoding="utf-8") as f3:
 
-        podatki1 = list(reader(f1))
-        podatki2 = list(reader(f2))
-        podatki3 = list(reader(f3))
+        podatki1 = list(reader(f1))[2:]
+        podatki2 = list(reader(f2))[2:]
+        podatki3 = list(reader(f3))[2:]
 
     wins = {
         os.path.basename(file1): {"count": 0, "procent": 0},
@@ -108,7 +84,7 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
 
     rows = min(len(podatki1), len(podatki2), len(podatki3))
 
-    for i in range(1, rows):
+    for i in range(rows):
         try:
             v1 = float(podatki1[i][stolpec])
             v2 = float(podatki2[i][stolpec])
@@ -154,6 +130,7 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
 
         rows_output.append({
             "datum": datum,
+            "graph_title": f"{datum[:10]}--{datum[11:]}",
             "best": best,
             "second": second,
             "third": third,
@@ -181,9 +158,9 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
             return value
 
     summary = {
-        "zacetna_investicija": safe_float(podatki1[1][1]) if len(podatki1) > 1 else None,
-        "vse_mesecne_investicije": safe_float(podatki1[1][2]) if len(podatki1) > 1 else None,
-        "skupaj_investirano": safe_float(podatki1[1][3]) if len(podatki1) > 1 else None,
+        "zacetna_investicija": safe_float(podatki1[0][1]) if podatki1 else None,
+        "vse_mesecne_investicije": safe_float(podatki1[0][2]) if podatki1 else None,
+        "skupaj_investirano": safe_float(podatki1[0][3]) if podatki1 else None,
         "wins": wins,
         "total_compared": total_compared
     }

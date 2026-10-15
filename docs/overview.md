@@ -4,14 +4,14 @@
 
 **Leverage ETFs ti pomaga raziskati, kaj bi različne stopnje vzvoda pomenile za tvojo naložbo skozi čas.** Z lastnim začetnim vložkom in mesečnimi vplačili lahko primerjaš strategije 1x, 2x in 3x ter spremljaš njihov razvoj na zgodovinskih podatkih.
 
-Aplikacija poveže končne rezultate z zgodbo za njimi: kdaj je vzvod prinesel prednost, kako globoki so bili vmesni padci in koliko je na izid vplivalo leto začetka investiranja. Pregledne primerjave in interaktivni grafi omogočajo, da razlike med strategijami raziščeš na konkretnih primerih.
+Aplikacija poveže končne rezultate z zgodbo za njimi: kdaj je vzvod prinesel prednost, kako globoki so bili vmesni padci in koliko je na izid vplival mesec začetka investiranja. Pregledne primerjave in interaktivni grafi omogočajo, da razlike med strategijami raziščeš na konkretnih primerih.
 
 
 
 ## Kaj lahko raziščeš
 
 - **Vpliv vzvoda:** kako so se rezultati 2x in 3x strategij razlikovali od strategije brez vzvoda.
-- **Pomen časa:** kako so se rezultati razlikovali glede na dolžino investiranja in začetno leto.
+- **Pomen časa:** kako so se rezultati razlikovali glede na dolžino investiranja in začetni mesec.
 - **Redno vlaganje:** kako se je naložba razvijala ob začetnem vložku in mesečnih vplačilih.
 - **Pot do končnega rezultata:** kakšna rast, nihanja in padci so spremljali posamezno strategijo.
 
@@ -33,7 +33,9 @@ Za vse tri strategije se uporabijo enaki vložki in enako obdobje, kar omogoča 
 
 ## Primerjaj rezultate skozi zgodovino
 
-Aplikacija izbrano dolžino investiranja preveri v več zgodovinskih obdobjih. Začetek premika po letih in vključi obdobja, za katera je na voljo dovolj podatkov. Tako lahko na primer primerjaš več desetletnih naložb z različnimi začetnimi leti.
+Aplikacija izbrano dolžino investiranja preveri v več zgodovinskih obdobjih. Začetek premika po mesecih in vključi obdobja, za katera je na voljo dovolj podatkov. Tako lahko na primer primerjaš več desetletnih naložb z različnimi začetnimi meseci.
+
+Vsak interval se začne na prvem razpoložljivem trgovalnem dnevu meseca in konča na prvem trgovalnem dnevu na ali po obletnici začetka. Dolžina ostane v letih. Če ni dovolj podatkov za celotno obdobje, se interval izpusti. Tudi začetni nepopolni mesec se vključi s prvim razpoložljivim datumom.
 
 Izvor podatkov za posamezne indekse je predstavljen na strani [Viri podatkov](data-sources.md).
 

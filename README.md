@@ -2,7 +2,7 @@
 
 **Razišči, kako bi se tvoja naložba skozi zgodovino razvijala brez vzvoda, z 2x ali s 3x vzvodom.** Leverage ETFs primerja te strategije ob enakem začetnem vložku, mesečnih vplačilih in dolžini investiranja. Za zelo zgodovino.
 
-Izbereš **S&P 500, Nasdaq 100 ali Nasdaq Composite** in nastaviš svoje vložke. Aplikacija nato preveri več zgodovinskih obdobij z različnimi začetnimi leti, da lahko raziščeš:
+Izbereš **S&P 500, Nasdaq 100 ali Nasdaq Composite** in nastaviš svoje vložke. Aplikacija nato preveri več zgodovinskih obdobij z različnimi začetnimi meseci, da lahko raziščeš:
 
 - **Kdaj je vzvod prinesel prednost** pred strategijo brez vzvoda.
 - **Kako sta na rezultat vplivala začetek in dolžina investiranja.**

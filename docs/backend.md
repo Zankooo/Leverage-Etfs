@@ -44,7 +44,7 @@ Podprti indeksi so:
 
 ## Pot izračuna
 
-`POST /primerjava_vrstic` izbere podatke indeksa, izvede simulacijo za vse možne intervale in primerja končne vrednosti strategij 1x, 2x in 3x.
+`POST /primerjava_vrstic` izbere podatke indeksa, izvede simulacijo za intervale z začetkom vsak mesec (dolžina v letih) in primerja končne vrednosti strategij 1x, 2x in 3x.
 
 `POST /html-files` ponovno pripravi podrobne rezultate, ustvari HTML-grafe in vrne njihove javne URL-je.
 
@@ -69,10 +69,10 @@ class podatki_iz_frontenda(BaseModel):
     zacetna_investicija: int
     mesecni_vlozek: int
     indeks: str
-    interval: int
+    interval: int = Field(ge=1, le=50)
 ```
 
-FastAPI in Pydantic preverita prisotnost in osnovni tip teh polj. Dodatne omejitve, kot so dovoljene vrednosti indeksa in interval med 1 ter 50, se trenutno preverjajo predvsem na frontendu.
+FastAPI in Pydantic preverita prisotnost in osnovni tip teh polj. Dolžina intervala od 1 do 50 let se preveri tudi na backendu. Oba endpointa uporabljata iste mesečne začetke za vse tri strategije in zavrneta predolgo obdobje ali neusklajene datume serij.
 
 ## Pomembna finančna omejitev
 
