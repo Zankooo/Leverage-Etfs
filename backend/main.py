@@ -21,6 +21,10 @@ from grafi import narisi_logaritmicne_grafe
 
 init(autoreset=True)
 
+# spletna stran za primerjavo, oziroma dela isto ali zelo podobno
+# pobrat se kaksno idejo iz nje in jo narest tuki notri
+# https://www.leveraged-etfs.com/
+
 app = FastAPI()
 
 # te tri vrstice so da se grafi prikazejo na frontnedu
