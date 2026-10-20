@@ -2,6 +2,8 @@
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { Loader2 } from 'lucide-vue-next'
+import { calculateSimulationStatistics } from '../utils/simulationStatistics'
+
 
 // ref () pomeni : Shrani vrednost in ob njeni spremembi samodejno posodobi dele uporabniškega vmesnika, ki jo uporabljajo.
 const initialInvestment = ref('')
@@ -67,6 +69,62 @@ const totalInvested = computed(() => {
   const years = Number(selectedInterval.value) || 0
   return initial + (monthly * 12 * years)
 })
+
+const strategies = [
+  { file: 'osnoven.csv', leverage: '1x' },
+  { file: 'vzvod-2x.csv', leverage: '2x' },
+  { file: 'vzvod-3x.csv', leverage: '3x' },
+] as const
+
+// JSON razvršča strategije po uspehu; statistiko združimo po imenu datoteke.
+const simulationStatistics = computed(() => calculateSimulationStatistics(tableRows.value))
+
+const statisticRows = computed(() => {
+  const statistics = strategies.map(strategy => simulationStatistics.value[strategy.file])
+  return [
+    {
+      label: 'Skupno simulacij',
+      explanation: 'Število zgodovinskih obdobij, v katerih smo primerjali posamezno strategijo.',
+      values: statistics.map(statistic => statistic.count),
+      currency: false,
+    },
+    {
+      label: 'Denar investiran',
+      explanation: 'Začetni vložek in vsa mesečna vplačila v eni simulaciji, brez donosov. Enako za vse tri strategije.',
+      values: strategies.map(() => totalInvested.value),
+      currency: true,
+    },
+    {
+      label: 'Povprečna končna vrednost',
+      explanation: 'Vsota končnih vrednosti naložbe, deljena s številom simulacij.',
+      values: statistics.map(statistic => statistic.mean),
+      currency: true,
+    },
+    {
+      label: 'Mediana končne vrednosti',
+      explanation: 'Sredinska vrednost urejenih rezultatov. Pri sodem številu simulacij je povprečje obeh sredinskih vrednosti.',
+      values: statistics.map(statistic => statistic.median),
+      currency: true,
+    },
+    {
+      label: 'Najboljša končna vrednost',
+      explanation: 'Najvišja končna vrednost naložbe med vsemi simulacijami te strategije.',
+      values: statistics.map(statistic => statistic.max),
+      currency: true,
+    },
+    {
+      label: 'Najslabša končna vrednost',
+      explanation: 'Najnižja končna vrednost naložbe med vsemi simulacijami te strategije.',
+      values: statistics.map(statistic => statistic.min),
+      currency: true,
+    },
+  ]
+})
+
+
+
+
+const formatCount = (num: number) => new Intl.NumberFormat('sl-SI').format(num)
 
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('sl-SI', {
@@ -261,7 +319,7 @@ const showGraph = (index: number) => {
       <!-- Results Section -->
         <div v-if="backendResponse && tableRows.length > 0" class="mt-10 flex justify-center px-6">
           
-          <div class="w-full max-w-[1600px] bg-transparent">
+          <div class="w-full min-w-0 max-w-[1600px] bg-transparent">
             <div style="font-family: sans-serif;">
               <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">Rezultati simulacije</h2>
               
@@ -304,6 +362,61 @@ const showGraph = (index: number) => {
                   <div>
                     <hr class="border-0 border-t border-gray-100 my-3">
                   </div>
+
+                  <section aria-labelledby="simulation-statistics-heading" class="min-w-0">
+                    <h3 id="simulation-statistics-heading" class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-3">
+                      <span aria-hidden="true" class="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">📋</span>
+                      Statistika simulacij
+                    </h3>
+                    
+                    <div
+                      class="overflow-x-auto rounded-2xl border border-gray-100 focus-visible:outline-2 focus-visible:outline-[#10B981]"
+                      role="region"
+                      aria-label="Statistika simulacij po vzvodih; tabelo lahko pomaknete vodoravno"
+                      tabindex="0"
+                    >
+                      <table class="w-full min-w-[1040px] text-sm text-left">
+                        <caption class="sr-only">Statistika naložb v {{ selectedIndex }} za vzvode 1x, 2x in 3x.</caption>
+                        <thead>
+                          <tr class="border-b border-gray-100">
+                            <th scope="col" class="px-5 py-4 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider">Kazalnik</th>
+                            <th
+                              v-for="strategy in strategies"
+                              :key="strategy.file"
+                              scope="col"
+                              class="px-5 py-4 text-right"
+                              :style="{ backgroundColor: getEtfColor(strategy.file) + '12' }"
+                            >
+                              <span class="block text-xs font-medium text-gray-500 mb-1">{{ selectedIndex }}</span>
+                              <span class="text-base font-bold" :style="{ color: getEtfColor(strategy.file) }">{{ strategy.leverage }} vzvod</span>
+                            </th>
+                            <th scope="col" class="w-[30%] px-5 py-4 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider">Razlaga pojma</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                          <tr v-for="statistic in statisticRows" :key="statistic.label">
+                            <th scope="row" class="px-5 py-4 font-semibold text-gray-800 leading-relaxed">{{ statistic.label }}</th>
+                            <td
+                              v-for="(value, index) in statistic.values"
+                              :key="strategies[index].file"
+                              class="px-5 py-4 text-right whitespace-nowrap tabular-nums font-bold text-gray-900"
+                              :style="{ backgroundColor: getEtfColor(strategies[index].file) + '06' }"
+                            >
+                              <template v-if="value !== null">
+                                {{ statistic.currency ? formatNumber(value) : formatCount(value) }}<span v-if="statistic.currency" class="ml-1 text-xs font-medium text-gray-400">€</span>
+                              </template>
+                              <span v-else class="text-gray-400" aria-label="Ni podatkov">—</span>
+                            </td>
+                            <td class="px-5 py-4 text-xs leading-relaxed text-gray-500">{{ statistic.explanation }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+
+                  
+
+                  <hr class="border-0 border-t border-gray-100 my-3">
 
                   <!-- Povzetek primerjave -->
                   <div>
