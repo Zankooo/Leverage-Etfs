@@ -301,15 +301,13 @@ const showGraph = (index: number) => {
           <button 
             @click="izracunaj"
             :disabled="isLoading || !isFormValid"
-            class="w-full py-3.5 bg-[#10B981] hover:bg-[#059669] text-white text-base font-semibold rounded-xl transition-all shadow-lg shadow-[#10B981]/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            class="w-full py-3.5 bg-[#10B981] hover:bg-[#059669] text-white text-base font-semibold rounded-xl transition-all shadow-lg shadow-[#10B981]/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           >
             <Loader2 v-if="isLoading" class="w-5 h-5 animate-spin" />
-            <span>{{ isLoading ? 'Računam...' : 'Izračunaj' }}</span>
+            <span >{{ isLoading ? 'Računam...' : 'Izračunaj' }}</span>
           </button>
 
-          <p class="text-center text-gray-400 text-sm px-8 leading-relaxed">
-            Opomba: Stran je zasnovana kot "login-page" kartica — sredinsko, čista in osredotočena na vnos.
-          </p>
+          <p></p>
         </div>
       </div>
     </div>
