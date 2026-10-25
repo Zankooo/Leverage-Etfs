@@ -10,7 +10,7 @@ Izbereš **S&P 500, Nasdaq 100 ali Nasdaq Composite** in nastaviš svoje vložke
 
 Rezultati vključujejo primerjavo končnih vrednosti, deleže zmag posameznih strategij in interaktivne grafe razvoja naložbe.
 
-Model upošteva **dividende, funding, upravljalske provizije in volatility decay**. Predpostavke in omejitve zgodovinske simulacije so opisane v [metodologiji](docs/methodology.md).
+Model upošteva **dividende, funding, upravljalske provizije in volatility decay**. 
 
 ![Primer zgodovinske simulacije strategij 1x, 2x in 3x](docs/assets/graf.png)
 
