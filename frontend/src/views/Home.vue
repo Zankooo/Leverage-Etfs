@@ -361,6 +361,7 @@ const showGraph = (index: number) => {
                     <hr class="border-0 border-t border-gray-100 my-3">
                   </div>
 
+                  <!-- Statistika simulacij -->
                   <section aria-labelledby="simulation-statistics-heading" class="min-w-0">
                     <h3 id="simulation-statistics-heading" class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-3">
                       <span aria-hidden="true" class="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">📋</span>
