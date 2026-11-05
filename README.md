@@ -12,7 +12,7 @@ Rezultati vključujejo primerjavo končnih vrednosti, deleže zmag posameznih st
 
 Model upošteva **dividende, funding, upravljalske provizije in volatility decay**. 
 ![Statistika](docs/assets/statistika.png)
- . 
+
 ![Primer zgodovinske simulacije strategij 1x, 2x in 3x](docs/assets/graf.png)
 
 ## Dokumentacija
