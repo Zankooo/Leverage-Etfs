@@ -500,15 +500,16 @@ const showGraph = (index: number) => {
               <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">Posamezne simulacije</h2>
               <!-- Results List (Full-width "Rows") -->
               <div class="flex flex-col gap-4">
-                <details
+                <component
+                  :is="selectedIntervalType === 'mesecni' ? 'details' : 'div'"
                   v-for="(comparisons, year) in comparisonsByYear"
                   :key="year"
-                  class="bg-white rounded-[24px] border border-gray-100 shadow-sm"
+                  :class="{ 'bg-white rounded-[24px] border border-gray-100 shadow-sm': selectedIntervalType === 'mesecni' }"
                 >
-                  <summary class="cursor-pointer p-5 font-bold text-gray-800 rounded-[24px] focus-visible:outline-[#10B981]">
+                  <summary v-if="selectedIntervalType === 'mesecni'" class="cursor-pointer p-5 font-bold text-gray-800 rounded-[24px] focus-visible:outline-[#10B981]">
                     {{ year }} – {{ Number(year) + Number(selectedInterval) }}
                   </summary>
-                  <div class="flex flex-col gap-4 p-4 pt-0">
+                  <div class="flex flex-col gap-4" :class="{ 'p-4 pt-0': selectedIntervalType === 'mesecni' }">
                 <div 
                   v-for="{ row, index } in comparisons"
                   :key="index" 
@@ -523,6 +524,7 @@ const showGraph = (index: number) => {
 
                   <!-- Results - Horizontal Scroll/Flex -->
                   <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
                     <!-- Best -->
                     <div class="flex items-center gap-4 p-3 rounded-[20px] bg-white border-2 shadow-md" :style="{ borderColor: getEtfColor(row.best.file) + '50' }">
                       <div class="w-8 h-8 flex items-center justify-center rounded-full text-white font-bold text-xs shadow-sm shrink-0" :style="{ background: getEtfColor(row.best.file) }">1</div>
@@ -563,8 +565,10 @@ const showGraph = (index: number) => {
                         </div>
                       </div>
                     </div>
+
+
                   </div>
-                  <!-- Third konec-->  
+                  
 
                   <!-- Button column klik na gumb GRAF -->
                   <div class="shrink-0">
@@ -578,7 +582,7 @@ const showGraph = (index: number) => {
                   <!-- Button column konec -->
                 </div>
                   </div>
-                </details>
+                </component>
             </div>
 
           </div>
