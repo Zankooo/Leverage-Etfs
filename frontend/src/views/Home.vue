@@ -80,6 +80,15 @@ const strategies = [
 // JSON razvršča strategije po uspehu; statistiko združimo po imenu datoteke.
 const simulationStatistics = computed(() => calculateSimulationStatistics(tableRows.value))
 
+const comparisonsByYear = computed(() => {
+  const years: Record<string, { row: any; index: number }[]> = {}
+  tableRows.value.forEach((row, index) => {
+    const year = row.datum.slice(0, 4)
+    ;(years[year] ??= []).push({ row, index })
+  })
+  return years
+})
+
 const statisticRows = computed(() => {
   const statistics = strategies.map(strategy => simulationStatistics.value[strategy.file])
   return [
@@ -485,12 +494,23 @@ const showGraph = (index: number) => {
               
                 </div>
               </div>
-              <!-- Summary Section Card -->
 
+
+              <!-- Summary Section Card -->
+              <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">Posamezne simulacije</h2>
               <!-- Results List (Full-width "Rows") -->
               <div class="flex flex-col gap-4">
+                <details
+                  v-for="(comparisons, year) in comparisonsByYear"
+                  :key="year"
+                  class="bg-white rounded-[24px] border border-gray-100 shadow-sm"
+                >
+                  <summary class="cursor-pointer p-5 font-bold text-gray-800 rounded-[24px] focus-visible:outline-[#10B981]">
+                    {{ year }} – {{ Number(year) + Number(selectedInterval) }}
+                  </summary>
+                  <div class="flex flex-col gap-4 p-4 pt-0">
                 <div 
-                  v-for="(row, index) in tableRows" 
+                  v-for="{ row, index } in comparisons"
                   :key="index" 
                   class="bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row lg:items-center gap-6"
                 >
@@ -557,7 +577,10 @@ const showGraph = (index: number) => {
                   </div>
                   <!-- Button column konec -->
                 </div>
+                  </div>
+                </details>
             </div>
+
           </div>
         </div>
 
