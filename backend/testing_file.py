@@ -1,59 +1,53 @@
+from bisect import bisect_left
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from csv import reader
-from csv import reader
 import os
 
-def generiraj_intervale_leto(podatki, dolzina_intervala_let):
+def generiraj_intervale(podatki, dolzina_intervala_let, tip_intervala="mesecni"):
     """
-    Funkcija generira intervale za izbrano število let
-    Da nato lahko naredimo testing na teh datumih 
-    :param podatki: List of lists (dogovorjen format, prve 2 vrstice sta naslova): 
-    Nasdaq-composite, 1971-2025
-    Date, Close-price
-    1971-02-05,100.000
-    1971-02-08,100.840
-    1971-02-09,100.760
-    :param dolzina_intervala_let: int, dolžina intervala v letih
-    :return: list of lists [[zacetni_datum, koncni_datum], ...]: 
-    [
-    ['1962-01-02', '1967-01-03']
-    ['1963-01-02', '1968-01-02']
-    ['1964-01-02', '1969-01-02']
-    ['1965-01-04', '1970-01-05']
-    ['1966-01-03', '1971-01-04']
-    ['1967-01-03', '1972-01-03']
-    ['1968-01-02', '1973-01-02']
-    ['1969-01-02', '1974-01-02']
-    ['1970-01-02', '1975-01-02']
-    ['1971-01-04', '1976-01-05']
-    ['1972-01-03', '1977-01-03']
-    ]
+    Ustvari interval izbranega števila let za vsak začetni mesec ali leto.
+
+    Prvi dve vrstici podatkov sta naslova. Začetek je prvi razpoložljivi
+    trgovalni dan v mesecu oziroma letu, tudi če se podatki začnejo sredi njega.
+    Konec je prvi razpoložljivi datum na obletnico začetka ali po njej.
+    Obdobja brez dovolj podatkov za celotno dolžino izpustimo.
+    Vrne [[zacetni_datum, koncni_datum], ...] v obliki YYYY-MM-DD.
     """
+    if tip_intervala not in ("letni", "mesecni"):
+        raise ValueError("Tip intervala mora biti 'letni' ali 'mesecni'.")
+
     # Preskoči naslovne vrstice
     podatki = podatki[2:]
 
-    # Pretvori v datetime in poišči prvi datum v vsakem letu
-    datumi = [datetime.strptime(row[0], "%Y-%m-%d") for row in podatki]
-    prvi_v_letu = {}
+    # Urejeni datumi omogočajo binarno iskanje konca vsakega intervala.
+    datumi = sorted(datetime.fromisoformat(row[0]) for row in podatki)
+    prvi_v_obdobju = {}
     for d in datumi:
-        if d.year not in prvi_v_letu:
-            prvi_v_letu[d.year] = d
+        obdobje = (d.year, d.month) if tip_intervala == "mesecni" else d.year
+        prvi_v_obdobju.setdefault(obdobje, d)
 
     # Naredi intervale
     intervali = []
-    leta = sorted(prvi_v_letu.keys())
-    for leto in leta:
-        start_date = prvi_v_letu[leto]
+    for start_date in prvi_v_obdobju.values():
         konec_date = start_date + relativedelta(years=dolzina_intervala_let)
 
         # Poišči prvi datum >= konec_date
-        konec = next((d for d in datumi if d >= konec_date), None)
-        if konec:
-            intervali.append([start_date.strftime("%Y-%m-%d"), konec.strftime("%Y-%m-%d")])
+        konec_index = bisect_left(datumi, konec_date)
+        if konec_index == len(datumi):
+            break
+        konec = datumi[konec_index]
+        intervali.append([start_date.strftime("%Y-%m-%d"), konec.strftime("%Y-%m-%d")])
 
     return intervali
 
+
+def generiraj_intervale_mesecno(podatki, dolzina_intervala_let):
+    return generiraj_intervale(podatki, dolzina_intervala_let, "mesecni")
+
+
+def generiraj_intervale_leto(podatki, dolzina_intervala_let):
+    return generiraj_intervale(podatki, dolzina_intervala_let, "letni")
 
 
 

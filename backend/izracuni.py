@@ -68,7 +68,7 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     vsota_mesecnih_vlozkov = 0.0
     st_vplacil = 0
 
-    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+    current_month = datetime.fromisoformat(datum_zacetka).month
     results = []
 
     for k in range(len1):
@@ -79,7 +79,7 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
         if podatki2[i2][0] != date_str or podatki3[i3][0] != date_str:
             raise ValueError(f"Datumi se ne ujemajo pri k={k}: {date_str} vs {podatki2[i2][0]} / {podatki3[i3][0]}")
 
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        date_obj = datetime.fromisoformat(date_str)
 
         # ob prehodu v nov mesec dodamo mesečni vložek vsem trem (vplačilo šteje ENKRAT na serijo)
         if date_obj.month != current_month:
@@ -160,7 +160,7 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     # zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
     
     # Nastavimo začetni mesec za mesečne vložke
-    current_month = datetime.strptime(datum_zacetka, "%Y-%m-%d").month
+    current_month = datetime.fromisoformat(datum_zacetka).month
 
     # to rabimo da lahko pozenemo loop cez vse dneve
     vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
@@ -182,7 +182,7 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
             raise ValueError(f"Dnevni donos na datum {podatki[i][0]} mora biti končno število.")
 
         # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
-        date = datetime.strptime(podatki[i][0], "%Y-%m-%d")
+        date = datetime.fromisoformat(podatki[i][0])
 
         # Če je nov mesec, dodamo mesečni vložek
         if date.month != current_month:

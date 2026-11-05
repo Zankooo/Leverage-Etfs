@@ -2,6 +2,7 @@ import os
 import glob
 import re
 from pathlib import Path
+from typing import Literal
 
 # Third-party libraries
 from colorama import init, Fore, Style
@@ -17,7 +18,7 @@ from izracuni import *
 from testing_file import *
 from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
-from grafi import narisi_logaritmicne_grafe
+from grafi import narisi_vec_grafov
 
 init(autoreset=True)
 
@@ -88,6 +89,7 @@ class podatki_iz_frontenda(BaseModel):
     mesecni_vlozek: int
     indeks : str
     interval : int
+    tip_intervala: Literal["letni", "mesecni"] = "mesecni"
 
 # primerjava_vrstic ti zračuna številke in statistiko, 
 # kdo je zmagovalec (1x, 2x ali 3x).
@@ -102,7 +104,8 @@ def root(data: podatki_iz_frontenda):
         data.zacetna_investicija,
         data.mesecni_vlozek,
         data.interval,
-        keri_indeksi
+        keri_indeksi,
+        data.tip_intervala
         )
     print('----------')
 
@@ -131,7 +134,7 @@ def root(data: podatki_iz_frontenda):
     cela_investicija_skupaj = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
 
 
-    funkcija_naredi_rezultat_za_csvje(keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek)
+    funkcija_naredi_rezultat_za_csvje(keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek, data.tip_intervala)
     print(" funkcija_naredi_rezultat_za_csvje ✅ ")
     print()
     
@@ -169,9 +172,9 @@ def pridobi_indekse(izbran_indeks):
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # GLAVNE TRI FUNKCIJE
-def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
+def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks, tip_intervala="mesecni"):
     # izracuna intervale
-    intervali = generiraj_intervale_leto(indeks, interval)
+    intervali = generiraj_intervale(indeks, interval, tip_intervala)
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
         print()
@@ -182,9 +185,9 @@ def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, inter
             progress.advance(task)
     return 0
 
-def funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
+def funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks, tip_intervala="mesecni"):
     # izracuna intervale
-    intervali = generiraj_intervale_leto(indeks, interval)
+    intervali = generiraj_intervale(indeks, interval, tip_intervala)
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
         task = progress.add_task("[magenta]Izdelava vzvod-2x.csv...", total=len(intervali))
@@ -194,9 +197,9 @@ def funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, inter
             progress.advance(task)
     return 0
 
-def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks):
+def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks, tip_intervala="mesecni"):
     # izracuna intervale
-    intervali = generiraj_intervale_leto(indeks, interval)
+    intervali = generiraj_intervale(indeks, interval, tip_intervala)
     # ta progress je basically v konzoli da je bolj fancy 
     with Progress() as progress:
         task = progress.add_task("[orange1]Izdelava vzvod-3x.csv...", total=len(intervali))
@@ -211,7 +214,7 @@ def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, inter
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 #FUNKCIJA KI KLICE UNE TRI ZGORAJ
-def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, indeksi):
+def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, indeksi, tip_intervala="mesecni"):
     # Najprej se prepričamo, da mapa 'testing' sploh obstaja
     os.makedirs('testing', exist_ok=True)
     
@@ -221,16 +224,16 @@ def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, inde
     if test_files:
         for file in test_files:
             os.remove(file)
-    funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0])
-    funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1])
-    funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2])
+    funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0], tip_intervala)
+    funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1], tip_intervala)
+    funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2], tip_intervala)
     return 0
 
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki):
+def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki, tip_intervala="mesecni"):
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
     # ce se ni ustvarjena mapa jo ustvarimo
     folder = "rezultati-vsak-interval-vsi-indeksi"
@@ -242,7 +245,7 @@ def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicij
 
     # izračuna intervale -> na podlagi osnovnega indeksa.. pac itak bodo imeli vsi iste intervale 
     # in iste datume imajo.. teoreticno bi lahko tudi dali ker kol indeksi[1] ali indeksi[2]
-    intervali = generiraj_intervale_leto(keri_indeksi[0], interval)
+    intervali = generiraj_intervale(keri_indeksi[0], interval, tip_intervala)
 
     
     with Progress() as progress:
@@ -286,16 +289,11 @@ def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_inve
     # ce pa ze obstaja pa iz nje vse odstrani
     with Progress() as progress:
         task = progress.add_task("[yellow]Izdelava HTML grafov...", total=len(csv_files))
-        for csv_path in csv_files:
-            ime_fajla = csv_path.stem
-            pot = str(csv_path)
-            narisi_logaritmicne_grafe(
-                zacetna_investicija,
-                mesecna_investicija,
-                cela_investicija_skupaj,
-                pot,
-                f'mapa-grafi/{ime_fajla}.html'
-            )
+        html_files = [folder / f"{csv_path.stem}.html" for csv_path in csv_files]
+        for _ in narisi_vec_grafov(
+            zacetna_investicija, mesecna_investicija, cela_investicija_skupaj,
+            csv_files, html_files,
+        ):
             progress.advance(task)
     
     

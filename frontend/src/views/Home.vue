@@ -10,6 +10,7 @@ const initialInvestment = ref('')
 const monthlyContribution = ref('')
 const selectedIndex = ref('S&P 500')
 const selectedInterval = ref(15)
+const selectedIntervalType = ref<'letni' | 'mesecni'>('mesecni')
 
 
 // spremenljivka ali je backend ze odgovoril, vrednost je lahko strinj ali null -> ob uspesnem gre na "true"
@@ -39,7 +40,7 @@ let revizijaVnosa = 0
 // razlika med computed in watch funkcijo je: 
 //  torej če se naredi sprememba od eni od teh, se izvede koda
 watch(
-  [initialInvestment, monthlyContribution, selectedIndex, selectedInterval],
+  [initialInvestment, monthlyContribution, selectedIndex, selectedInterval, selectedIntervalType],
   () => {
     revizijaVnosa += 1
     // pocistimo od prej 
@@ -170,7 +171,8 @@ async function izracunaj() {
       zacetna_investicija: Number(initialInvestment.value),
       mesecni_vlozek: Number(monthlyContribution.value),
       indeks: selectedIndex.value,
-      interval: Number(selectedInterval.value)
+      interval: Number(selectedInterval.value),
+      tip_intervala: selectedIntervalType.value
     }
 
     // KLICI NA BACKEND IN ODGOVORI
@@ -284,7 +286,7 @@ const showGraph = (index: number) => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Interval (leta)</label>
+              <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Dolžina obdobja (leta)</label>
               <input 
                 v-model="selectedInterval"
                 :disabled="isLoading"
@@ -297,6 +299,33 @@ const showGraph = (index: number) => {
             </div>
           </div>
 
+          <div>
+            <label for="interval-type" class="block text-sm font-medium text-[#1A1A1A] mb-2">Tip intervala</label>
+            <div class="relative">
+              <select
+                id="interval-type"
+                v-model="selectedIntervalType"
+                :disabled="isLoading"
+                aria-describedby="interval-type-description"
+                class="w-full px-4 py-3 pr-10 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+              >
+                <option value="letni">Letni interval</option>
+                <option value="mesecni">Mesečni interval</option>
+              </select>
+              <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <p id="interval-type-description" class="mt-2 text-sm text-gray-500">
+              {{ selectedIntervalType === 'letni'
+                ? 'Novo obdobje se začne na prvem dnevu vsakega leta.'
+                : 'Novo obdobje se začne na prvem  dnevu vsakega meseca. Več primerjav pomeni daljši izračun. (Rahlo natančnejši izračun).' }}
+              Dolžina obdobja ostane v letih.
+            </p>
+          </div>
+
           <!-- Calculate Button -->
           <button 
             @click="izracunaj"
@@ -307,7 +336,13 @@ const showGraph = (index: number) => {
             <span >{{ isLoading ? 'Računam...' : 'Izračunaj' }}</span>
           </button>
 
-          <p></p>
+          <p
+            v-if="isLoading"
+            role="status"
+            class="text-center text-sm text-gray-600"
+          >
+            Izračun traja do pol minute
+          </p>
         </div>
       </div>
     </div>
@@ -332,7 +367,7 @@ const showGraph = (index: number) => {
                       <span class="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">⚙️</span>
                       Vneseni parametri
                     </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
                         <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Začetna inv.</div>
                         <div class="text-lg font-bold text-[#1A1A1A]">{{ formatNumber(Number(initialInvestment)) }} €</div>
@@ -352,6 +387,10 @@ const showGraph = (index: number) => {
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
                         <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Indeks</div>
                         <div class="text-lg font-bold text-[#1A1A1A]">{{ selectedIndex }}</div>
+                      </div>
+                      <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Tip intervala</div>
+                        <div class="text-lg font-bold text-[#1A1A1A]">{{ selectedIntervalType === 'letni' ? 'Letni' : 'Mesečni' }}</div>
                       </div>
                     </div>
                   </div>

@@ -2,6 +2,31 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from typing import List, Optional, Dict
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
+from multiprocessing import get_context
+import os
+
+
+def narisi_vec_grafov(zacetna_investicija, mesecna_investicija,
+                     vse_investicije_skupaj, csv_paths, html_paths):
+    """Riše neodvisne grafe na največ štirih procesih; yield za vsak končan graf.
+
+    Majhne serije rišemo zaporedno, ker bi zagon procesov trajal dlje.
+    Vsak proces bere svoj CSV in piše svoj HTML; map ohrani vrstni red
+    in napake delavcev prenese klicatelju. Spawn deluje tudi na macOS/Windows.
+    """
+    if len(csv_paths) != len(html_paths):
+        raise ValueError("Vsak CSV mora imeti svojo izhodno HTML-pot.")
+    workers = min(4, os.cpu_count() or 1)
+    narisi = partial(narisi_logaritmicne_grafe, zacetna_investicija,
+                     mesecna_investicija, vse_investicije_skupaj)
+    if workers == 1 or len(csv_paths) < 16:
+        yield from map(narisi, csv_paths, html_paths)
+        return
+
+    with ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn")) as pool:
+        yield from pool.map(narisi, csv_paths, html_paths, chunksize=4)
 
 # to dela perfektno, 
 # mores dat pa csv v takem formatu:

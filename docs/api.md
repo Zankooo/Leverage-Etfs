@@ -32,7 +32,8 @@ Oba simulacijska endpointa sprejmeta enako JSON-telo:
   "zacetna_investicija": 1000,
   "mesecni_vlozek": 100,
   "indeks": "S&P 500",
-  "interval": 15
+  "interval": 15,
+  "tip_intervala": "mesecni"
 }
 ```
 
@@ -42,6 +43,11 @@ Oba simulacijska endpointa sprejmeta enako JSON-telo:
 | `mesecni_vlozek` | integer | Redni mesečni vložek v evrih |
 | `indeks` | string | `S&P 500`, `Nasdaq 100` ali `Nasdaq Composite` |
 | `interval` | integer | Dolžina simulacije v letih; frontend dovoljuje 1–50 |
+| `tip_intervala` | string | `letni`: začetek vsako leto; `mesecni`: začetek vsak mesec. Neobvezno, privzeto `mesecni`. |
+
+Začetek je prvi razpoložljivi trgovalni dan izbranega leta oziroma meseca.
+Izbira tipa intervala ne spremeni dolžine simulacije v letih ali mesečnih vplačil.
+Oba endpointa morata prejeti isti tip intervala, da se primerjave in grafi ujemajo.
 
 ## `POST /primerjava_vrstic`
 

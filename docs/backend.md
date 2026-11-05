@@ -48,6 +48,31 @@ Podprti indeksi so:
 
 `POST /html-files` ponovno pripravi podrobne rezultate, ustvari HTML-grafe in vrne njihove javne URL-je.
 
+Oba endpointa uporabljata `generiraj_intervale`: dolžina intervala ostane
+v letih, polje `tip_intervala` pa določi, ali se nov interval začne na prvem
+razpoložljivem trgovalnem dnevu vsakega leta (`letni`) ali meseca (`mesecni`).
+Privzeta izbira je `mesecni`, tudi kadar starejši odjemalec polja ne pošlje.
+Pri dolžini 10 let in mesečni izbiri tako primerjamo začetke januarja, februarja,
+marca itd. Konec je prvi razpoložljivi trgovalni dan na deseto obletnico začetka
+ali po njej. Vključena so le obdobja, za katera imamo podatke za celotno dolžino.
+Mesečna izbira pomeni približno dvanajstkrat več primerjav in grafov kot letna;
+priprava vseh grafov zato traja dlje.
+
+Pri vsaj 16 grafih se izris izvaja vzporedno na največ štirih procesih
+(oziroma manj, če ima računalnik manj procesorskih jeder). Vsak proces bere svoj
+CSV in piše svoj HTML. Pri manjšem številu grafov ali enem jedru izris ostane
+zaporeden, da se izognemo strošku zagona procesov. Vrstni red vrnjenih grafov
+ostane kronološki. Izračuni za datume v obliki `YYYY-MM-DD` uporabljajo hitrejše
+branje ISO-datumov; pravila izračuna donosov in vplačil ostanejo enaka.
+
+Preverjanje vzporednega izrisa in obeh tipov intervalov:
+
+```bash
+python3 -m unittest discover -s backend/tests -v
+```
+
+API-test uporablja `httpx` (namestitev v razvojno okolje: `python -m pip install httpx`).
+
 ## Statične datoteke
 
 FastAPI objavi mapo `backend/mapa-grafi/`:
@@ -62,7 +87,7 @@ Frontend ta URL odpre v `iframe`.
 
 ## Model vhodnih podatkov
 
-Razred `podatki_iz_frontenda` zahteva štiri polja:
+Razred `podatki_iz_frontenda` zahteva štiri polja in sprejme neobvezni tip intervala:
 
 ```python
 class podatki_iz_frontenda(BaseModel):
@@ -70,9 +95,10 @@ class podatki_iz_frontenda(BaseModel):
     mesecni_vlozek: int
     indeks: str
     interval: int
+    tip_intervala: Literal["letni", "mesecni"] = "mesecni"
 ```
 
-FastAPI in Pydantic preverita prisotnost in osnovni tip teh polj. Dodatne omejitve, kot so dovoljene vrednosti indeksa in interval med 1 ter 50, se trenutno preverjajo predvsem na frontendu.
+FastAPI in Pydantic preverita prisotnost in osnovni tip teh polj ter dovoljeni vrednosti tipa intervala. Dodatne omejitve, kot so dovoljene vrednosti indeksa in interval med 1 ter 50, se trenutno preverjajo predvsem na frontendu.
 
 ## Pomembna finančna omejitev
 
