@@ -76,6 +76,7 @@ def primerjaj_tri_indekse(file1, file2, file3, stolpec=5):
                     (po defaultu 5, kar predstavlja 'končno vrednost')
     @return: JSON (dictionary) s 'summary' (zbirna statistika zmag in vložkov) 
              ter 'rows' (podrobni rezultati in razlike v % za vsak posamezen interval).
+    Če se ne motim v dev tolsih vidiš kaj returna ta funkcija
     """
     def pct_diff(a, b):
         try:

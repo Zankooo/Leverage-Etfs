@@ -166,14 +166,16 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
     - in provizijo (TER) -> ta je pa hard codana v tej funkciji
 
     Args:
-        podatki (list[list]): CSV-vrstice: opis, glava, nato [datum, cena].
-            Datumi YYYY-MM-DD morajo naraščati, cene morajo biti pozitivne
-            in brez reinvestiranih dividend. Vhodnih podatkov ne spreminja.
+        podatki (list[list]): 
+        CSV-vrstice: 
+        opis, glava, 
+        NASDAQ 100, 1986-2026
+        Date,Price
 
     Returns:
-        list[list]: Opis z oznako vzvoda, glava in vrstice
-            [datum, vrednost, donos]. Donos vključuje vse stroške in je
-            decimalen (0.02 = 2 %); prvi je 0.0. CSV-ja ne zapisuje.
+        list[list]: Recimo
+        NASDAQ 100 3x, 1986-2026
+        Date,Close,Daily Return
     """
     # Preverimo, da imamo opis, glavo in vsaj eno ceno.
     if len(podatki) < 3 or not podatki[0]:
@@ -208,7 +210,7 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
     if vzvod not in (1, 2, 3):
         raise ValueError("Vzvod mora biti 1, 2 ali 3.")
 
-    # Decimalne letne provizije za 1x, 2x in 3x; 0.0007 pomeni 0,07 %.
+    # Decimalne letne provizije (net management fee) za 1x, 2x in 3x; 0.0007 pomeni 0,07 %.
     provizije = {
         "sp_500": {1: 0.0007, 2: 0.006, 3: 0.0075},
         "nasdaq_100": {1: 0.003, 2: 0.006, 3: 0.0075},
@@ -253,6 +255,9 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
                 [prejsnji_datum.isoformat(), vrednost, 0.0]]
 
     # Od drugega trgovalnega dne naprej izračunamo spremembo osnovne cene.
+    # prištejemo dividende
+    # odštejemo funding
+    # odštejemo management fee
     for datum, cena in vrstice[1:]:
         donos_indeksa = (cena - prejsnja_cena) / prejsnja_cena
         funding_obdobja = 0.0
@@ -273,11 +278,10 @@ def naredi_leverage_iz_osnovnih_podatkov(podatki):
 
         # Donos in dividende pomnožimo z vzvodom; funding odštejemo za izposojeni del.
         # Provizija izbranega ETF-ja se odšteje enkrat od donosa celotne serije.
-        dnevni_donos = (
-            vzvod * (donos_indeksa + dividende_obdobja)
-            - (vzvod - 1) * funding_obdobja
-            - provizija_obdobja
-        )
+
+        # GLAVNA FORMULA ZA IZRAČUN DEJANSKEGA DONOSA !!
+        dnevni_donos = (vzvod * (donos_indeksa + dividende_obdobja) - ((vzvod - 1) * funding_obdobja) - provizija_obdobja)
+
         if not isfinite(dnevni_donos) or dnevni_donos <= -1:
             raise ValueError(f"Serije ni mogoče nadaljevati: donos na {datum} je {dnevni_donos}.")
         # Končni donos uporabimo na prejšnji vrednosti pripravljene serije.

@@ -459,6 +459,7 @@ const showGraph = (index: number) => {
                         </tbody>
                       </table>
                     </div>
+                    
                   </section>
 
                   
