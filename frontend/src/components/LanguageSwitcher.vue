@@ -3,8 +3,8 @@ import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n({ useScope: 'global' })
 const languages = [
-  { code: 'sl', label: 'SL', name: 'Slovenščina' },
-  { code: 'en', label: 'EN', name: 'English' },
+  { code: 'sl', label: 'SLO', name: 'Slovenščina' },
+  { code: 'en', label: 'ENG', name: 'English' },
 ] as const
 </script>
 

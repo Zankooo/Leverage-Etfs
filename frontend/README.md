@@ -20,11 +20,11 @@ morata imeti enake ključe. V komponentah uporabljaj `t('home.calculate')`,
 za številke `n(vrednost, 'decimal')`, za datume pa `d(datum, 'short')`.
 Nastavitve, zapis izbire ter jezik in naslov dokumenta so v `src/i18n.ts`.
 
-Preklop jezika ohrani vnose in prikazane rezultate simulacije. Frontend v obeh
-POST-zahtevah pošlje `language: locale.value`. Backend vrne `urls.sl` in
-`urls.en` za vsak graf; `iframe` uporabi URL trenutnega jezika. Če druga
-jezikovna različica še ne obstaja, jo backend pripravi iz shranjenih rezultatov,
-brez ponovnega računanja naložbe.
+Preklop jezika ohrani vnose in prikazane rezultate simulacije. Ob kliku Izračunaj
+frontend zajame `language: locale.value` in ga pošlje v obeh POST-zahtevah.
+Backend pripravi grafe v tem jeziku in za vsak graf vrne en `url`.
+Jezik že pripravljenih grafov se ob preklopu jezika strani ne spremeni;
+za grafe v drugem jeziku je treba ponovno klikniti Izračunaj.
 
 
 ```mermaid

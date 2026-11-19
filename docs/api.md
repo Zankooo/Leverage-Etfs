@@ -95,44 +95,34 @@ Vrednosti v tem primeru so ilustrativne; dejanski odgovor je odvisen od parametr
 ## `POST /html-files`
 
 Pripravi podrobne rezultate, ustvari HTML-graf za vsak interval in vrne seznam grafov.
-Prvotne grafe ustvari v zahtevanem jeziku. Vsaka simulacija dobi svoj `simulation_id`.
+Grafe ustvari samo v jeziku, poslanem v polju `language` ob kliku Izračunaj.
 
 Primer odgovora:
 
 ```json
 {
-  "simulation_id": "0123456789abcdef0123456789abcdef",
-  "language": "en",
   "results": [
     {
       "id": 1,
       "title": "1927-12-30--1942-12-30",
       "filename": "1927-12-30--1942-12-30.html",
-      "url": "http://localhost:8000/graf/0123456789abcdef0123456789abcdef/en/1927-12-30--1942-12-30.html",
-      "urls": {
-        "sl": "http://localhost:8000/graf/0123456789abcdef0123456789abcdef/sl/1927-12-30--1942-12-30.html",
-        "en": "http://localhost:8000/graf/0123456789abcdef0123456789abcdef/en/1927-12-30--1942-12-30.html"
-      }
+      "url": "http://localhost:8000/grafi/1927-12-30--1942-12-30.html"
     }
   ]
 }
 ```
 
-## `GET /graf/{simulation_id}/{language}/{filename}`
+## `/grafi/{filename}`
 
-Vrne HTML-graf v izbranem jeziku. Če ta prevod še ne obstaja, ga izriše iz
-shranjenega CSV-ja in shrani za naslednje odprtje. Izračuna naložbe ne ponavlja.
-Neznana simulacija ali datoteka vrne 404, neveljaven jezik ali ID pa 422.
+Obstoječa statična pot vrne že pripravljeni HTML-graf. Frontend uporablja njegov
+`url` kot `src` za `iframe`; ob odpiranju se graf ne računa ali riše ponovno.
 
-Frontend uporablja `urls[locale]` kot `src` za `iframe`. Menjava jezika tako
-prevede tudi že izračunan graf, pri čemer vnosi in rezultati ostanejo isti.
-Deluje tudi, če uporabnik spremeni jezik med čakanjem na prvotni izračun.
+Menjava jezika na frontendu ne spremeni že pripravljenih grafov. Za grafe v
+drugem jeziku uporabnik izbere jezik in ponovno klikne Izračunaj. Tudi če jezik
+spremeni med čakanjem, grafi ostanejo v jeziku, poslanem ob začetku izračuna.
 
-Rezultati in parametri so v `rezultati-vsak-interval-vsi-indeksi/{simulation_id}/`,
-grafi pa v `mapa-grafi/{simulation_id}/{language}/`. Nova simulacija ne prepiše
-prejšnje. Datoteke ostanejo do ročnega čiščenja teh izhodnih map.
-
-Obstoječa statična pot `/grafi/{filename}` ostane na voljo za stare grafe.
+CSV-ji so v `rezultati-vsak-interval-vsi-indeksi/`, HTML-grafi pa v `mapa-grafi/`.
+Nov izračun zamenja prejšnje CSV-je in HTML-grafe v teh mapah.
 
 ## Napake
 

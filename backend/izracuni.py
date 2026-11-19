@@ -1,17 +1,15 @@
-import re
-import os
-from math import isfinite
-import pandas as pd
+"""Izračuna vrednost naložbe iz že pripravljenih dnevnih donosov.
 
-from obcasno_pogosti_fajli.csv_operacije import *
-# karkoli tukaj delamo oz kero kol funkcijo klicemo moramo imeti
-# dogovorjen format podatkov oz csv.ja
+main.py določi obdobja in kliče spodnji funkciji:
+- izracun_dca_metoda_prilagojena_da_naredi_csv: dnevne vrednosti za graf;
+- metoda_dca_za_testing_prilagojena: končni rezultat za primerjalno tabelo.
+"""
 
-
-# ta funkcija tocno zracuna isto k kot funkcija 'izracun dca metoda' le da vse tri 1x in 2x in 3x naredi
-# in jih da v locen csv!!
 import csv
 from datetime import datetime
+from math import isfinite
+from pathlib import Path
+
 
 def izracun_dca_metoda_prilagojena_da_naredi_csv(
     podatki1, podatki2, podatki3,  # morajo biti isti indeks: osnovni, 2x, 3x
@@ -19,7 +17,7 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
     monthly_investment: float,
     datum_zacetka: str,
     datum_konca: str,
-    output_file: str  = "rezultati_investicije.csv",
+    output_file: str = "rezultati_investicije.csv",
 ):
     """
     Prejme pripravljene serije istega indeksa za 1x, 2x in 3x:
@@ -115,27 +113,22 @@ def izracun_dca_metoda_prilagojena_da_naredi_csv(
         w.writerow(["date", "A", "B", "C"])
         w.writerows(results)
 
-    # izpis povzetka (na serijo)
-    
-    # print(f"Začetna investicija (na serijo): {initial_investment:.2f} $")
-    # print(f"Vsota mesečnih vložkov (na serijo): {vsota_mesecnih_vlozkov:.2f} $  (št. vplačil: {st_vplacil})")
-    # print("Za obdobje " + datum_zacetka + " in " + datum_konca + " narejeno.")
     return round(inv1, 2), round(inv2, 2), round(inv3, 2)
 
 
-
-
-# TA METODA JE FIXERICA KER SE JO KLICE V FOR LOOPU - POTREBNA ZA PRIMERJAVO PO LETIH 
-def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_investment, datum_zacetka, datum_konca, ime_novega_filea):
+def metoda_dca_za_testing_prilagojena(
+    podatki, initial_investment, monthly_investment,
+    datum_zacetka, datum_konca, ime_novega_filea,
+):
     """
     Simulira DCA (Dollar Cost Averaging) investiranje za TOČNO DOLOČEN interval.
-    
-    Funkcija je namenjena večkratnemu klicanju v zanki (for loop). 
-    Izračuna dnevno rast/padec portfelja za podano obdobje in na koncu 
-    zapiše ZBIRNO VRSTICO rezultatov (začetni vložek, donos, končna vrednost) 
-    na konec izbrane CSV datoteke v mapo 'testing/'. To nam omogoči 
+
+    Funkcija je namenjena večkratnemu klicanju v zanki (for loop).
+    Izračuna dnevno rast/padec portfelja za podano obdobje in na koncu
+    zapiše ZBIRNO VRSTICO rezultatov (začetni vložek, donos, končna vrednost)
+    na konec izbrane CSV datoteke v mapo 'testing/'. To nam omogoči
     kasnejšo primerjavo vseh intervalov med seboj.
-    
+
     @param podatki: seznam vrstic pripravljene serije: opis, glava in nato
         [datum, vrednost, dnevni_donos]. Tretji stolpec je decimalni donos
         (0.02 = 2 %), ki že vključuje vzvod, dividende in funding.
@@ -147,27 +140,18 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
     @param ime_novega_filea: Ime ciljne datoteke (npr. 'osnoven', 'vzvod-2x'), v katero se prilepi nov rezultat
     @return: 0 (Rezultat se ne vrača, temveč zapiše neposredno v CSV)
     """
-    # ta funkcija je misljena da se jo klice v mainu v for loopu toliko koliko je intervalov in da se ji podaja razlicne datume pridobljena iz intervali letni
-    #kle je fora ker tist dan ko mi kupimo se uposta tudi koliko je ta dan zrastlo
-    # ampak tega verjetno ne bi smel upostevat, idk
-    # pogledat tudi za mesecne investicije kdaj dejansko se kupjo
-
-     # Nov vnos za mesečno investicijo
+    # 1. Nastavimo začetni vložek in poiščemo začetek ter konec obdobja.
     investment = initial_investment
     mesecni_vlozki_vsota = 0
 
-    # PROBLEM JE KER CE PRIMERJAS Z GOOGLE GRAFOM NISO CIST CIST ISTI DONOSI IN ZDEJ GRUNTAM KJE JE PROBLEM
-    # zdej je okej sem testiral ampak mi ni jasno kako je lahko okej ce v for loopu ze prvi dan vzamemo, idk ampak je zlo prou
-    
-    # Nastavimo začetni mesec za mesečne vložke
     current_month = datetime.fromisoformat(datum_zacetka).month
 
-    # to rabimo da lahko pozenemo loop cez vse dneve
-    vrstica_zacetka = (next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka))
-    
-    vrstica_konca = (next(i for i, row in enumerate(podatki) if row[0] == datum_konca))
+    vrstica_zacetka = next(i for i, row in enumerate(podatki) if row[0] == datum_zacetka)
+    vrstica_konca = next(i for i, row in enumerate(podatki) if row[0] == datum_konca)
 
-    # od kere do kere vrstice gre? -> pac mi smatramo da kupimo ob close ob zaprtju, po tisti ceni
+    # 2. Za vsak dan upoštevamo vplačilo in dnevni donos.
+    # Trenutno vključimo tudi donos prvega dne.
+    # TODO: preveriti predpostavko o času nakupa in mesečnih vplačil.
     for i in range(vrstica_zacetka, vrstica_konca + 1):
         # Donos je že pripravljen v tretjem stolpcu: 0.02 pomeni 2 %.
         # Ne delimo s 100 in ne zaokrožujemo pred izračunom naložbe.
@@ -181,7 +165,6 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
         if not isfinite(daily_change_cifra):
             raise ValueError(f"Dnevni donos na datum {podatki[i][0]} mora biti končno število.")
 
-        # Pridobimo mesec trenutnega datuma, da lahko upalimo mesecno investicijo ce je nov mesec
         date = datetime.fromisoformat(podatki[i][0])
 
         # Če je nov mesec, dodamo mesečni vložek
@@ -192,26 +175,30 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
 
         # Izračun vrednosti portfelja
         investment = investment * (1 + daily_change_cifra)
-        
-    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
-   
-    # od tukaj naprej je pa pisanje v file
-    # da bi v csv file pisal ane..
-    # od kdaj do kdaj, zacetna investicija, vse mesecne investicije, total contribution, zasluzili in koliko imamo
-    vrstica = [datum_zacetka + "-" + datum_konca, initial_investment, mesecni_vlozki_vsota, initial_investment + mesecni_vlozki_vsota, zasluzili, investment]
-    
-    ime_novega_filea = ime_novega_filea + ".csv"
-    pot = f"testing/{ime_novega_filea}"
 
-    # Ustvari mapo testing, če ne obstaja
-    os.makedirs("testing", exist_ok=True)
+    zasluzili = round(investment - initial_investment - mesecni_vlozki_vsota, 2)
+
+    # 3. Končni rezultat tega obdobja dodamo kot eno vrstico v CSV.
+    vrstica = [
+        datum_zacetka + "-" + datum_konca,
+        initial_investment,
+        mesecni_vlozki_vsota,
+        initial_investment + mesecni_vlozki_vsota,
+        zasluzili,
+        investment,
+    ]
+
+    ime_novega_filea = ime_novega_filea + ".csv"
+    mapa = Path("testing")
+    mapa.mkdir(parents=True, exist_ok=True)
+    pot = mapa / ime_novega_filea
 
     # Če datoteka obstaja, dodaj v obstoječo, drugače ustvari novo
-    mode = "a" if os.path.exists(pot) else "w"
+    mode = "a" if pot.exists() else "w"
 
     with open(pot, mode=mode, newline="") as f:
         writer = csv.writer(f)
-        
+
         if mode == "w":  # pišemo header samo če ustvarjamo novo datoteko
             writer.writerow([ime_novega_filea])
             writer.writerow([
@@ -222,10 +209,7 @@ def metoda_dca_za_testing_prilagojena(podatki, initial_investment, monthly_inves
                 "koliko smo v plusu oz minusu",
                 "koliko imamo vse skupaj"
             ])
-        
+
         writer.writerow(vrstica)
-    
+
     return 0
-
-
- # ------------------------------------------------------

@@ -1,378 +1,260 @@
-import os
-import glob
-import re
+"""Backend za primerjavo naložb in pripravo grafov.
+
+POTEK PO KLIKU »IZRAČUNAJ« V Home.vue:
+1. Frontend pošlje POST /primerjava_vrstic → primerjaj_rezultate().
+   ustvari_primerjalne_csvje() izbere po vrsti 1x, 2x in 3x.
+   ustvari_rezultate() za vsak vzvod obdela vsa časovna obdobja.
+   primerjaj_tri_indekse() prebere te CSV-je in vrne podatke za tabelo.
+2. Frontend nato pošlje POST /html-files → ustvari_grafe().
+   ustvari_dnevne_csvje() shrani dnevne vrednosti vseh treh vzvodov.
+   ustvari_grafe_iz_csvjev() iz njih nariše grafe v poslanem jeziku.
+   dobi_grafe_v_json() vrne povezave do ustvarjenih HTML-datotek.
+3. Frontend prikaže rezultate; ob kliku »Graf« odpre izbrano povezavo.
+
+Funkcije spodaj se izvedejo šele ob klicu. Ob zagonu se pripravijo
+aplikacija, mape in vhodni podatki; izračun sprožita zgornji POST-zahtevi.
+"""
+
 from pathlib import Path
 from typing import Literal
-from uuid import UUID, uuid4
 
-# Third-party libraries
-from colorama import init, Fore, Style
-from rich.progress import Progress
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from rich.progress import Progress
 
-# Local imports
-from izracuni import *
-from testing_file import *
-from obcasno_pogosti_fajli.csv_operacije import *
-from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
-from grafi import narisi_vec_grafov, narisi_logaritmicne_grafe
+from grafi import narisi_vec_grafov
+from izracuni import (
+    izracun_dca_metoda_prilagojena_da_naredi_csv,
+    metoda_dca_za_testing_prilagojena,
+)
+from obcasno_pogosti_fajli.csv_operacije import load_csv
+from testing_file import generiraj_intervale, primerjaj_tri_indekse
 
-init(autoreset=True)
 
-# spletna stran za primerjavo, oziroma dela isto ali zelo podobno
-# pobrat se kaksno idejo iz nje in jo narest tuki notri
-# https://www.leveraged-etfs.com/
+# Nastavitve aplikacije in map
 
 app = FastAPI()
-
-# te tri vrstice so da se grafi prikazejo na frontnedu
-# kje se nahaja main.py -> to rabimo ker bo koda laufala nekje drgje in tam 
-# ne ve kje pac je main.oy
 BASE_DIR = Path(__file__).resolve().parent
-
-# definiramo oz imena map kamor bomo shranjevali
 MAPA_GRAFI = BASE_DIR / "mapa-grafi"
 MAPA_REZULTATI = BASE_DIR / "rezultati-vsak-interval-vsi-indeksi"
 MAPA_TESTING = BASE_DIR / "testing"
 
-# Ustvari mape, če še ne obstajajo
 MAPA_GRAFI.mkdir(parents=True, exist_ok=True)
 MAPA_REZULTATI.mkdir(parents=True, exist_ok=True)
 MAPA_TESTING.mkdir(parents=True, exist_ok=True)
 
+# Brskalnik dobi ustvarjeni HTML prek povezave /grafi/ime-datoteke.html.
 app.mount("/grafi", StaticFiles(directory=str(MAPA_GRAFI)), name="grafi")
 
-
-# Obvezno za frontend dostop
+# Frontendu na portu 3000 dovolimo klice na backend.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# UPLOAD PODATKOV
-print()
-print(Fore.GREEN + "Začetek programa " + Style.RESET_ALL + "----------------------------------------------------------------")
-# UPLOAD PODATKOV DA JIH PREBEREMO
-sp_500 = load_csv(BASE_DIR / '1x-leverage' / 'sp-500-1x.csv')
-sp_500_2x = load_csv(BASE_DIR / '2x-leverage' / 'sp-500-2x.csv')
-sp_500_3x = load_csv(BASE_DIR / '3x-leverage' / 'sp-500-3x.csv')
-print()
-nasdaq_100 = load_csv(BASE_DIR / '1x-leverage' / 'nasdaq-100-1x.csv')
-nasdaq_100_2x = load_csv(BASE_DIR / '2x-leverage' / 'nasdaq-100-2x.csv')
-nasdaq_100_3x = load_csv(BASE_DIR / '3x-leverage' / 'nasdaq-100-3x.csv')
-print()
-nasdaq_comp = load_csv(BASE_DIR / '1x-leverage' / 'nasdaq-comp-1x.csv')
-nasdaq_comp_2x = load_csv(BASE_DIR / '2x-leverage' / 'nasdaq-comp-2x.csv')
-nasdaq_comp_3x = load_csv(BASE_DIR / '3x-leverage' / 'nasdaq-comp-3x.csv')
-print("----------------------------------------------------------------------------------")
 
-# probna funkcija če dela vse skup
-@app.get("/")
-def root():
-    # dobit moramo json pravih podatkov in nazaj posljemo tudi nek json
-    return {"message": "Backend deluje"}
+# Vhodne podatke preberemo enkrat ob zagonu.
+# Vsak indeks ima že pripravljene serije za 1x, 2x in 3x.
 
-#------------------------------------------------------
+sp_500 = load_csv(BASE_DIR / "1x-leverage" / "sp-500-1x.csv")
+sp_500_2x = load_csv(BASE_DIR / "2x-leverage" / "sp-500-2x.csv")
+sp_500_3x = load_csv(BASE_DIR / "3x-leverage" / "sp-500-3x.csv")
 
-# -----------------------------------------------------
+nasdaq_100 = load_csv(BASE_DIR / "1x-leverage" / "nasdaq-100-1x.csv")
+nasdaq_100_2x = load_csv(BASE_DIR / "2x-leverage" / "nasdaq-100-2x.csv")
+nasdaq_100_3x = load_csv(BASE_DIR / "3x-leverage" / "nasdaq-100-3x.csv")
+
+nasdaq_comp = load_csv(BASE_DIR / "1x-leverage" / "nasdaq-comp-1x.csv")
+nasdaq_comp_2x = load_csv(BASE_DIR / "2x-leverage" / "nasdaq-comp-2x.csv")
+nasdaq_comp_3x = load_csv(BASE_DIR / "3x-leverage" / "nasdaq-comp-3x.csv")
+
+
+# Podatki, ki jih frontend pošlje kot JSON
+
 class podatki_iz_frontenda(BaseModel):
     zacetna_investicija: int
     mesecni_vlozek: int
-    indeks : str
-    interval : int
+    indeks: str
+    interval: int
     tip_intervala: Literal["letni", "mesecni"] = "mesecni"
     language: Literal["sl", "en"] = "sl"
 
-# primerjava_vrstic ti zračuna številke in statistiko, 
-# kdo je zmagovalec (1x, 2x ali 3x).
+
+# API: tukaj se začne obdelava zahteve iz frontenda.
+
+@app.get("/")
+def preveri_delovanje():
+    """Vrne sporočilo za preprost preizkus povezave z backendom."""
+    return {"message": "Backend deluje"}
+
+
 @app.post("/primerjava_vrstic")
-def root(data: podatki_iz_frontenda):
-    print()
-    print("PRVI REST API CALL ")
-    print(" PRIMERJAVA PO VRSTICAH:")
-    keri_indeksi = pridobi_indekse(data.indeks)
-    print(" Funkcija kater indeksi ✅ ")
-    funkcija_naredi_vse(
-        data.zacetna_investicija,
-        data.mesecni_vlozek,
-        data.interval,
-        keri_indeksi,
-        data.tip_intervala
-        )
-    print('----------')
+def primerjaj_rezultate(data: podatki_iz_frontenda):
+    """Iz prejetih parametrov pripravi primerjavo 1x, 2x in 3x za tabelo."""
+    print("Pripravljam primerjavo naložb ...")
 
-    print("Uspešno ustvarjeni CSV-ji v mapi 'testing' ✅ ")
-    print()
-    # funkcija 'funkcija_naredi_vse' naredi csv fajle od vseh treh za vsak interval, 
-    # da jih ta funkcija lahko prejme in naredi primerjavo
-    primerjave = primerjaj_tri_indekse("testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv")
-    print(" Funkcija primerjaj tri indekse ✅")
-    return primerjave
-    
-    
+    # 1. Izberemo tri serije podatkov za zahtevani indeks.
+    izbrani_indeksi = pridobi_indekse(data.indeks)
 
-# html-files ti zgenerira podrobne podatke za vsako obdobje 
-# posebej in ti iz njih nariše grafe, 
-# da lahko gibanje investicije dejansko vidiš!
+    # 2. Ustvarimo tri CSV-je: vsak vsebuje končne rezultate enega vzvoda.
+    ustvari_primerjalne_csvje(
+        data.zacetna_investicija, data.mesecni_vlozek, data.interval,
+        izbrani_indeksi, data.tip_intervala,
+    )
+
+    # 3. Primerjamo rezultate vsakega obdobja in jih vrnemo frontendu.
+    return primerjaj_tri_indekse(
+        "testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv",
+    )
+
+
 @app.post("/html-files")
 def ustvari_grafe(data: podatki_iz_frontenda, request: Request):
-    print()
-    print("DRUGI REST API CALL ")
-    
-    print("GRAFKI")
-    keri_indeksi = pridobi_indekse(data.indeks)
-    print(" Funkcija kater indeksi ✅ ")
-    
-    cela_investicija_skupaj = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
+    """Iz prejetih parametrov ustvari HTML-grafe in vrne njihove povezave."""
+    print(f"Pripravljam grafe v jeziku '{data.language}' ...")
+    izbrani_indeksi = pridobi_indekse(data.indeks)
+    skupaj_vlozeno = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
 
-    # Vsaka simulacija ohrani svoje številčne rezultate in obe jezikovni različici.
-    simulation_id = uuid4().hex
-    csv_folder = MAPA_REZULTATI / simulation_id
-    graph_folder = MAPA_GRAFI / simulation_id / data.language
-
-    funkcija_naredi_rezultat_za_csvje(
-        keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek,
-        data.tip_intervala, output_dir=csv_folder,
+    # 1. Za grafe potrebujemo dnevne vrednosti, ne samo končnih rezultatov.
+    ustvari_dnevne_csvje(
+        izbrani_indeksi, data.interval, data.zacetna_investicija,
+        data.mesecni_vlozek, data.tip_intervala,
     )
-    (csv_folder / "parametri.json").write_text(data.model_dump_json(), encoding="utf-8")
-    print(" funkcija_naredi_rezultat_za_csvje ✅ ")
-    print()
-    
-    funkcija_ki_narise_grafe(
-        data.zacetna_investicija, data.mesecni_vlozek, cela_investicija_skupaj,
-        language=data.language, csv_folder=csv_folder, graph_folder=graph_folder,
+
+    # 2. Iz vsakega dnevnega CSV-ja naredimo en HTML-graf.
+    ustvari_grafe_iz_csvjev(
+        data.zacetna_investicija, data.mesecni_vlozek, skupaj_vlozeno,
+        language=data.language,
     )
-    print(" funkcija_ki_narise_grafe ✅ ")
-    
 
-    
-    
-    # vse htmlje
-    json_grafi = dobi_grafe_v_json(simulation_id, data.language, request)
-    print(" vrnemo json grafov ✅ ")
-    
-    fancy_zakljucek_1()
-    return json_grafi
+    # 3. Frontend prejme povezave; ob odprtju grafa se izračun ne ponovi.
+    return dobi_grafe_v_json(request)
 
 
-@app.get("/graf/{simulation_id}/{language}/{filename}", name="graf_v_jeziku")
-def graf_v_jeziku(simulation_id: UUID, language: Literal["sl", "en"], filename: str):
-    """Drugi jezik izrišemo ob prvem odprtju iz istih CSV-jev, brez nove simulacije."""
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}--\d{4}-\d{2}-\d{2}\.html", filename):
-        raise HTTPException(status_code=404, detail="Graph not found")
-
-    csv_folder = MAPA_REZULTATI / simulation_id.hex
-    csv_path = csv_folder / Path(filename).with_suffix(".csv")
-    parameters_path = csv_folder / "parametri.json"
-    if not csv_path.is_file() or not parameters_path.is_file():
-        raise HTTPException(status_code=404, detail="Graph not found")
-
-    html_path = MAPA_GRAFI / simulation_id.hex / language / filename
-    if not html_path.is_file():
-        data = podatki_iz_frontenda.model_validate_json(parameters_path.read_text(encoding="utf-8"))
-        total = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
-        narisi_logaritmicne_grafe(
-            data.zacetna_investicija, data.mesecni_vlozek, total,
-            csv_path, html_path, language=language,
-        )
-    return FileResponse(html_path, media_type="text/html")
-    
-# ------------------------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------------------------------------
-# PRIDOBIVANJE PODATKOV - pomozne funkcije, ki jih rabimo
-# Te printi so v veliki meri fancy stvari, če hočemo brez damo chatu in nam odstrani fancy stvari
-# in koda bo krajsa, in ostala bo samo funkcionalnost
+# Izbira vhodnih podatkov
 
 def pridobi_indekse(izbran_indeks):
-    if  izbran_indeks== "S&P 500":
+    """Za izbrani indeks vrne serije v vrstnem redu: 1x, 2x, 3x."""
+    if izbran_indeks == "S&P 500":
         indeksi = [sp_500, sp_500_2x, sp_500_3x]
     elif izbran_indeks == "Nasdaq 100":
         indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
     elif izbran_indeks == "Nasdaq Composite":
         indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
-    
     return indeksi
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
-# GLAVNE TRI FUNKCIJE
-def funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks, tip_intervala="mesecni"):
-    # izracuna intervale
-    intervali = generiraj_intervale(indeks, interval, tip_intervala)
-    # ta progress je basically v konzoli da je bolj fancy 
-    with Progress() as progress:
-        print()
-        task = progress.add_task("[cyan]Izdelava osnoven.csv...", total=len(intervali))
-        # for loop za vse datume pac
-        for i in range(len(intervali)):
-            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "osnoven")
-            progress.advance(task)
-    return 0
+# Prvi API-klic: končni rezultati za primerjavo
 
-def funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks, tip_intervala="mesecni"):
-    # izracuna intervale
-    intervali = generiraj_intervale(indeks, interval, tip_intervala)
-    # ta progress je basically v konzoli da je bolj fancy 
-    with Progress() as progress:
-        task = progress.add_task("[magenta]Izdelava vzvod-2x.csv...", total=len(intervali))
-        # for loop za vse datume pac
-        for i in range(len(intervali)):
-            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "vzvod-2x")
-            progress.advance(task)
-    return 0
+def ustvari_primerjalne_csvje(
+    zacetna_investicija, mesecni_vlozek, interval, izbrani_indeksi,
+    tip_intervala="mesecni",
+):
+    """Pripravi osnoven.csv, vzvod-2x.csv in vzvod-3x.csv z rezultati obdobij."""
+    # Ta mapa je relativna mapi zagona, tako kot zapis v izracuni.py.
+    mapa = Path("testing")
+    mapa.mkdir(parents=True, exist_ok=True)
+    for datoteka in mapa.glob("*.csv"):
+        datoteka.unlink()
 
-def funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeks, tip_intervala="mesecni"):
-    # izracuna intervale
-    intervali = generiraj_intervale(indeks, interval, tip_intervala)
-    # ta progress je basically v konzoli da je bolj fancy 
-    with Progress() as progress:
-        task = progress.add_task("[orange1]Izdelava vzvod-3x.csv...", total=len(intervali))
-        # for loop za vse datume pac
-        for i in range(len(intervali)):
-            metoda_dca_za_testing_prilagojena(indeks, zacetna_investicija, mesecne_investicije,intervali[i][0], intervali[i][1], "vzvod-3x")
-            progress.advance(task)
+    # ZUNANJA ZANKA: skupno funkcijo pokličemo trikrat, enkrat za vsak vzvod.
+    for podatki_indeksa, ime_datoteke, barva in (
+        (izbrani_indeksi[0], "osnoven", "cyan"),
+        (izbrani_indeksi[1], "vzvod-2x", "magenta"),
+        (izbrani_indeksi[2], "vzvod-3x", "orange1"),
+    ):
+        ustvari_rezultate(
+            zacetna_investicija, mesecni_vlozek, interval, podatki_indeksa,
+            ime_datoteke, barva, tip_intervala,
+        )
     return 0
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
+def ustvari_rezultate(
+    zacetna_investicija, mesecni_vlozek, interval, podatki_indeksa,
+    ime_datoteke, barva, tip_intervala="mesecni",
+):
+    """Za EN vzvod izračuna vsa obdobja in rezultate zapiše v izbrani CSV."""
+    intervali = generiraj_intervale(podatki_indeksa, interval, tip_intervala)
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
-#FUNKCIJA KI KLICE UNE TRI ZGORAJ
-def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, indeksi, tip_intervala="mesecni"):
-    # Najprej se prepričamo, da mapa 'testing' sploh obstaja
-    os.makedirs('testing', exist_ok=True)
-    
-    # preverimo ce so od prejsnega zagona programa ze kaksne datoteke v testing mapi, 
-    # in ce so jih izbrisemo, da ustvarimo prostor da se ustvarijo nove -> brez tega filtra moramo sami zbrisat rocno
-    test_files = glob.glob('testing/*.csv')
-    if test_files:
-        for file in test_files:
-            os.remove(file)
-    funkcija_naredi_1x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[0], tip_intervala)
-    funkcija_naredi_2x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[1], tip_intervala)
-    funkcija_naredi_3x_rezultate(zacetna_investicija, mesecne_investicije, interval, indeksi[2], tip_intervala)
-    return 0
-
-
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki,
-                                   tip_intervala="mesecni", output_dir=None):
-    # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
-    # ce se ni ustvarjena mapa jo ustvarimo
-    folder = Path(output_dir) if output_dir is not None else MAPA_REZULTATI
-    folder.mkdir(parents=True, exist_ok=True)
-
-    # da pripravimo prostor da nove fajle damo notri moremo prej use zbrisat. to naredi pa ta koda
-    for csv_file in glob.glob(os.path.join(folder, "*.csv")):  # 🔍 Najdi vse CSV datoteke
-        os.remove(csv_file)
-
-    # izračuna intervale -> na podlagi osnovnega indeksa.. pac itak bodo imeli vsi iste intervale 
-    # in iste datume imajo.. teoreticno bi lahko tudi dali ker kol indeksi[1] ali indeksi[2]
-    intervali = generiraj_intervale(keri_indeksi[0], interval, tip_intervala)
-
-    
+    # Progress prikazuje samo napredek v terminalu; ne računa rezultatov.
     with Progress() as progress:
-        task = progress.add_task("[green]Ustvarjam CSV-je...", total=len(intervali))
-        for i in range(len(intervali)):
-            datum_zacetka = intervali[i][0]
-            datum_konca = intervali[i][1]
-            output_file = folder / f"{datum_zacetka}--{datum_konca}.csv"
-            # ker v for loopu klicemo je to zato ker za razlicne intervale
-            izracun_dca_metoda_prilagojena_da_naredi_csv(
-                keri_indeksi[0], keri_indeksi[1], keri_indeksi[2],
-                initial_investment = zacetna_investicija,
-                monthly_investment = mesecni_vlozki,
-                datum_zacetka = datum_zacetka,
-                datum_konca = datum_konca,
-                output_file = output_file
+        task = progress.add_task(f"[{barva}]Izdelava {ime_datoteke}.csv...", total=len(intervali))
+        # NOTRANJA ZANKA: vsak klic doda eno obdobje v isti CSV.
+        for datum_zacetka, datum_konca in intervali:
+            metoda_dca_za_testing_prilagojena(
+                podatki_indeksa, zacetna_investicija, mesecni_vlozek,
+                datum_zacetka, datum_konca, ime_datoteke,
             )
             progress.advance(task)
-            
     return 0
 
-# ------
 
-# 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
-def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj,
-                           language="sl", csv_folder=None, graph_folder=None):
-    print()
-    # usvarimo mapo ce se ne obstaja
-    folder = Path(graph_folder) if graph_folder is not None else MAPA_GRAFI / language
-    if folder.exists():
-        for file in folder.iterdir():
-            if file.is_file():
-                file.unlink()
-    else:
-        folder.mkdir(parents=True, exist_ok=True)
+# Drugi API-klic: dnevne vrednosti, grafi in povezave
 
-    # preštej csv-je v mapi in jih ustrezno vzemi
-    mapa = Path(csv_folder) if csv_folder is not None else MAPA_REZULTATI
-    csv_files = sorted(list(mapa.glob("*.csv")))
+def ustvari_dnevne_csvje(
+    izbrani_indeksi, interval, zacetna_investicija, mesecni_vlozek,
+    tip_intervala="mesecni",
+):
+    """Za vsako obdobje ustvari CSV z dnevnimi vrednostmi vseh treh vzvodov."""
+    MAPA_REZULTATI.mkdir(parents=True, exist_ok=True)
+    for datoteka in MAPA_REZULTATI.glob("*.csv"):
+        datoteka.unlink()
 
-    # tukaj dodaj da ustvari mapo ce se ne obstaja... 
-    # ce pa ze obstaja pa iz nje vse odstrani
+    # Vse tri serije imajo iste datume, zato obdobja določimo po seriji 1x.
+    intervali = generiraj_intervale(izbrani_indeksi[0], interval, tip_intervala)
+
     with Progress() as progress:
-        task = progress.add_task("[yellow]Izdelava HTML grafov...", total=len(csv_files))
-        html_files = [folder / f"{csv_path.stem}.html" for csv_path in csv_files]
+        task = progress.add_task("[green]Ustvarjam CSV-je...", total=len(intervali))
+        for datum_zacetka, datum_konca in intervali:
+            csv_pot = MAPA_REZULTATI / f"{datum_zacetka}--{datum_konca}.csv"
+            izracun_dca_metoda_prilagojena_da_naredi_csv(
+                izbrani_indeksi[0], izbrani_indeksi[1], izbrani_indeksi[2],
+                initial_investment=zacetna_investicija,
+                monthly_investment=mesecni_vlozek,
+                datum_zacetka=datum_zacetka,
+                datum_konca=datum_konca,
+                output_file=csv_pot,
+            )
+            progress.advance(task)
+    return 0
+
+
+def ustvari_grafe_iz_csvjev(
+    zacetna_investicija, mesecni_vlozek, skupaj_vlozeno, language="sl",
+):
+    """Prebere dnevne CSV-je in zamenja stare HTML-grafe z novimi."""
+    MAPA_GRAFI.mkdir(parents=True, exist_ok=True)
+    for datoteka in MAPA_GRAFI.glob("*.html"):
+        datoteka.unlink()
+
+    # Imena vsebujejo datume, zato sortiranje ohrani kronološki vrstni red.
+    csv_poti = sorted(MAPA_REZULTATI.glob("*.csv"))
+    html_poti = [MAPA_GRAFI / f"{csv_pot.stem}.html" for csv_pot in csv_poti]
+
+    with Progress() as progress:
+        task = progress.add_task("[yellow]Izdelava HTML grafov...", total=len(csv_poti))
         for _ in narisi_vec_grafov(
-            zacetna_investicija, mesecna_investicija, cela_investicija_skupaj,
-            csv_files, html_files, language=language,
+            zacetna_investicija, mesecni_vlozek, skupaj_vlozeno,
+            csv_poti, html_poti, language=language,
         ):
             progress.advance(task)
-    
-    
 
-def dobi_grafe_v_json(simulation_id, language, request):
-    """Vrne grafe po datumih ter URL za vsak jezik iste simulacije."""
-    mapa = MAPA_GRAFI / simulation_id / language
 
-    # Datoteke so sedaj poimenovane po datumih (YYYY-MM-DD--YYYY-MM-DD.html)
-    # Zato jih navadno abecedno sortiranje avtomatsko uredi kronološko!
-    files = sorted([f for f in mapa.iterdir() if f.suffix == ".html"])
-
-    results = []
-    for i, file_path in enumerate(files, start=1):
-        urls = {
-            lang: str(request.url_for("graf_v_jeziku", simulation_id=simulation_id,
-                                      language=lang, filename=file_path.name))
-            for lang in ("sl", "en")
-        }
-        results.append({
-            "id": i,
-            "title": file_path.stem,
-            "filename": file_path.name,
-            "url": urls[language],
-            "urls": urls,
+def dobi_grafe_v_json(request: Request):
+    """Vrne seznam povezav do že ustvarjenih HTML-grafov, urejen po datumih."""
+    datoteke = sorted(MAPA_GRAFI.glob("*.html"))
+    rezultati = []
+    for stevilka, html_pot in enumerate(datoteke, start=1):
+        rezultati.append({
+            "id": stevilka,
+            "title": html_pot.stem,
+            "filename": html_pot.name,
+            "url": str(request.url_for("grafi", path=html_pot.name)),
         })
-
-    return {
-        "simulation_id": simulation_id,
-        "language": language,
-        "results": results
-    }
-# ---------------------------------------------------------------------------------------------
-
-# POKLICEMO TO KAR JE TUKAJ IN JE TO TO
-
-# to rabimo ker te podatke uporabljata obe glavni funkciji
-
-
-
-
-
-
-
+    return {"results": rezultati}

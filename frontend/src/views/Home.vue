@@ -5,65 +5,35 @@ import { Loader2 } from 'lucide-vue-next'
 import { calculateSimulationStatistics } from '../utils/simulationStatistics'
 import { useI18n } from 'vue-i18n'
 
+// POTEK: klik »Izračunaj« → izracunaj() → primerjava_vrstic → html-files
+// → shranimo rezultate → prikažemo tabelo → showGraph() odpre izbrani graf.
 const { t, n, d, locale } = useI18n()
 
-// ref () pomeni : Shrani vrednost in ob njeni spremembi samodejno posodobi dele uporabniškega vmesnika, ki jo uporabljajo.
+// 1. Stanje obrazca
+// ref shrani vrednost; ob spremembi Vue posodobi njen prikaz.
 const initialInvestment = ref('')
 const monthlyContribution = ref('')
 const selectedIndex = ref('S&P 500')
 const selectedInterval = ref(15)
 const selectedIntervalType = ref<'letni' | 'mesecni'>('mesecni')
 
-
-// spremenljivka ali je backend ze odgovoril, vrednost je lahko strinj ali null -> ob uspesnem gre na "true"
-// pred zacetkom je null in rezultati so skriti, po uspesnem se da na true in rezulati se prikazejo
-const backendResponse = ref<string | null>(null)
-// Hrani seznam grafov, ki jih vrne backend, ko uporabnik klikne gumb za graf se url iz tega rezultata vzame
+// 2. Stanje rezultatov in odprtega grafa
+// Rezultate pokažemo, ko se oba API-klica uspešno zaključita.
+const rezultatiPripravljeni = ref(false)
+// Vsak graf vsebuje URL do HTML-datoteke na backendu.
 const grafi = ref<any[]>([])
-// Hrani informacijo, ali backend trenutno računa.
+// Med izračunom zaklenemo obrazec in pokažemo nalaganje.
 const isLoading = ref(false)
 
-// New refs for table rendering and modal
 const tableRows = ref<any[]>([])
 const tableSummary = ref<any | null>(null)
 const showGraphModal = ref(false)
-const selectedGraphIndex = ref<number | null>(null)
-// Backend vrne oba URL-ja; drugi jezik po potrebi izriše iz shranjenega CSV-ja.
-const selectedGraphUrl = computed(() => {
-  if (selectedGraphIndex.value === null) return ''
-  const graph = grafi.value[selectedGraphIndex.value]
-  return graph?.urls?.[locale.value] ?? graph?.url ?? ''
-})
+const selectedGraphUrl = ref('')
+
 let revizijaVnosa = 0
 
-
-// RAZLIKA MED WATCH IN COMPUTED
-// computed uporabiš, ko želiš izračunano vrednost iz drugih ref vrednosti.
-// Primer: totalInvested, isFormValid.
-// watch uporabiš, ko želiš ob spremembi izvesti neko dejanje.
-// Primer: pobrisati stare grafe, poslati zahtevo ali nekaj zapisati v konzolo.
-
-
-// ta funkcija se vedno 'izvaja' - čaka da se spremeni kaj in ukrepa,
-// razlika med computed in watch funkcijo je: 
-//  torej če se naredi sprememba od eni od teh, se izvede koda
-watch(
-  [initialInvestment, monthlyContribution, selectedIndex, selectedInterval, selectedIntervalType],
-  () => {
-    revizijaVnosa += 1
-    // pocistimo od prej 
-    backendResponse.value = null
-    tableRows.value = []
-    tableSummary.value = null
-    grafi.value = []
-    showGraphModal.value = false
-    selectedGraphIndex.value = null
-  }
-)
-
-// ko das gumb izracunaj se ta funkcija zalaufa, pogleda ce je vse prav vpisano
-// vsak computed spremlja tiste reaktivne vrednosti ki jih v sebi uporablja
-// kakroli se spremeni, se funkcija ponovno izvede
+// 3. Izračunane vrednosti za prikaz
+// computed se posodobi, ko se spremeni katera od uporabljenih reaktivnih vrednosti.
 const isFormValid = computed(function () {
   return initialInvestment.value !== '' &&
          monthlyContribution.value !== '' &&
@@ -92,7 +62,10 @@ const comparisonsByYear = computed(() => {
   const years: Record<string, { row: any; index: number }[]> = {}
   tableRows.value.forEach((row, index) => {
     const year = row.datum.slice(0, 4)
-    ;(years[year] ??= []).push({ row, index })
+    if (!years[year]) {
+      years[year] = []
+    }
+    years[year].push({ row, index })
   })
   return years
 })
@@ -139,9 +112,27 @@ const statisticRows = computed(() => {
   ]
 })
 
+// 4. Sprememba vnosa skrije prejšnje rezultate.
+function pocistiRezultate() {
+  rezultatiPripravljeni.value = false
+  tableRows.value = []
+  tableSummary.value = null
+  grafi.value = []
+  showGraphModal.value = false
+  selectedGraphUrl.value = ''
+}
 
+// watch izvede dejanje ob spremembi katerega od naštetih vnosov.
+// Jezika ni na seznamu: njegova sprememba ohrani že izračunane grafe.
+watch(
+  [initialInvestment, monthlyContribution, selectedIndex, selectedInterval, selectedIntervalType],
+  () => {
+    revizijaVnosa += 1
+    pocistiRezultate()
+  }
+)
 
-
+// 5. Oblikovanje datumov, števil in oznak
 const formatCount = (num: number) => n(num, 'integer')
 const formatNumber = (num: number) => n(num, 'decimal')
 
@@ -170,21 +161,16 @@ const getEtfLabel = (file: string) => {
   return file
 }
 
+// 6. Glavni potek po kliku »Izračunaj«
 async function izracunaj() {
-  console.log("Poslal podatke na backend!")
+  // Shranimo različico vnosa, da poznejši odgovor ne prepiše novih podatkov.
   const revizijaObZacetku = revizijaVnosa
-  // pocistimo od prej 
-  backendResponse.value = null
-  tableRows.value = []
-  tableSummary.value = null
-  grafi.value = []
-  showGraphModal.value = false
-  selectedGraphIndex.value = null
+  pocistiRezultate()
 
   isLoading.value = true
 
   try {
-    // podatki ki se posljejo
+    // 1. Sestavimo JSON. Jezik zajamemo enkrat in ga pošljemo v obeh zahtevah.
     const podatki_za_poslat = {
       zacetna_investicija: Number(initialInvestment.value),
       mesecni_vlozek: Number(monthlyContribution.value),
@@ -194,49 +180,40 @@ async function izracunaj() {
       language: locale.value,
     }
 
-    // KLICI NA BACKEND IN ODGOVORI
-    // Najprej izvedemo prvi klic na backend, da se printi v konzoli ne mešajo
+    // 2. Počakamo na primerjavo končnih rezultatov za tabelo.
     const responseVrstice = await axios.post('http://localhost:8000/primerjava_vrstic', podatki_za_poslat)
-    // Šele ko se prvi klic (in njegovi printi) zaključi, sprožimo drugega
+    // 3. Nato počakamo še na pripravo grafov.
     const responseGrafi = await axios.post('http://localhost:8000/html-files', podatki_za_poslat)
 
-    // shranimo v variable saj je v lastnosti data to, saj data potrebujemo, je pa še več parametrov
+    // Odgovor backenda je shranjen v lastnosti data.
     const dataVrstice = responseVrstice.data
     const dataGrafi = responseGrafi.data
 
-    console.log("Prejeli podatke iz backenda")
-    // da jih lahko kadarkoli pogledamo v dev toolsih v browserju
-    console.log("Podatki za tabelo:", dataVrstice)
-    console.log("Podatki za grafe:", dataGrafi)
-
-    // zavržemo odgovor stare simulacije, ce je uporabnik zacel pisati nove parametre v formo
+    // Če so se vnosi med čakanjem spremenili, ta odgovor zavržemo.
     if (revizijaObZacetku !== revizijaVnosa) {
       return
     }
 
-    // Vse spremenljivke posodobimo hkrati
+    // 4. Shranimo oba odgovora in pokažemo rezultate.
     tableSummary.value = dataVrstice.summary
     tableRows.value = dataVrstice.rows
     grafi.value = dataGrafi.results || []
-    
-    // Šele zdaj pokažemo rezultate
-    backendResponse.value = "true" 
 
-  } 
-  catch (error) {
+    rezultatiPripravljeni.value = true
+
+  } catch (error) {
     console.error("Poskus povezave spodletel:", error)
     alert(t('home.backendError'))
-  } 
-  finally {
+  } finally {
     isLoading.value = false
   }
 }
 
-// ta funkcija se izvede kot clovek kliknen na gumb graf
+// 7. Klik »Graf« odpre že pripravljeni HTML; novega izračuna ne sproži.
 const showGraph = (index: number) => {
   if (grafi.value[index]) {
-    // URL sledi trenutnemu jeziku tudi po že opravljenem izračunu.
-    selectedGraphIndex.value = index
+    // Graf ostane v jeziku zadnjega izračuna, tudi če uporabnik preklopi jezik strani.
+    selectedGraphUrl.value = grafi.value[index].url
     showGraphModal.value = true
   }
 }
@@ -369,7 +346,7 @@ const showGraph = (index: number) => {
 
 
       <!-- Results Section -->
-        <div v-if="backendResponse && tableRows.length > 0" class="mt-10 flex justify-center px-6">
+        <div v-if="rezultatiPripravljeni && tableRows.length > 0" class="mt-10 flex justify-center px-6">
           
           <div class="w-full min-w-0 max-w-[1600px] bg-transparent">
             <div style="font-family: sans-serif;">

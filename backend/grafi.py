@@ -7,13 +7,12 @@ from functools import partial
 from multiprocessing import get_context
 import os
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from html import escape
 from prevodi_grafov import prevodi_za_jezik, plotly_config
 
 
-def narisi_vec_grafov(zacetna_investicija, mesecna_investicija,
-                     vse_investicije_skupaj, csv_paths, html_paths, language="sl"):
+def narisi_vec_grafov(zacetna_investicija, mesecni_vlozek,
+                     skupaj_vlozeno, csv_paths, html_paths, language="sl"):
     """Riše neodvisne grafe na največ štirih procesih; yield za vsak končan graf.
 
     Majhne serije rišemo zaporedno, ker bi zagon procesov trajal dlje.
@@ -25,7 +24,7 @@ def narisi_vec_grafov(zacetna_investicija, mesecna_investicija,
     prevodi_za_jezik(language)
     workers = min(4, os.cpu_count() or 1)
     narisi = partial(narisi_logaritmicne_grafe, zacetna_investicija,
-                     mesecna_investicija, vse_investicije_skupaj, language=language)
+                     mesecni_vlozek, skupaj_vlozeno, language=language)
     if workers == 1 or len(csv_paths) < 16:
         yield from map(narisi, csv_paths, html_paths)
         return
@@ -49,8 +48,8 @@ def narisi_vec_grafov(zacetna_investicija, mesecna_investicija,
 
 def narisi_logaritmicne_grafe(
     zacetna_investicija,
-    mesecna_investicija,
-    vse_investicije_skupaj,
+    mesecni_vlozek,
+    skupaj_vlozeno,
     csv_path: str,
     output_html: str,
     columns: Optional[List[str]] = None,
@@ -108,7 +107,7 @@ def narisi_logaritmicne_grafe(
     # Enako kot DCA: začetni vložek, nato vplačilo ob prehodu v nov mesec.
     meseci = df["date"].dt.month
     stevilo_vplacil = (meseci != meseci.shift()).cumsum() - 1
-    skupna_vplacila = zacetna_investicija + stevilo_vplacil * mesecna_investicija
+    skupna_vplacila = zacetna_investicija + stevilo_vplacil * mesecni_vlozek
 
     if columns is None:
         y_cols = [c for c in df.columns if c.lower() != "date"]
@@ -199,8 +198,8 @@ def narisi_logaritmicne_grafe(
     end_date_str   = pd.to_datetime(df["date"].max()).strftime(besedila["date_format"])
 
     z_html = fmt_intbold_html(zacetna_investicija, 2) + dolar
-    m_html = fmt_intbold_html(mesecna_investicija, 2) + dolar
-    s_html = fmt_intbold_html(vse_investicije_skupaj, 2) + dolar
+    m_html = fmt_intbold_html(mesecni_vlozek, 2) + dolar
+    s_html = fmt_intbold_html(skupaj_vlozeno, 2) + dolar
 
     color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"][:len(y_cols)]
     label_colors = dict(zip(y_cols, color_seq))
@@ -245,15 +244,4 @@ def narisi_logaritmicne_grafe(
     title = escape(f"{besedila['title']} – {start_date_str} – {end_date_str}")
     html = html.replace("</head>", f"<title>{title}</title></head>", 1)
     html = inject_favicon(html, emoji="🌳", bg=None)  # emoji lahko zamenjaš (npr. "📊", "🚀"); bg="#fff" doda belo ozadje
-    output_path = Path(output_html)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    # Sočasni zahtevi ne smeta prebrati le delno zapisanega HTML-ja.
-    with NamedTemporaryFile(mode="w", encoding="utf-8", dir=output_path.parent,
-                            suffix=".tmp", delete=False) as temporary:
-        temporary_path = Path(temporary.name)
-        try:
-            temporary.write(html)
-            temporary.close()
-            temporary_path.replace(output_path)
-        finally:
-            temporary_path.unlink(missing_ok=True)
+    Path(output_html).write_text(html, encoding="utf-8")
