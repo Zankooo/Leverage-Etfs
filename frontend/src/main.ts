@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import './index.css'
+import { i18n } from './i18n'
 
 import Home from './views/Home.vue'
 import About from './views/About.vue'
@@ -28,5 +29,6 @@ const router = createRouter({
 })
 
 const app = createApp(App)
+app.use(i18n)
 app.use(router)
 app.mount('#root')

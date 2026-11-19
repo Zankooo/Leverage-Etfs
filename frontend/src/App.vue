@@ -2,15 +2,18 @@
 import { RouterView, RouterLink, useRoute } from 'vue-router'
 import { Menu, X, TrendingUp } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const isMenuOpen = ref(false)
 
 const navItems = [
-  { name: 'Simulacija', path: '/' },
-  { name: 'O projektu', path: '/about' },
-  { name: 'Prednosti', path: '/features' },
-  { name: 'Kontakt', path: '/contact' },
+  { label: 'nav.simulation', path: '/' },
+  { label: 'nav.about', path: '/about' },
+  { label: 'nav.features', path: '/features' },
+  { label: 'nav.contact', path: '/contact' },
 ]
 </script>
 
@@ -22,43 +25,47 @@ const navItems = [
 
       <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12">
         
-        <div class="flex justify-between h-16 items-center">
+        <div class="flex justify-between h-16 items-center gap-3">
 
-          <div class="flex items-center gap-2">
-            <TrendingUp class="text-[#10B981] w-6 h-6" />
-            <span class="text-xl font-semibold tracking-tight">Vzvodno</span>
+          <div class="flex min-w-0 items-center gap-2">
+            <TrendingUp class="text-[#10B981] w-6 h-6 shrink-0" />
+            <span class="text-sm sm:text-xl font-semibold leading-tight tracking-tight">{{ t('app.brand') }}</span>
           </div>
           
           <!-- Desktop Nav -->
-          <div class="hidden md:flex space-x-8">
-            <RouterLink 
-              v-for="item in navItems" 
-              :key="item.path"
-              :to="item.path"
-              class="text-sm font-medium transition-colors hover:text-[#10B981]"
-              :class="route.path === item.path ? 'text-[#10B981]' : 'text-gray-500'"
-            >
-              {{ item.name }}
-            </RouterLink>
-          </div>
+          <div class="flex shrink-0 items-center gap-3 md:gap-6 lg:gap-8">
+            <div class="hidden md:flex gap-5 lg:gap-8">
+              <RouterLink
+                v-for="item in navItems"
+                :key="item.path"
+                :to="item.path"
+                class="text-sm font-medium transition-colors hover:text-[#10B981]"
+                :class="route.path === item.path ? 'text-[#10B981]' : 'text-gray-500'"
+              >
+                {{ t(item.label) }}
+              </RouterLink>
+            </div>
 
-          <!-- Mobile Menu Button -->
-          <div class="md:hidden">
-            <button
-              @click="isMenuOpen = !isMenuOpen"
-              :aria-expanded="isMenuOpen"
-              aria-label="Odpri ali zapri navigacijski meni"
-              class="relative flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:text-gray-700"
-            >
-              <Menu
-                class="absolute h-6 w-6 transition-all duration-300 ease-out"
-                :class="isMenuOpen ? 'rotate-90 scale-75 opacity-0' : 'rotate-0 scale-100 opacity-100'"
-              />
-              <X
-                class="absolute h-6 w-6 transition-all duration-300 ease-out cursor-pointer"
-                :class="isMenuOpen ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-75 opacity-0'"
-              />
-            </button>
+            <LanguageSwitcher />
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+              <button
+                @click="isMenuOpen = !isMenuOpen"
+                :aria-expanded="isMenuOpen"
+                :aria-label="t('app.toggleMenu')"
+                class="relative flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:text-gray-700"
+              >
+                <Menu
+                  class="absolute h-6 w-6 transition-all duration-300 ease-out"
+                  :class="isMenuOpen ? 'rotate-90 scale-75 opacity-0' : 'rotate-0 scale-100 opacity-100'"
+                />
+                <X
+                  class="absolute h-6 w-6 transition-all duration-300 ease-out cursor-pointer"
+                  :class="isMenuOpen ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-75 opacity-0'"
+                />
+              </button>
+            </div>
           </div>
 
         </div>
@@ -77,7 +84,7 @@ const navItems = [
                 class="block py-2 text-base font-medium text-gray-600 hover:text-[#10B981]"
                 @click="isMenuOpen = false"
               >
-                {{ item.name }}
+                {{ t(item.label) }}
               </RouterLink>
             </div>
           </div>
@@ -98,7 +105,7 @@ const navItems = [
     <!-- Footer -->
     <footer class="bg-white border-t border-gray-100 py-7 mt-auto">
       <div class="max-w-screen-2xl mx-auto px-6 lg:px-10 xl:px-12 text-center">
-        <p class="text-gray-400 text-sm">© 2026 Vzvodno Investiranje.</p>
+        <p class="text-gray-400 text-sm">{{ t('app.footer') }}</p>
       </div>
     </footer>
   </div>

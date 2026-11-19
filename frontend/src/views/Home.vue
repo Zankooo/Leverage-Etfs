@@ -3,7 +3,9 @@ import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { Loader2 } from 'lucide-vue-next'
 import { calculateSimulationStatistics } from '../utils/simulationStatistics'
+import { useI18n } from 'vue-i18n'
 
+const { t, n, d } = useI18n()
 
 // ref () pomeni : Shrani vrednost in ob njeni spremembi samodejno posodobi dele uporabniškega vmesnika, ki jo uporabljajo.
 const initialInvestment = ref('')
@@ -93,38 +95,38 @@ const statisticRows = computed(() => {
   const statistics = strategies.map(strategy => simulationStatistics.value[strategy.file])
   return [
     {
-      label: 'Skupno simulacij',
-      explanation: 'Število zgodovinskih obdobij, v katerih smo primerjali posamezno strategijo.',
+      label: t('statistics.count.label'),
+      explanation: t('statistics.count.explanation'),
       values: statistics.map(statistic => statistic.count),
       currency: false,
     },
     {
-      label: 'Denar investiran',
-      explanation: 'Začetni vložek in vsa mesečna vplačila v eni simulaciji, brez donosov. Enako za vse tri strategije.',
+      label: t('statistics.invested.label'),
+      explanation: t('statistics.invested.explanation'),
       values: strategies.map(() => totalInvested.value),
       currency: true,
     },
     {
-      label: 'Povprečna končna vrednost',
-      explanation: 'Vsota končnih vrednosti naložbe, deljena s številom simulacij.',
+      label: t('statistics.mean.label'),
+      explanation: t('statistics.mean.explanation'),
       values: statistics.map(statistic => statistic.mean),
       currency: true,
     },
     {
-      label: 'Mediana končne vrednosti',
-      explanation: 'Sredinska vrednost urejenih rezultatov. Pri sodem številu simulacij je povprečje obeh sredinskih vrednosti.',
+      label: t('statistics.median.label'),
+      explanation: t('statistics.median.explanation'),
       values: statistics.map(statistic => statistic.median),
       currency: true,
     },
     {
-      label: 'Najboljša končna vrednost',
-      explanation: 'Najvišja končna vrednost naložbe med vsemi simulacijami te strategije.',
+      label: t('statistics.max.label'),
+      explanation: t('statistics.max.explanation'),
       values: statistics.map(statistic => statistic.max),
       currency: true,
     },
     {
-      label: 'Najslabša končna vrednost',
-      explanation: 'Najnižja končna vrednost naložbe med vsemi simulacijami te strategije.',
+      label: t('statistics.min.label'),
+      explanation: t('statistics.min.explanation'),
       values: statistics.map(statistic => statistic.min),
       currency: true,
     },
@@ -134,13 +136,14 @@ const statisticRows = computed(() => {
 
 
 
-const formatCount = (num: number) => new Intl.NumberFormat('sl-SI').format(num)
+const formatCount = (num: number) => n(num, 'integer')
+const formatNumber = (num: number) => n(num, 'decimal')
 
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat('sl-SI', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(num)
+const formatDateRange = (value: string) => {
+  const dates = value.match(/\d{4}-\d{2}-\d{2}/g)
+  return dates
+    ? dates.map(date => d(new Date(`${date}T00:00:00Z`), 'short')).join(' – ')
+    : value
 }
 
 const formatPercent = (num: number) => {
@@ -155,9 +158,9 @@ const getEtfColor = (file: string) => {
 }
 
 const getEtfLabel = (file: string) => {
-  if (file === 'osnoven.csv') return 'Osnoven'
-  if (file === 'vzvod-2x.csv') return '2x vzvod'
-  if (file === 'vzvod-3x.csv') return '3x vzvod'
+  if (file === 'osnoven.csv') return t('home.unleveraged')
+  if (file === 'vzvod-2x.csv') return t('home.leverage', { leverage: '2x' })
+  if (file === 'vzvod-3x.csv') return t('home.leverage', { leverage: '3x' })
   return file
 }
 
@@ -215,7 +218,7 @@ async function izracunaj() {
   } 
   catch (error) {
     console.error("Poskus povezave spodletel:", error)
-    alert("Prisotna je težava z backendom ali pa ne teče na portu 8000!")
+    alert(t('home.backendError'))
   } 
   finally {
     isLoading.value = false
@@ -241,31 +244,33 @@ const showGraph = (index: number) => {
       <!-- Calculation Form Card -->
       <div class="bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-7 md:p-10 border border-gray-50">
         <div class="text-center mb-7">
-          <h1 class="text-3xl font-bold text-[#1A1A1A] mb-2 tracking-tight">Vzvodno investiranje</h1>
-          <p class="text-gray-400 text-base">Vnesi parametre in pripravi simulacijo rasti portfelja.</p>
+          <h1 class="text-3xl font-bold text-[#1A1A1A] mb-2 tracking-tight">{{ t('home.title') }}</h1>
+          <p class="text-gray-400 text-base">{{ t('home.intro') }}</p>
         </div>
 
         <div class="space-y-5">
           <!-- Initial Investment -->
           <div>
-            <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Začetna investicija (€)</label>
+            <label for="initial-investment" class="block text-sm font-medium text-[#1A1A1A] mb-2">{{ t('home.initialInvestment') }}</label>
             <input 
+              id="initial-investment"
               v-model="initialInvestment"
               :disabled="isLoading"
               type="number" 
-              placeholder="npr. 1.000 €"
+              :placeholder="t('home.initialPlaceholder')"
               class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
             />
           </div>
 
           <!-- Monthly Contribution -->
           <div>
-            <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Mesečni vložek (€)</label>
+            <label for="monthly-contribution" class="block text-sm font-medium text-[#1A1A1A] mb-2">{{ t('home.monthlyContribution') }}</label>
             <input 
+              id="monthly-contribution"
               v-model="monthlyContribution"
               :disabled="isLoading"
               type="number" 
-              placeholder="npr. 100 €"
+              :placeholder="t('home.monthlyPlaceholder')"
               class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
             />
           </div>
@@ -273,10 +278,11 @@ const showGraph = (index: number) => {
           <!-- Kater indeks -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Indeks</label>
+              <label for="selected-index" class="block text-sm font-medium text-[#1A1A1A] mb-2">{{ t('home.index') }}</label>
               
               <div class="relative">
                 <select 
+                  id="selected-index"
                   v-model="selectedIndex"
                   :disabled="isLoading"
                   class="w-full px-4 py-3 pr-10 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
@@ -295,21 +301,22 @@ const showGraph = (index: number) => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[#1A1A1A] mb-2">Dolžina obdobja (leta)</label>
+              <label for="selected-interval" class="block text-sm font-medium text-[#1A1A1A] mb-2">{{ t('home.duration') }}</label>
               <input 
+                id="selected-interval"
                 v-model="selectedInterval"
                 :disabled="isLoading"
                 type="number"
                 min="1"
                 max="50"
-                placeholder="npr. 10"
+                :placeholder="t('home.durationPlaceholder')"
                 class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all placeholder:text-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               />
             </div>
           </div>
 
           <div>
-            <label for="interval-type" class="block text-sm font-medium text-[#1A1A1A] mb-2">Tip intervala</label>
+            <label for="interval-type" class="block text-sm font-medium text-[#1A1A1A] mb-2">{{ t('home.intervalType') }}</label>
             <div class="relative">
               <select
                 id="interval-type"
@@ -318,8 +325,8 @@ const showGraph = (index: number) => {
                 aria-describedby="interval-type-description"
                 class="w-full px-4 py-3 pr-10 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               >
-                <option value="letni">Letni interval</option>
-                <option value="mesecni">Mesečni interval</option>
+                <option value="letni">{{ t('home.annualInterval') }}</option>
+                <option value="mesecni">{{ t('home.monthlyInterval') }}</option>
               </select>
               <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -328,10 +335,8 @@ const showGraph = (index: number) => {
               </div>
             </div>
             <p id="interval-type-description" class="mt-2 text-sm text-gray-500">
-              {{ selectedIntervalType === 'letni'
-                ? 'Novo obdobje se začne na prvem dnevu vsakega leta.'
-                : 'Novo obdobje se začne na prvem  dnevu vsakega meseca. Več primerjav pomeni daljši izračun. (Rahlo natančnejši izračun).' }}
-              Dolžina obdobja ostane v letih.
+              {{ t(selectedIntervalType === 'letni' ? 'home.annualDescription' : 'home.monthlyDescription') }}
+              {{ t('home.durationNote') }}
             </p>
           </div>
 
@@ -342,7 +347,7 @@ const showGraph = (index: number) => {
             class="w-full py-3.5 bg-[#10B981] hover:bg-[#059669] text-white text-base font-semibold rounded-xl transition-all shadow-lg shadow-[#10B981]/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           >
             <Loader2 v-if="isLoading" class="w-5 h-5 animate-spin" />
-            <span >{{ isLoading ? 'Računam...' : 'Izračunaj' }}</span>
+            <span>{{ t(isLoading ? 'home.calculating' : 'home.calculate') }}</span>
           </button>
 
           <p
@@ -350,7 +355,7 @@ const showGraph = (index: number) => {
             role="status"
             class="text-center text-sm text-gray-600"
           >
-            Izračun traja do pol minute
+            {{ t('home.loadingNote') }}
           </p>
         </div>
       </div>
@@ -363,7 +368,7 @@ const showGraph = (index: number) => {
           
           <div class="w-full min-w-0 max-w-[1600px] bg-transparent">
             <div style="font-family: sans-serif;">
-              <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">Rezultati simulacije</h2>
+              <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">{{ t('home.results') }}</h2>
               
               <!-- Summary Section Card -->
               <div v-if="tableSummary" class="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm mb-8">
@@ -374,32 +379,32 @@ const showGraph = (index: number) => {
                   <div class="pt-8 border-t border-gray-50">
                     <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                       <span class="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">⚙️</span>
-                      Vneseni parametri
+                      {{ t('home.parameters') }}
                     </h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Začetna inv.</div>
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ t('home.initialShort') }}</div>
                         <div class="text-lg font-bold text-[#1A1A1A]">{{ formatNumber(Number(initialInvestment)) }} €</div>
                       </div>
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Mesečni vložek</div>
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ t('home.monthlyShort') }}</div>
                         <div class="text-lg font-bold text-[#1A1A1A]">{{ formatNumber(Number(monthlyContribution)) }} €</div>
                       </div>
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-[10px] font-black uppercase tracking-wider mb-1">Skupaj investirano</div>
+                        <div class="text-[10px] font-black uppercase tracking-wider mb-1">{{ t('home.totalInvested') }}</div>
                         <div class="text-lg font-bold">{{ formatNumber(totalInvested) }} €</div>
                       </div>
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Doba (leta)</div>
-                        <div class="text-lg font-bold text-[#1A1A1A]">{{ selectedInterval }} let</div>
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ t('home.durationShort') }}</div>
+                        <div class="text-lg font-bold text-[#1A1A1A]">{{ t('home.years', Number(selectedInterval)) }}</div>
                       </div>
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Indeks</div>
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ t('home.index') }}</div>
                         <div class="text-lg font-bold text-[#1A1A1A]">{{ selectedIndex }}</div>
                       </div>
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Tip intervala</div>
-                        <div class="text-lg font-bold text-[#1A1A1A]">{{ selectedIntervalType === 'letni' ? 'Letni' : 'Mesečni' }}</div>
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ t('home.intervalType') }}</div>
+                        <div class="text-lg font-bold text-[#1A1A1A]">{{ t(selectedIntervalType === 'letni' ? 'home.annual' : 'home.monthly') }}</div>
                       </div>
                     </div>
                   </div>
@@ -413,20 +418,20 @@ const showGraph = (index: number) => {
                   <section aria-labelledby="simulation-statistics-heading" class="min-w-0">
                     <h3 id="simulation-statistics-heading" class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-3">
                       <span aria-hidden="true" class="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">📋</span>
-                      Statistika simulacij
+                      {{ t('home.statistics') }}
                     </h3>
                     
                     <div
                       class="overflow-x-auto rounded-2xl border border-gray-100 focus-visible:outline-2 focus-visible:outline-[#10B981]"
                       role="region"
-                      aria-label="Statistika simulacij po vzvodih; tabelo lahko pomaknete vodoravno"
+                      :aria-label="t('home.statisticsRegion')"
                       tabindex="0"
                     >
                       <table class="w-full min-w-[1040px] text-sm text-left">
-                        <caption class="sr-only">Statistika naložb v {{ selectedIndex }} za vzvode 1x, 2x in 3x.</caption>
+                        <caption class="sr-only">{{ t('home.statisticsCaption', { index: selectedIndex }) }}</caption>
                         <thead>
                           <tr class="border-b border-gray-100">
-                            <th scope="col" class="px-5 py-4 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider">Kazalnik</th>
+                            <th scope="col" class="px-5 py-4 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider">{{ t('home.metric') }}</th>
                             <th
                               v-for="strategy in strategies"
                               :key="strategy.file"
@@ -435,9 +440,9 @@ const showGraph = (index: number) => {
                               :style="{ backgroundColor: getEtfColor(strategy.file) + '12' }"
                             >
                               <span class="block text-xs font-medium text-gray-500 mb-1">{{ selectedIndex }}</span>
-                              <span class="text-base font-bold" :style="{ color: getEtfColor(strategy.file) }">{{ strategy.leverage }} vzvod</span>
+                              <span class="text-base font-bold" :style="{ color: getEtfColor(strategy.file) }">{{ t('home.leverage', { leverage: strategy.leverage }) }}</span>
                             </th>
-                            <th scope="col" class="w-[30%] px-5 py-4 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider">Razlaga pojma</th>
+                            <th scope="col" class="w-[30%] px-5 py-4 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider">{{ t('home.explanation') }}</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -452,7 +457,7 @@ const showGraph = (index: number) => {
                               <template v-if="value !== null">
                                 {{ statistic.currency ? formatNumber(value) : formatCount(value) }}<span v-if="statistic.currency" class="ml-1 text-xs font-medium text-gray-400">€</span>
                               </template>
-                              <span v-else class="text-gray-400" aria-label="Ni podatkov">—</span>
+                              <span v-else class="text-gray-400" :aria-label="t('home.noData')">—</span>
                             </td>
                             <td class="px-5 py-4 text-xs leading-relaxed text-gray-500">{{ statistic.explanation }}</td>
                           </tr>
@@ -470,20 +475,20 @@ const showGraph = (index: number) => {
                   <div>
                     <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                       <span class="bg-[#10B981]/10 p-2 rounded-lg text-[#10B981]">📊</span>
-                      Povzetek primerjave
+                      {{ t('home.comparisonSummary') }}
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 
                       <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                        <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Skupno primerjav</div>
-                        <div class="text-2xl font-bold text-gray-900">{{ tableSummary.total_compared }}</div>
+                        <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ t('home.totalComparisons') }}</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ formatCount(tableSummary.total_compared) }}</div>
                       </div>
 
                       <div v-for="(winData, file) in tableSummary.wins" :key="file" class="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
                         <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{{ getEtfLabel(file as string) }}</div>
                         <div class="text-2xl font-bold" :style="{ color: getEtfColor(file as string) }">
-                          {{ winData.count }} <span class="text-sm font-medium opacity-60">({{ winData.procent }}%)</span>
+                          {{ formatCount(winData.count) }} <span class="text-sm font-medium opacity-60">({{ n(winData.procent / 100, 'percent') }})</span>
                         </div>
                       </div>
 
@@ -498,7 +503,7 @@ const showGraph = (index: number) => {
 
 
               <!-- Summary Section Card -->
-              <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">Posamezne simulacije</h2>
+              <h2 class="text-2xl font-bold text-[#1A1A1A] mb-8">{{ t('home.individualSimulations') }}</h2>
               <!-- Results List (Full-width "Rows") -->
               <div class="flex flex-col gap-4">
                 <component
@@ -519,7 +524,7 @@ const showGraph = (index: number) => {
                   <!-- Date column -->
                   <div class="shrink-0 lg:w-32">
                     <div class="bg-gray-50 px-4 py-2 rounded-full text-[13px] font-black text-gray-400 border border-gray-100 uppercase tracking-[0.15em] text-center">
-                      {{ row.datum }}
+                      {{ formatDateRange(row.datum) }}
                     </div>
                   </div>
 
@@ -577,7 +582,7 @@ const showGraph = (index: number) => {
                       class="w-full translate-x-0 cursor-pointer rounded-[14px] border-2 border-[#10B98130] bg-[#10B98120] px-7 py-3 text-[0.8125rem] font-black tracking-[0.05em] text-[#059669] uppercase transition-[background-color,border-color,translate] duration-200 ease-[ease] hover:translate-x-1 hover:border-[#10B98150] hover:bg-[#10B98130]"
                       @click="showGraph(index)"
                     >
-                      Graf
+                      {{ t('home.graph') }}
                     </button>
                   </div>
                   <!-- Button column konec -->
@@ -594,9 +599,10 @@ const showGraph = (index: number) => {
           <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showGraphModal = false"></div>
           <div class="relative w-full max-w-[95vw] h-[90vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
-              <h3 class="text-xl font-bold text-gray-800">Pregled grafa</h3>
+              <h3 class="text-xl font-bold text-gray-800">{{ t('home.graphOverview') }}</h3>
               <button 
                 @click="showGraphModal = false"
+                :aria-label="t('home.closeGraph')"
                 class="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -608,7 +614,7 @@ const showGraph = (index: number) => {
               <!-- dvopicje pomeni da je src poveza z reaktivno spremeljivko selectedGraphUrl -->
               <!-- selectedGraphUrl  = http://localhost:8000/grafi/1930-01-02--1945-01-02.html -->
               <!-- tuki je v bistvu klic na backend, na ta link -->
-               <iframe :src="selectedGraphUrl" class="w-full h-full border-none"></iframe>
+               <iframe :src="selectedGraphUrl" :title="t('home.graphFrame')" class="w-full h-full border-none"></iframe>
             </div>
             </div>
           </div>
