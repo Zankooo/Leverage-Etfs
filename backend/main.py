@@ -3,12 +3,13 @@ import glob
 import re
 from pathlib import Path
 from typing import Literal
+from uuid import UUID, uuid4
 
 # Third-party libraries
 from colorama import init, Fore, Style
 from rich.progress import Progress
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -18,7 +19,7 @@ from izracuni import *
 from testing_file import *
 from obcasno_pogosti_fajli.csv_operacije import *
 from obcasno_pogosti_fajli.fancy_zakljucki_programa import *
-from grafi import narisi_vec_grafov
+from grafi import narisi_vec_grafov, narisi_logaritmicne_grafe
 
 init(autoreset=True)
 
@@ -90,6 +91,7 @@ class podatki_iz_frontenda(BaseModel):
     indeks : str
     interval : int
     tip_intervala: Literal["letni", "mesecni"] = "mesecni"
+    language: Literal["sl", "en"] = "sl"
 
 # primerjava_vrstic ti zračuna številke in statistiko, 
 # kdo je zmagovalec (1x, 2x ali 3x).
@@ -123,7 +125,7 @@ def root(data: podatki_iz_frontenda):
 # posebej in ti iz njih nariše grafe, 
 # da lahko gibanje investicije dejansko vidiš!
 @app.post("/html-files")
-def root(data: podatki_iz_frontenda):
+def ustvari_grafe(data: podatki_iz_frontenda, request: Request):
     print()
     print("DRUGI REST API CALL ")
     
@@ -133,23 +135,57 @@ def root(data: podatki_iz_frontenda):
     
     cela_investicija_skupaj = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
 
+    # Vsaka simulacija ohrani svoje številčne rezultate in obe jezikovni različici.
+    simulation_id = uuid4().hex
+    csv_folder = MAPA_REZULTATI / simulation_id
+    graph_folder = MAPA_GRAFI / simulation_id / data.language
 
-    funkcija_naredi_rezultat_za_csvje(keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek, data.tip_intervala)
+    funkcija_naredi_rezultat_za_csvje(
+        keri_indeksi, data.interval, data.zacetna_investicija, data.mesecni_vlozek,
+        data.tip_intervala, output_dir=csv_folder,
+    )
+    (csv_folder / "parametri.json").write_text(data.model_dump_json(), encoding="utf-8")
     print(" funkcija_naredi_rezultat_za_csvje ✅ ")
     print()
     
-    funkcija_ki_narise_grafe(data.zacetna_investicija, data.mesecni_vlozek, cela_investicija_skupaj)
+    funkcija_ki_narise_grafe(
+        data.zacetna_investicija, data.mesecni_vlozek, cela_investicija_skupaj,
+        language=data.language, csv_folder=csv_folder, graph_folder=graph_folder,
+    )
     print(" funkcija_ki_narise_grafe ✅ ")
     
 
     
     
     # vse htmlje
-    json_grafi = dobi_grafe_v_json()
+    json_grafi = dobi_grafe_v_json(simulation_id, data.language, request)
     print(" vrnemo json grafov ✅ ")
     
     fancy_zakljucek_1()
     return json_grafi
+
+
+@app.get("/graf/{simulation_id}/{language}/{filename}", name="graf_v_jeziku")
+def graf_v_jeziku(simulation_id: UUID, language: Literal["sl", "en"], filename: str):
+    """Drugi jezik izrišemo ob prvem odprtju iz istih CSV-jev, brez nove simulacije."""
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}--\d{4}-\d{2}-\d{2}\.html", filename):
+        raise HTTPException(status_code=404, detail="Graph not found")
+
+    csv_folder = MAPA_REZULTATI / simulation_id.hex
+    csv_path = csv_folder / Path(filename).with_suffix(".csv")
+    parameters_path = csv_folder / "parametri.json"
+    if not csv_path.is_file() or not parameters_path.is_file():
+        raise HTTPException(status_code=404, detail="Graph not found")
+
+    html_path = MAPA_GRAFI / simulation_id.hex / language / filename
+    if not html_path.is_file():
+        data = podatki_iz_frontenda.model_validate_json(parameters_path.read_text(encoding="utf-8"))
+        total = data.zacetna_investicija + data.interval * 12 * data.mesecni_vlozek
+        narisi_logaritmicne_grafe(
+            data.zacetna_investicija, data.mesecni_vlozek, total,
+            csv_path, html_path, language=language,
+        )
+    return FileResponse(html_path, media_type="text/html")
     
 # ------------------------------------------------------------------------------------------
 
@@ -233,11 +269,12 @@ def funkcija_naredi_vse(zacetna_investicija, mesecne_investicije, interval, inde
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki, tip_intervala="mesecni"):
+def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicija, mesecni_vlozki,
+                                   tip_intervala="mesecni", output_dir=None):
     # rezultate shranjujemo v mapo: 'rezultati-vsak-interval-vsi-indeksi'
     # ce se ni ustvarjena mapa jo ustvarimo
-    folder = "rezultati-vsak-interval-vsi-indeksi"
-    os.makedirs(folder, exist_ok=True)  # Ustvari mapo (če še ne obstaja)
+    folder = Path(output_dir) if output_dir is not None else MAPA_REZULTATI
+    folder.mkdir(parents=True, exist_ok=True)
 
     # da pripravimo prostor da nove fajle damo notri moremo prej use zbrisat. to naredi pa ta koda
     for csv_file in glob.glob(os.path.join(folder, "*.csv")):  # 🔍 Najdi vse CSV datoteke
@@ -253,7 +290,7 @@ def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicij
         for i in range(len(intervali)):
             datum_zacetka = intervali[i][0]
             datum_konca = intervali[i][1]
-            output_file = f"rezultati-vsak-interval-vsi-indeksi/{datum_zacetka}--{datum_konca}.csv"
+            output_file = folder / f"{datum_zacetka}--{datum_konca}.csv"
             # ker v for loopu klicemo je to zato ker za razlicne intervale
             izracun_dca_metoda_prilagojena_da_naredi_csv(
                 keri_indeksi[0], keri_indeksi[1], keri_indeksi[2],
@@ -270,10 +307,11 @@ def funkcija_naredi_rezultat_za_csvje(keri_indeksi, interval, zacetna_investicij
 # ------
 
 # 2. GLAVNA FUNKCIJA - funkcija ki narise grafe iz vseh csvjev v mapi: 'rezultati-vsak-interval-vsi-indeksi'
-def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj):
+def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_investicija_skupaj,
+                           language="sl", csv_folder=None, graph_folder=None):
     print()
     # usvarimo mapo ce se ne obstaja
-    folder = Path("mapa-grafi")
+    folder = Path(graph_folder) if graph_folder is not None else MAPA_GRAFI / language
     if folder.exists():
         for file in folder.iterdir():
             if file.is_file():
@@ -282,7 +320,7 @@ def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_inve
         folder.mkdir(parents=True, exist_ok=True)
 
     # preštej csv-je v mapi in jih ustrezno vzemi
-    mapa = Path("rezultati-vsak-interval-vsi-indeksi")
+    mapa = Path(csv_folder) if csv_folder is not None else MAPA_REZULTATI
     csv_files = sorted(list(mapa.glob("*.csv")))
 
     # tukaj dodaj da ustvari mapo ce se ne obstaja... 
@@ -292,27 +330,15 @@ def funkcija_ki_narise_grafe(zacetna_investicija, mesecna_investicija, cela_inve
         html_files = [folder / f"{csv_path.stem}.html" for csv_path in csv_files]
         for _ in narisi_vec_grafov(
             zacetna_investicija, mesecna_investicija, cela_investicija_skupaj,
-            csv_files, html_files,
+            csv_files, html_files, language=language,
         ):
             progress.advance(task)
     
     
 
-def dobi_grafe_v_json():
-    """
-    Skenira mapo z ustvarjenimi HTML grafi in vrne JSON seznam za frontend.
-    
-    Ker so datoteke poimenovane z datumi (npr. '1990-01-01--2000-01-01.html'), 
-    jih funkcija najprej prebere in abecedno (kronološko) sortira.
-    
-    @return: Vrne JSON objekt (slovar) s ključem 'results', ki vsebuje seznam grafov. 
-             Vsak element seznama vsebuje:
-             - 'id': zaporedna številka
-             - 'title': ime brez končnice (torej samo interval, npr. '1990-01-01--2000-01-01')
-             - 'filename': celotno ime datoteke z .html
-             - 'url': točen lokalni link do grafa (npr. 'http://localhost:8000/grafi/1990-01...html')
-    """
-    mapa = Path("mapa-grafi")
+def dobi_grafe_v_json(simulation_id, language, request):
+    """Vrne grafe po datumih ter URL za vsak jezik iste simulacije."""
+    mapa = MAPA_GRAFI / simulation_id / language
 
     # Datoteke so sedaj poimenovane po datumih (YYYY-MM-DD--YYYY-MM-DD.html)
     # Zato jih navadno abecedno sortiranje avtomatsko uredi kronološko!
@@ -320,14 +346,22 @@ def dobi_grafe_v_json():
 
     results = []
     for i, file_path in enumerate(files, start=1):
+        urls = {
+            lang: str(request.url_for("graf_v_jeziku", simulation_id=simulation_id,
+                                      language=lang, filename=file_path.name))
+            for lang in ("sl", "en")
+        }
         results.append({
             "id": i,
             "title": file_path.stem,
             "filename": file_path.name,
-            "url": f"http://localhost:8000/grafi/{file_path.name}"
+            "url": urls[language],
+            "urls": urls,
         })
 
     return {
+        "simulation_id": simulation_id,
+        "language": language,
         "results": results
     }
 # ---------------------------------------------------------------------------------------------

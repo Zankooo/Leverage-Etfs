@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-vue-next'
 import { calculateSimulationStatistics } from '../utils/simulationStatistics'
 import { useI18n } from 'vue-i18n'
 
-const { t, n, d } = useI18n()
+const { t, n, d, locale } = useI18n()
 
 // ref () pomeni : Shrani vrednost in ob njeni spremembi samodejno posodobi dele uporabniškega vmesnika, ki jo uporabljajo.
 const initialInvestment = ref('')
@@ -27,7 +27,13 @@ const isLoading = ref(false)
 const tableRows = ref<any[]>([])
 const tableSummary = ref<any | null>(null)
 const showGraphModal = ref(false)
-const selectedGraphUrl = ref('')
+const selectedGraphIndex = ref<number | null>(null)
+// Backend vrne oba URL-ja; drugi jezik po potrebi izriše iz shranjenega CSV-ja.
+const selectedGraphUrl = computed(() => {
+  if (selectedGraphIndex.value === null) return ''
+  const graph = grafi.value[selectedGraphIndex.value]
+  return graph?.urls?.[locale.value] ?? graph?.url ?? ''
+})
 let revizijaVnosa = 0
 
 
@@ -51,7 +57,7 @@ watch(
     tableSummary.value = null
     grafi.value = []
     showGraphModal.value = false
-    selectedGraphUrl.value = ''
+    selectedGraphIndex.value = null
   }
 )
 
@@ -173,7 +179,7 @@ async function izracunaj() {
   tableSummary.value = null
   grafi.value = []
   showGraphModal.value = false
-  selectedGraphUrl.value = ''
+  selectedGraphIndex.value = null
 
   isLoading.value = true
 
@@ -184,7 +190,8 @@ async function izracunaj() {
       mesecni_vlozek: Number(monthlyContribution.value),
       indeks: selectedIndex.value,
       interval: Number(selectedInterval.value),
-      tip_intervala: selectedIntervalType.value
+      tip_intervala: selectedIntervalType.value,
+      language: locale.value,
     }
 
     // KLICI NA BACKEND IN ODGOVORI
@@ -228,10 +235,8 @@ async function izracunaj() {
 // ta funkcija se izvede kot clovek kliknen na gumb graf
 const showGraph = (index: number) => {
   if (grafi.value[index]) {
-    // Funkcija izbere URL ustreznega grafa, 
-    
-    // ta url se nahaja v odgovoru ki ga da backend
-    selectedGraphUrl.value = grafi.value[index].url
+    // URL sledi trenutnemu jeziku tudi po že opravljenem izračunu.
+    selectedGraphIndex.value = index
     showGraphModal.value = true
   }
 }

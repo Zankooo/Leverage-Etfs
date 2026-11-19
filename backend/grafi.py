@@ -6,10 +6,14 @@ from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 from multiprocessing import get_context
 import os
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from html import escape
+from prevodi_grafov import prevodi_za_jezik, plotly_config
 
 
 def narisi_vec_grafov(zacetna_investicija, mesecna_investicija,
-                     vse_investicije_skupaj, csv_paths, html_paths):
+                     vse_investicije_skupaj, csv_paths, html_paths, language="sl"):
     """Riše neodvisne grafe na največ štirih procesih; yield za vsak končan graf.
 
     Majhne serije rišemo zaporedno, ker bi zagon procesov trajal dlje.
@@ -18,9 +22,10 @@ def narisi_vec_grafov(zacetna_investicija, mesecna_investicija,
     """
     if len(csv_paths) != len(html_paths):
         raise ValueError("Vsak CSV mora imeti svojo izhodno HTML-pot.")
+    prevodi_za_jezik(language)
     workers = min(4, os.cpu_count() or 1)
     narisi = partial(narisi_logaritmicne_grafe, zacetna_investicija,
-                     mesecna_investicija, vse_investicije_skupaj)
+                     mesecna_investicija, vse_investicije_skupaj, language=language)
     if workers == 1 or len(csv_paths) < 16:
         yield from map(narisi, csv_paths, html_paths)
         return
@@ -52,9 +57,12 @@ def narisi_logaritmicne_grafe(
     rename_to_graf: bool = True,
     custom_labels: Optional[Dict[str,str]] = None,
     y_tickformat: str = ",.0f",
+    language: str = "sl",
     
 ):
-    import base64, pathlib, webbrowser
+    import base64
+
+    besedila = prevodi_za_jezik(language)
 
     # te dve funkciji sta samo zato da je lahko favicon notri
     def make_emoji_favicon_data_url(emoji="📈", size=64, bg=None):
@@ -78,21 +86,23 @@ def narisi_logaritmicne_grafe(
             return link + html
     # --------
 
-    def fmt_eu_intbold_html(x, decimals=2, int_color="#111", dec_color="#111"):
+    def fmt_intbold_html(x, decimals=2, int_color="#111", dec_color="#111"):
         try:
             val = float(x)
         except (TypeError, ValueError):
             return str(x)
         s = f"{val:,.{decimals}f}"
-        s_eu = s.replace(",", "X").replace(".", ",").replace("X", ".")
-        if "," in s_eu:
-            int_part, dec_part = s_eu.split(",")
+        decimal = besedila["separators"][0]
+        if language == "sl":
+            s = s.replace(",", "X").replace(".", ",").replace("X", ".")
+        if decimal in s:
+            int_part, dec_part = s.rsplit(decimal, 1)
             return (
                 f"<b style='font-weight:700; color:{int_color}'>{int_part}</b>"
-                f"<span style='font-weight:400; color:{dec_color}'>,{dec_part}</span>"
+                f"<span style='font-weight:400; color:{dec_color}'>{decimal}{dec_part}</span>"
             )
         else:
-            return f"<b style='font-weight:700; color:{int_color}'>{s_eu}</b>"
+            return f"<b style='font-weight:700; color:{int_color}'>{s}</b>"
 
     df = pd.read_csv(csv_path, parse_dates=["date"])
     # Enako kot DCA: začetni vložek, nato vplačilo ob prehodu v nov mesec.
@@ -112,12 +122,12 @@ def narisi_logaritmicne_grafe(
         rename_map.update(custom_labels)
 
     if rename_to_graf:
-        fixed_names = ["Osnoven indeks", "Vzvod 2x", "Vzvod 3x"]
+        fixed_names = besedila["strategies"]
         for i, c in enumerate(y_cols):
             if i < len(fixed_names):
                 rename_map[c] = fixed_names[i]
             else:
-                rename_map[c] = f"Graf {i+1}"  # če bi bilo stolpcev več kot 3
+                rename_map[c] = besedila["chart"].format(number=i+1)
 
     if rename_map:
         df = df.rename(columns=rename_map)
@@ -143,20 +153,20 @@ def narisi_logaritmicne_grafe(
 
     fig.update_layout(
         hovermode="x unified",
-        xaxis_title="Datum",
-        yaxis_title="Vrednost (log)",
+        xaxis_title=besedila["date"],
+        yaxis_title=besedila["value"],
         font=dict(family="Arial, Helvetica, sans-serif", size=14),
         margin=dict(l=60, r=30, t=190, b=80),
         hoverlabel=dict(font_size=13, namelength=-1),
         legend_title_text="",
-        separators=",."
+        separators=besedila["separators"]
     )
 
     fig.update_xaxes(
         showgrid=True, gridcolor="rgba(0,0,0,0.08)",
         showspikes=True, spikemode="across", spikesnap="cursor", spikedash="solid",
-        tickformat="%d.%m.%Y",
-        hoverformat="%d.%m.%Y",
+        tickformat=besedila["date_format"],
+        hoverformat=besedila["date_format"],
         rangeslider=dict(visible=True, thickness=0.08, bgcolor="rgba(108,99,255,0.08)")
     )
     fig.update_yaxes(
@@ -169,7 +179,7 @@ def narisi_logaritmicne_grafe(
 
     dolar = "<span style='font-weight:400; color:#111'> $</span>"
     for i, col in enumerate(y_cols):
-        values_html = [fmt_eu_intbold_html(v, 2) + dolar for v in df_original[col].tolist()]
+        values_html = [fmt_intbold_html(v, 2) + dolar for v in df_original[col].tolist()]
         fig.data[i].customdata = values_html
         fig.data[i].hovertemplate = "<b>%{fullData.name}</b>: %{customdata}<extra></extra>"
 
@@ -178,19 +188,19 @@ def narisi_logaritmicne_grafe(
     fig.add_trace(go.Scatter(
         x=df["date"],
         y=skupna_vplacila.clip(lower=0.01).tolist(),
-        name="Skupaj investirano",
+        name=besedila["invested"],
         mode="lines",
         line=dict(color="rgb(140,140,140)", width=2, shape="hv"),
-        customdata=[fmt_eu_intbold_html(v, 2) + dolar for v in skupna_vplacila],
+        customdata=[fmt_intbold_html(v, 2) + dolar for v in skupna_vplacila],
         hovertemplate="<b>%{fullData.name}</b>: %{customdata}<extra></extra>",
     ))
 
-    start_date_str = pd.to_datetime(df["date"].min()).strftime("%d.%m.%Y")
-    end_date_str   = pd.to_datetime(df["date"].max()).strftime("%d.%m.%Y")
+    start_date_str = pd.to_datetime(df["date"].min()).strftime(besedila["date_format"])
+    end_date_str   = pd.to_datetime(df["date"].max()).strftime(besedila["date_format"])
 
-    z_html = fmt_eu_intbold_html(zacetna_investicija, 2) + dolar
-    m_html = fmt_eu_intbold_html(mesecna_investicija, 2) + dolar
-    s_html = fmt_eu_intbold_html(vse_investicije_skupaj, 2) + dolar
+    z_html = fmt_intbold_html(zacetna_investicija, 2) + dolar
+    m_html = fmt_intbold_html(mesecna_investicija, 2) + dolar
+    s_html = fmt_intbold_html(vse_investicije_skupaj, 2) + dolar
 
     color_seq = ["rgb(166,130,255)", "rgb(85,193,255)", "rgb(255,183,3)"][:len(y_cols)]
     label_colors = dict(zip(y_cols, color_seq))
@@ -199,7 +209,7 @@ def narisi_logaritmicne_grafe(
     finals_parts = []
     for col in y_cols:
         colored_label = f"<span style='color:{label_colors[col]}; font-weight:700'>{col}</span>"
-        value_html = fmt_eu_intbold_html(last_row[col], 2) + dolar
+        value_html = fmt_intbold_html(last_row[col], 2) + dolar
         finals_parts.append(f"{colored_label}: {value_html}")
     finals_html = " &nbsp;•&nbsp; ".join(finals_parts)
 
@@ -218,19 +228,32 @@ def narisi_logaritmicne_grafe(
             f"{end_date_str}"
             f"</span><br>"
             f"<span style='font-size:21px; color:#444'>"
-            f"💰 Začetna investicija: {z_html} &nbsp;•&nbsp; "
-            f"📈 Mesečne investicije: {m_html} &nbsp;•&nbsp; "
-            f"Σ Vse skupaj: {s_html}"
+            f"💰 {besedila['initial']}: {z_html} &nbsp;•&nbsp; "
+            f"📈 {besedila['monthly']}: {m_html} &nbsp;•&nbsp; "
+            f"Σ {besedila['total']}: {s_html}"
             f"</span><br>"
             f"<span style='font-size:21px; color:#444'>"
-            f"🏁 Končne vrednosti: {finals_html}"
+            f"🏁 {besedila['final']}: {finals_html}"
             f"</span>"
         )
     )
 
 
 
-    html = fig.to_html(full_html=True, include_plotlyjs="cdn")
+    html = fig.to_html(full_html=True, include_plotlyjs="cdn", config=plotly_config(language))
+    html = html.replace("<html>", f'<html lang="{language}">', 1)
+    title = escape(f"{besedila['title']} – {start_date_str} – {end_date_str}")
+    html = html.replace("</head>", f"<title>{title}</title></head>", 1)
     html = inject_favicon(html, emoji="🌳", bg=None)  # emoji lahko zamenjaš (npr. "📊", "🚀"); bg="#fff" doda belo ozadje
-    pathlib.Path(output_html).write_text(html, encoding="utf-8")
-    # webbrowser.open(pathlib.Path(output_html).resolve().as_uri())
+    output_path = Path(output_html)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Sočasni zahtevi ne smeta prebrati le delno zapisanega HTML-ja.
+    with NamedTemporaryFile(mode="w", encoding="utf-8", dir=output_path.parent,
+                            suffix=".tmp", delete=False) as temporary:
+        temporary_path = Path(temporary.name)
+        try:
+            temporary.write(html)
+            temporary.close()
+            temporary_path.replace(output_path)
+        finally:
+            temporary_path.unlink(missing_ok=True)
