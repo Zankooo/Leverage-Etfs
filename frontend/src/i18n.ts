@@ -4,13 +4,15 @@ import sl from './locales/sl'
 import en from './locales/en'
 
 const languageStorageKey = 'vzvodno-language'
+const defaultLanguage: 'sl' | 'en' = 'en'
 
 function savedLanguage(): 'sl' | 'en' {
   try {
-    return localStorage.getItem(languageStorageKey) === 'en' ? 'en' : 'sl'
+    const saved = localStorage.getItem(languageStorageKey)
+    return saved === 'sl' || saved === 'en' ? saved : defaultLanguage
   } catch {
     // Preklop deluje tudi, če brskalnik ne dovoli shranjevanja izbire.
-    return 'sl'
+    return defaultLanguage
   }
 }
 
