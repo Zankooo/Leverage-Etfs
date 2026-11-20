@@ -30,6 +30,7 @@ from izracuni import (
     metoda_dca_za_testing_prilagojena,
 )
 from obcasno_pogosti_fajli.csv_operacije import load_csv
+from obcasno_pogosti_fajli.fancy_zakljucki_programa import fancy_zakljucek_1
 from testing_file import generiraj_intervale, primerjaj_tri_indekse
 
 
@@ -75,7 +76,6 @@ nasdaq_comp_3x = load_csv(BASE_DIR / "3x-leverage" / "nasdaq-comp-3x.csv")
 
 
 # Podatki, ki jih frontend pošlje kot JSON
-
 class podatki_iz_frontenda(BaseModel):
     zacetna_investicija: int
     mesecni_vlozek: int
@@ -84,18 +84,30 @@ class podatki_iz_frontenda(BaseModel):
     tip_intervala: Literal["letni", "mesecni"] = "mesecni"
     language: Literal["sl", "en"] = "sl"
 
+# Izbira vhodnih podatkov
+def pridobi_indekse(izbran_indeks):
+    """Za izbrani indeks vrne serije v vrstnem redu: 1x, 2x, 3x."""
+    if izbran_indeks == "S&P 500":
+        indeksi = [sp_500, sp_500_2x, sp_500_3x]
+    elif izbran_indeks == "Nasdaq 100":
+        indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
+    elif izbran_indeks == "Nasdaq Composite":
+        indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
+    return indeksi
+
 
 # API: tukaj se začne obdelava zahteve iz frontenda.
-
 @app.get("/")
 def preveri_delovanje():
     """Vrne sporočilo za preprost preizkus povezave z backendom."""
     return {"message": "Backend deluje"}
 
-
+# PRVI API KLIC
 @app.post("/primerjava_vrstic")
 def primerjaj_rezultate(data: podatki_iz_frontenda):
     """Iz prejetih parametrov pripravi primerjavo 1x, 2x in 3x za tabelo."""
+    print()
+    print("KLIC NA BACKEND SPROŽEN")
     print("Pripravljam primerjavo naložb ...")
 
     # 1. Izberemo tri serije podatkov za zahtevani indeks.
@@ -112,7 +124,7 @@ def primerjaj_rezultate(data: podatki_iz_frontenda):
         "testing/osnoven.csv", "testing/vzvod-2x.csv", "testing/vzvod-3x.csv",
     )
 
-
+# PRVI API KLIC
 @app.post("/html-files")
 def ustvari_grafe(data: podatki_iz_frontenda, request: Request):
     """Iz prejetih parametrov ustvari HTML-grafe in vrne njihove povezave."""
@@ -131,22 +143,12 @@ def ustvari_grafe(data: podatki_iz_frontenda, request: Request):
         data.zacetna_investicija, data.mesecni_vlozek, skupaj_vlozeno,
         language=data.language,
     )
-
+    fancy_zakljucek_1()
     # 3. Frontend prejme povezave; ob odprtju grafa se izračun ne ponovi.
     return dobi_grafe_v_json(request)
 
 
-# Izbira vhodnih podatkov
 
-def pridobi_indekse(izbran_indeks):
-    """Za izbrani indeks vrne serije v vrstnem redu: 1x, 2x, 3x."""
-    if izbran_indeks == "S&P 500":
-        indeksi = [sp_500, sp_500_2x, sp_500_3x]
-    elif izbran_indeks == "Nasdaq 100":
-        indeksi = [nasdaq_100, nasdaq_100_2x, nasdaq_100_3x]
-    elif izbran_indeks == "Nasdaq Composite":
-        indeksi = [nasdaq_comp, nasdaq_comp_2x, nasdaq_comp_3x]
-    return indeksi
 
 
 # Prvi API-klic: končni rezultati za primerjavo
@@ -193,6 +195,8 @@ def ustvari_rezultate(
             )
             progress.advance(task)
     return 0
+
+
 
 
 # Drugi API-klic: dnevne vrednosti, grafi in povezave
